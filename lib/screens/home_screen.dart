@@ -2,6 +2,7 @@ import 'package:chat_app/screens/login_screen.dart';
 import 'package:chat_app/widgets/build_chats_body.dart';
 import 'package:chat_app/widgets/my_app_bar.dart';
 import 'package:chat_app/widgets/my_bottom_navigation_app_bar.dart';
+import 'package:chat_app/widgets/my_floating_action_button.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -40,11 +41,7 @@ class _HomePageState extends State<HomePage>  with TickerProviderStateMixin {
     ];
     return Scaffold(
       body: TabBarView(controller: _tabController, children: widgetOptions),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.message),
-        backgroundColor: Colors.green,
-      ),
+      floatingActionButton: myFloatingActionButton(context),
       bottomNavigationBar: MyBottomNavigationBar(
         screenHeight: screenHeight,
         currentIndex: _selectedIndex,
