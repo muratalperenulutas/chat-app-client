@@ -1,3 +1,4 @@
+import 'package:chat_app/screens/login_screen.dart';
 import 'package:chat_app/widgets/my_bottom_navigation_app_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -107,7 +108,18 @@ class _HomePageState extends State<HomePage> {
         ),
         backgroundColor: Colors.green,
         toolbarHeight: screenHeight / 16,
-        title: Text("Chat App " + screenWidth.toString()),
+        title: Text("Chat App "),actions: [
+        IconButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: ((context) => const LoginPage()),
+                ),
+              );
+            },
+            icon: const Icon(Icons.logout))
+      ],
       ),
     );
   }
