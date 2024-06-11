@@ -14,11 +14,13 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       body: ListView(padding: EdgeInsets.zero, children: [
         Container(
             color: Colors.green,
-            height: 220,
+            height: screenHeight*0.25,
             child: const Padding(padding: EdgeInsets.all(25),
             child: Column(
               children: [
