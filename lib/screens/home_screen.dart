@@ -1,5 +1,6 @@
 import 'package:chat_app/screens/login_screen.dart';
 import 'package:chat_app/widgets/build_chats_body.dart';
+import 'package:chat_app/widgets/my_app_bar.dart';
 import 'package:chat_app/widgets/my_bottom_navigation_app_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -33,7 +34,7 @@ class _HomePageState extends State<HomePage>  with TickerProviderStateMixin {
 
     List<Widget> widgetOptions = <Widget>[
       const Center(child: Text("Home Page")),
-      const Center(child: Text("Chats Page")),
+      buildChatsBody(screenHeight),
       const Center(child: Text("Contacts Page")),
       const Center(child: Text("Me Page"))
     ];
@@ -56,26 +57,7 @@ class _HomePageState extends State<HomePage>  with TickerProviderStateMixin {
         ],
         onTab: _onItemTapped,
       ),
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.menu),
-        ),
-        backgroundColor: Colors.green,
-        toolbarHeight: screenHeight / 16,
-        title: Text("Chat App "),actions: [
-        IconButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: ((context) => const LoginPage()),
-                ),
-              );
-            },
-            icon: const Icon(Icons.logout))
-      ],
-      ),
+      appBar: buildAppBar(screenHeight, context)
     );
   }
 }
