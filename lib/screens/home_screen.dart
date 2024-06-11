@@ -1,3 +1,4 @@
+import 'package:chat_app/widgets/my_bottom_navigation_app_bar.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -8,6 +9,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -80,86 +88,17 @@ class _HomePageState extends State<HomePage> {
         child: Icon(Icons.message),
         backgroundColor: Colors.green,
       ),
-      bottomNavigationBar: BottomAppBar(
-        //varsayılan padding problemi
-        color: Colors.green,
-        padding: EdgeInsets.all(0),
-        height: screenHeight / 14,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                MaterialButton(
-                  onPressed: () {},
-                  child: const Column(
-                    children: [
-                      Icon(
-                        Icons.home_outlined,
-                        size: 25.0,
-                        color: Colors.black,
-                      ),
-                      SizedBox(
-                        height: 3,
-                      ),
-                      Text("Home"),
-                    ],
-                  ),
-                ),
-                MaterialButton(
-                  onPressed: () {},
-                  child: const Column(
-                    children: [
-                      Icon(
-                        Icons.chat_sharp,
-                        size: 25.0,
-                        color: Colors.black,
-                      ),
-                      SizedBox(
-                        height: 3,
-                      ),
-                      Text("Chats"),
-                    ],
-                  ),
-                ),
-                MaterialButton(
-                  onPressed: () {},
-                  child: const Column(
-                    children: [
-                      Icon(
-                        Icons.perm_contact_cal_sharp,
-                        size: 25.0,
-                        color: Colors.black,
-                      ),
-                      SizedBox(
-                        height: 3,
-                      ),
-                      Text("Contacts"),
-                    ],
-                  ),
-                ),
-                MaterialButton(
-                  onPressed: () {},
-                  child: const Column(
-                    children: [
-                      Icon(
-                        Icons.account_circle,
-                        size: 25.0,
-                        color: Colors.black,
-                      ),
-                      SizedBox(
-                        height: 3,
-                      ),
-                      Text("Me"),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+      bottomNavigationBar: MyBottomNavigationBar(
+        screenHeight: screenHeight,
+        currentIndex: _selectedIndex,
+        items: [
+          MyBottomNavigationBarItem(title: "Home", icon: Icons.home_outlined),
+          MyBottomNavigationBarItem(title: "Chats", icon: Icons.chat_sharp),
+          MyBottomNavigationBarItem(
+              title: "Contacts", icon: Icons.perm_contact_cal_sharp),
+          MyBottomNavigationBarItem(title: "Me", icon: Icons.account_circle),
+        ],
+        onTab: _onItemTapped,
       ),
       appBar: AppBar(
         leading: IconButton(
