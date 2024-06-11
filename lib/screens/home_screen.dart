@@ -17,6 +17,7 @@ class _HomePageState extends State<HomePage>  with TickerProviderStateMixin {
     setState(() {
       _selectedIndex = index;
     });
+     _tabController.index = _selectedIndex;
   }
 
     @override
