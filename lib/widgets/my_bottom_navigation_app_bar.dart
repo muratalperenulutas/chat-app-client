@@ -34,7 +34,7 @@ class MyBottomNavigationBar extends StatelessWidget {
       });
     }).toList();
 
-    return BottomAppBar(
+    return Container(  //add box decoration
       color: Colors.green,
       padding: const EdgeInsets.all(0),
       height: screenHeight * 0.07 < 60 ? 60 : screenHeight * 0.07,
