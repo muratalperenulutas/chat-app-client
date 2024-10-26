@@ -1,4 +1,6 @@
+import 'package:chat_app/models/login.dart';
 import 'package:chat_app/screens/register_screen.dart';
+import 'package:chat_app/services/auth/auth.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -42,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
                 TextField(
                   controller: emailController,
                   decoration: const InputDecoration(
-                      labelText: "E-mail",
+                      labelText: "Email",
                       labelStyle: TextStyle(color: Colors.black),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -69,7 +71,9 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          AuthService.login(context, LoginModel(email: emailController.text,password: passwordController.text));
+                        },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.indigo,
                             shape: RoundedRectangleBorder(

@@ -10,6 +10,6 @@ class Url {
 }
 
 class Auth{
-  String Login = '$serverAddress/login';
-  String Register = '$serverAddress/register';
+  String Login = '$serverAddress/auth/login';
+  String Register = '$serverAddress/auth/register';
 }

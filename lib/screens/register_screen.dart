@@ -1,4 +1,6 @@
+import 'package:chat_app/models/register.dart';
 import 'package:chat_app/screens/login_screen.dart';
+import 'package:chat_app/services/auth/auth.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -52,7 +54,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 TextField(
                   controller: emailController,
                   decoration: const InputDecoration(
-                      labelText: "E-mail",
+                      labelText: "Email",
                       labelStyle: TextStyle(color: Colors.black),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -85,7 +87,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          AuthService.register(context, RegisterModel(password: passwordController.text, email: emailController.text));
+                        },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.indigo,
                             shape: RoundedRectangleBorder(
