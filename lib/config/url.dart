@@ -7,6 +7,7 @@ String serverAddress = address3;
 
 class Url {
   static final auth = Auth();
+  static final websocket =serverAddress;
 }
 
 class Auth{
