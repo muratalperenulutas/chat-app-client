@@ -38,6 +38,7 @@ class AuthService {
         print(jsonResponse);
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('refresh-token', jsonResponse['refreshToken']);
+        await prefs.setString('access-token', jsonResponse['accessToken']);
         String message = jsonResponse['message'];
         showSnackbar(context, message);
 
@@ -92,5 +93,9 @@ class AuthService {
     }
   }
 
-  Future<void> logout() async {}
+  static Future<void> logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('refresh-token');
+    await prefs.remove('access-token');
+  }
 }

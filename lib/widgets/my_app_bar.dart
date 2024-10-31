@@ -1,4 +1,5 @@
 import 'package:chat_app/screens/login_screen.dart';
+import 'package:chat_app/services/auth/auth.dart';
 import 'package:flutter/material.dart';
 
 AppBar buildAppBar(double screenHeight, BuildContext context) {
@@ -13,6 +14,7 @@ AppBar buildAppBar(double screenHeight, BuildContext context) {
     actions: [
       IconButton(
           onPressed: () {
+            AuthService.logout();
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
