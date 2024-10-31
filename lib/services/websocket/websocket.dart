@@ -1,12 +1,26 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:chat_app/config/url.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/io.dart';
 
 class WebSocketClient {
-  final IOWebSocketChannel channel;
+  late final IOWebSocketChannel channel;
+  
+  WebSocketClient() {
+    _connect();
+  }
 
-  WebSocketClient()
-      : channel = IOWebSocketChannel.connect(Uri.parse(Url.websocket)) {
+  Future<void> _connect() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = await prefs.getString('access-token') ?? '';
+
+    final headers = {
+      'Authorization': '$accessToken',
+    };
+
+    final webSocket = await WebSocket.connect(Url.websocket, headers: headers);
+    channel = IOWebSocketChannel(webSocket);
     channel.stream.listen(
       (message) {
         _handleMessage(message);
@@ -14,7 +28,7 @@ class WebSocketClient {
     );
   }
 
-  void sendCommand(String listId) {
+  void sendCommand() {
     String jsonMessage = jsonEncode({
       'command': 'echo'});
     channel.sink.add(jsonMessage);
