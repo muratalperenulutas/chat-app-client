@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:chat_app/config/url.dart';
+import 'package:chat_app/services/websocket/message_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/io.dart';
 
@@ -23,7 +24,7 @@ class WebSocketClient {
     channel = IOWebSocketChannel(webSocket);
     channel.stream.listen(
       (message) {
-        _handleMessage(message);
+        handleMessage(message);
       },
     );
   }
@@ -32,12 +33,6 @@ class WebSocketClient {
     String jsonMessage = jsonEncode({
       'command': 'echo'});
     channel.sink.add(jsonMessage);
-  }
-
-  Future<void> _handleMessage(dynamic message) async {
-    final jsonData = jsonDecode(message);
-    print(jsonData);
-
   }
 
   void close() {
