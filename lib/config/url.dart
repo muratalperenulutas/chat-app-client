@@ -2,12 +2,13 @@
 String address1 = "https://";
 String address2 = "http://localhost:8090";
 String address3 = "http://10.0.2.2:8090";
+String address4 = "ws://10.0.2.2:8090";
 
 String serverAddress = address3;
 
 class Url {
   static final auth = Auth();
-  static final websocket =serverAddress;
+  static final websocket =address4;
 }
 
 class Auth{
