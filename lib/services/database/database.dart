@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:chat_app/models/group.dart';
+import 'package:chat_app/models/message.dart';
 import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -49,18 +50,18 @@ class DatabaseManager {
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  static Future<void> insertGroup(Map<String, dynamic> data) async {
+  static Future<void> insertGroup(GroupModel group) async {
     final db = await _getDatabase();
-    await db.insert(groupsTableName, data,
+    await db.insert(groupsTableName, group.toDb(),
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  static Future<List<Map<String, dynamic>>> getMessagesFromGroup(
+  static Future<List<MessageModel>> getMessagesFromGroup(
       String groupId) async {
     final db = await _getDatabase();
     final list = await db.rawQuery(
         'SELECT * FROM $messagesTableName WHERE groupId = ?', [groupId]);
-    return list;
+    return list.map((map) => MessageModel.fromDb(map)).toList();
   }
 
   static Future<List<GroupModel>> getGroups() async {
