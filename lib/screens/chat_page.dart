@@ -36,7 +36,7 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue[900],
-        title: Text(widget.groupModel.name+widget.groupModel.groupId),
+        title: Text(widget.groupModel.name),
       ),
       body: FutureBuilder<String?>(
           future: _getUserIdFuture,
@@ -58,9 +58,9 @@ class _ChatPageState extends State<ChatPage> {
                           builder: (context, snapshot) {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
-                              return const CircularProgressIndicator();
+                              return const Center(child: CircularProgressIndicator());
                             } else if (snapshot.hasError) {
-                              return Text('Error: ${snapshot.error}');
+                              return Center(child: Text('Error: ${snapshot.error}'));
                             } else if (snapshot.hasData) {
                               List<MessageModel> messages = snapshot.data!;
                               return ListView.builder(
