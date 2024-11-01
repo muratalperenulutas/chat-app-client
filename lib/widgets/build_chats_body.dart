@@ -25,6 +25,13 @@ Widget buildChatsBody(
                 itemBuilder: (context, index) {
                   return myConversationButton(screenHeight, groups[index]);
                 },
+              ),
+              SizedBox(
+                height: screenHeight/20,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [Text("You have "+groups.length.toString()+" groups.")],
+                ),
               )
             ],
           ),
