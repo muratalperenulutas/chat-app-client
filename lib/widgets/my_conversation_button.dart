@@ -1,6 +1,7 @@
+import 'package:chat_app/models/group.dart';
 import 'package:flutter/material.dart';
 
-MaterialButton myConversationButton(double screenHeight){
+MaterialButton myConversationButton(double screenHeight,GroupModel group){
 
   return MaterialButton(
                   height: screenHeight / 12,
@@ -27,16 +28,16 @@ MaterialButton myConversationButton(double screenHeight){
                         const SizedBox(
                           width: 10,
                         ),
-                        const Column(
+                        Column(
                           children: [
                             Text(
-                              "Name",
+                              group.name,
                               style: TextStyle(
                                 fontSize: 16,
                               ),
                             ),
                             Text(
-                              "text",
+                              group.isDirectChat.toString(),
                               style: TextStyle(
                                   fontSize: 14,
                                   color: Color.fromARGB(255, 85, 92, 94)),

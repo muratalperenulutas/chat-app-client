@@ -1,4 +1,6 @@
+import 'package:chat_app/models/group.dart';
 import 'package:chat_app/screens/login_screen.dart';
+import 'package:chat_app/services/database/database.dart';
 import 'package:chat_app/widgets/build_chats_body.dart';
 import 'package:chat_app/widgets/my_app_bar.dart';
 import 'package:chat_app/widgets/my_bottom_navigation_app_bar.dart';
@@ -14,6 +16,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>  with TickerProviderStateMixin {
   late final TabController _tabController;
+    late Future<List<GroupModel>> _groupsFuture;
   int _selectedIndex = 0;
   void _onItemTapped(int index) {
     setState(() {
@@ -26,6 +29,7 @@ class _HomePageState extends State<HomePage>  with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _groupsFuture =DatabaseManager.getGroups();
   }
 
   @override
@@ -35,7 +39,7 @@ class _HomePageState extends State<HomePage>  with TickerProviderStateMixin {
 
     List<Widget> widgetOptions = <Widget>[
       const Center(child: Text("Home Page")),
-      buildChatsBody(screenHeight),
+      buildChatsBody(screenHeight,_groupsFuture),
       const Center(child: Text("Contacts Page")),
       const Center(child: Text("Me Page"))
     ];
