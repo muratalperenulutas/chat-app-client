@@ -36,7 +36,7 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue[900],
-        title: Text(widget.groupModel.name),
+        title: Text(widget.groupModel.name+widget.groupModel.groupId),
       ),
       body: FutureBuilder<String?>(
           future: _getUserIdFuture,
@@ -44,13 +44,61 @@ class _ChatPageState extends State<ChatPage> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return Center(child: Text('Hata1: ${snapshot.error}'));
+              return Center(child: Text('Error: ${snapshot.error}'));
             } else if (snapshot.hasData) {
               String? userId = snapshot.data;
               return Container(
                 child: Stack(
-                  children: [
-                    Text("messages"),
+                  children: [  
+                  SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        FutureBuilder<List<MessageModel>>(
+                          future: _messagesFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const CircularProgressIndicator();
+                            } else if (snapshot.hasError) {
+                              return Text('Error: ${snapshot.error}');
+                            } else if (snapshot.hasData) {
+                              List<MessageModel> messages = snapshot.data!;
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                primary: false,
+                                itemCount: messages.length,
+                                itemBuilder: (context, index) {
+                                  var message = messages[index];
+                                  bool isMyMessage = message.senderId == userId;
+                                  return Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Row(
+                                      mainAxisAlignment: isMyMessage
+                                          ? MainAxisAlignment.end
+                                          : MainAxisAlignment.start,
+                                      children: [
+                                        Card(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(12.0),
+                                            child: Text(message.message),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            } else {
+                              return const Text('Message data not found.');
+                            }
+                          },
+                        ),
+                        const SizedBox(
+                          height: 60,
+                        )
+                      ],
+                    ),
+                  ),
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: Padding(

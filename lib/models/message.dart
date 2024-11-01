@@ -1,15 +1,15 @@
 class MessageModel {
   final String message;
   final String? id;
-  final String messageId;
-  final int groupId;
-  final int senderId;
-  final DateTime sendTime;
+  final String? messageId;
+  final String groupId;
+  final String senderId;
+  final DateTime? sendTime;
 
   const MessageModel({
     required this.message,
     this.id,
-    required this.messageId,
+    this.messageId,
     required this.groupId,
     required this.senderId,
     required this.sendTime,
@@ -20,9 +20,9 @@ class MessageModel {
       message: map['message'],
       id: map['id'].toString(),
       messageId: map['messageId'].toString(),
-      groupId: map['groupId'],
-      senderId: map['senderId'],
-      sendTime: DateTime.parse(map['sendTime']),
+      groupId: map['groupId'].toString(),
+      senderId: map['senderId'].toString(),
+      sendTime: map['sendTime'],
     );
   }
 
