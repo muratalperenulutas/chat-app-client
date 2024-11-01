@@ -19,15 +19,17 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
-    _messagesFuture =DatabaseManager.getMessagesFromGroup(widget.groupModel.groupId);
-    _getUserIdFuture=_getUserId();
-  
+    _messagesFuture =
+        DatabaseManager.getMessagesFromGroup(widget.groupModel.groupId);
+    _getUserIdFuture = _getUserId();
   }
-  Future<String?> _getUserId() async{
+
+  Future<String?> _getUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = await prefs.getString('user-id');
     return userId;
-  } 
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -36,45 +38,59 @@ class _ChatPageState extends State<ChatPage> {
         backgroundColor: Colors.blue[900],
         title: Text(widget.groupModel.name),
       ),
-      body: Container(
-        child: Stack(
-          children: [
-            Text("messages"),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: EdgeInsets.all(5.0),
-                child: Row(
+      body: FutureBuilder<String?>(
+          future: _getUserIdFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Hata1: ${snapshot.error}'));
+            } else if (snapshot.hasData) {
+              String? userId = snapshot.data;
+              return Container(
+                child: Stack(
                   children: [
-                    Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: SizedBox(
-                        width: screenWidth - 80,
-                        child: TextFormField(
-                          decoration: const InputDecoration(
-                            hintText: "Type a message",
-                            contentPadding: EdgeInsets.fromLTRB(20, 5, 5, 5),
-                            border: InputBorder.none,
-                          ),
+                    Text("messages"),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: EdgeInsets.all(5.0),
+                        child: Row(
+                          children: [
+                            Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              child: SizedBox(
+                                width: screenWidth - 80,
+                                child: TextFormField(
+                                  decoration: const InputDecoration(
+                                    hintText: "Type a message",
+                                    contentPadding:
+                                        EdgeInsets.fromLTRB(20, 5, 5, 5),
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            CircleAvatar(
+                              radius: 25,
+                              child: IconButton(
+                                onPressed: () {},
+                                icon: const Icon(Icons.send),
+                              ),
+                            )
+                          ],
                         ),
-                      ),
-                    ),
-                    CircleAvatar(
-                      radius: 25,
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.send),
                       ),
                     )
                   ],
                 ),
-              ),
-            )
-          ],
-        ),
-      ),
+              );
+            } else {
+              return const Center(child: Text("User id not found !"));
+            }
+          }),
     );
   }
 }
