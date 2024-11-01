@@ -1,13 +1,13 @@
 class GroupModel {
   final String name;
   final String? id;
-  final String? groupId; 
+  final String groupId; 
   final String isDirectChat; 
 
   const GroupModel({
     required this.name,
     this.id,
-    this.groupId,
+    required this.groupId,
     this.isDirectChat = "0", 
   });
   factory GroupModel.fromDb(Map<String, dynamic> map) {
