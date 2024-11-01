@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:chat_app/models/group.dart';
 import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -62,10 +63,10 @@ class DatabaseManager {
     return list;
   }
 
-  static Future<List<Map<String, dynamic>>> getGroups() async {
+  static Future<List<GroupModel>> getGroups() async {
     final db = await _getDatabase();
     final list = await db.rawQuery('SELECT * FROM $groupsTableName');
-    return list;
+    return list.map((map) => GroupModel.fromDb(map)).toList();
   }
 
   static Future<void> closeDatabase() async {
