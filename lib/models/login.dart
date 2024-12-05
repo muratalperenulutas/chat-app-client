@@ -1,11 +1,11 @@
 class LoginModel{
   final String password;
-  final String email;
+  final String identifier;
 
-  const LoginModel({required this.password, required this.email});
+  const LoginModel({required this.password, required this.identifier});
 
   Map<String,String> toJson() => {
-    'email': email,
+    'identifier': identifier,
     'password': password,
   };
 }

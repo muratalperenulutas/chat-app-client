@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:chat_app/controller/app_controller.dart';
 import 'package:chat_app/models/login.dart';
 import 'package:chat_app/models/register.dart';
 import 'package:chat_app/screens/home_screen.dart';
 import 'package:chat_app/services/api/api.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get/get.dart';
 
-void showSnackbar(BuildContext context, String message) {
+void showSnackBar(BuildContext context, String message) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(message),
@@ -17,16 +18,7 @@ void showSnackbar(BuildContext context, String message) {
 }
 
 class AuthService {
-  static Future<bool> isUserLoggedIn() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? refreshToken = await prefs.getString('refresh-token');
-
-    if (refreshToken != null && refreshToken.length > 5) {
-      return true;
-    } else {
-      return false;
-    }
-  }
+  static AppController appController = Get.find<AppController>();
 
   static Future<void> login(BuildContext context, LoginModel loginModel) async {
     try {
@@ -36,11 +28,10 @@ class AuthService {
         print(response.body);
         Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         print(jsonResponse);
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('refresh-token', jsonResponse['refreshToken']);
-        await prefs.setString('access-token', jsonResponse['accessToken']);
+        appController.setRefreshToken(jsonResponse['refreshToken']);
+        appController.setAccessToken(jsonResponse['accessToken']);
         String message = jsonResponse['message'];
-        showSnackbar(context, message);
+        showSnackBar(context, message);
 
         Navigator.pushReplacement(
           context,
@@ -51,17 +42,17 @@ class AuthService {
       } else if (response.statusCode == 401) {
         Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         String message = jsonResponse['message'];
-        showSnackbar(context, message);
+        showSnackBar(context, message);
       } else {
-        showSnackbar(context, 'Error');
+        showSnackBar(context, 'Error');
         print('Login failed: ${response.body}');
       }
     } on SocketException catch (e2) {
-      showSnackbar(context, 'No internet connection');
+      showSnackBar(context, 'No internet connection');
       print(e2);
     } catch (e) {
       print('Error: $e');
-      showSnackbar(context, 'An error occurred');
+      showSnackBar(context, 'An error occurred');
     }
   }
 
@@ -75,27 +66,26 @@ class AuthService {
         Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         print(jsonResponse);
         String message = jsonResponse['message'];
-        showSnackbar(context, message);
+        showSnackBar(context, message);
       } else if (response.statusCode == 401) {
         Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         String message = jsonResponse['message'];
-        showSnackbar(context, message);
+        showSnackBar(context, message);
       } else {
-        showSnackbar(context, 'Error');
+        showSnackBar(context, 'Error');
         print('Register failed: ${response.body}');
       }
     } on SocketException catch (e2) {
-      showSnackbar(context, 'No internet connection');
+      showSnackBar(context, 'No internet connection');
       print(e2);
     } catch (e) {
       print('Error: $e');
-      showSnackbar(context, 'An error occurred');
+      showSnackBar(context, 'An error occurred');
     }
   }
 
   static Future<void> logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('refresh-token');
-    await prefs.remove('access-token');
+    appController.setAccessToken('');
+    appController.setRefreshToken('');
   }
 }
