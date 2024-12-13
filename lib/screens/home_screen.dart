@@ -1,8 +1,11 @@
+import 'dart:ffi';
+
 import 'package:chat_app/models/group.dart';
-import 'package:chat_app/screens/login_screen.dart';
+import 'package:chat_app/models/person.dart';
 import 'package:chat_app/services/database/database.dart';
 import 'package:chat_app/services/websocket/websocket.dart';
 import 'package:chat_app/widgets/build_chats_body.dart';
+import 'package:chat_app/widgets/build_contacts_body.dart';
 import 'package:chat_app/widgets/my_app_bar.dart';
 import 'package:chat_app/widgets/my_bottom_navigation_app_bar.dart';
 import 'package:chat_app/widgets/my_floating_action_button.dart';
@@ -15,9 +18,10 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>  with TickerProviderStateMixin {
-  late final TabController _tabController;
+class _HomePageState extends State<HomePage>  with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   late Future<List<GroupModel>> _groupsFuture;
+  late Future<List<PersonModel>> _contactsFuture;
   int _selectedIndex = 0;
   void _onItemTapped(int index) {
     setState(() {
@@ -30,7 +34,17 @@ class _HomePageState extends State<HomePage>  with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener((){
+      if(!_tabController.indexIsChanging){
+        setState(() {
+          _selectedIndex=_tabController.index;
+        });
+      }
+    }
+
+    );
     _groupsFuture =DatabaseManager.getGroups();
+    _contactsFuture=DatabaseManager.getContacts();
     WebSocketClient();
   }
 
@@ -42,12 +56,12 @@ class _HomePageState extends State<HomePage>  with TickerProviderStateMixin {
     List<Widget> widgetOptions = <Widget>[
       const Center(child: Text("Home Page")),
       buildChatsBody(screenHeight,_groupsFuture),
-      const Center(child: Text("Contacts Page")),
+      buildContactsBody(screenHeight, _contactsFuture),
       const Center(child: Text("Me Page"))
     ];
     return Scaffold(
       body: TabBarView(controller: _tabController, children: widgetOptions),
-      floatingActionButton: myFloatingActionButton(context),
+      floatingActionButton: myFloatingActionButton(context,_selectedIndex),
       bottomNavigationBar: MyBottomNavigationBar(
         screenHeight: screenHeight,
         currentIndex: _selectedIndex,

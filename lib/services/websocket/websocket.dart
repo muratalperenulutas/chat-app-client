@@ -17,7 +17,7 @@ class WebSocketClient {
     final accessToken = await prefs.getString('access-token') ?? '';
 
     final headers = {
-      'Authorization': '$accessToken',
+      'Authorization': 'Bearer $accessToken',
     };
 
     final webSocket = await WebSocket.connect(Url.websocket, headers: headers);
@@ -27,12 +27,14 @@ class WebSocketClient {
         handleMessage(message);
       },
     );
+    sendCommand();
   }
 
   void sendCommand() {
     String jsonMessage = jsonEncode({
-      'command': 'echo'});
+      'command': 'GET_GROUPS'});
     channel.sink.add(jsonMessage);
+    print("s");
   }
 
   void close() {

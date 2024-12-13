@@ -11,11 +11,12 @@ void handleMessage(dynamic message) async {
       break;
     case "receive-message":
       break;
-    case "get-user-groups":
-      String groupCount = jsonData["data"]["groupCount"];
-      List<dynamic> groups = jsonData["data"]["groups"];
-      for (var groupData in groups) {
-        GroupModel groupModel = GroupModel.fromJson(groupData); 
+    case "GET_GROUPS_RESPONSE":
+      print("get group response");
+      List<dynamic> groups = jsonData["data"];
+      for (var group in groups) {
+        print("loop");
+        GroupModel groupModel = GroupModel.fromJson(group);
         await DatabaseManager.insertGroup(groupModel);
       }
       break;

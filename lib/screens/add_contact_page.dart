@@ -1,0 +1,119 @@
+import 'package:chat_app/models/person.dart';
+import 'package:chat_app/models/personOriginType.dart';
+import 'package:chat_app/services/database/database.dart';
+import 'package:flutter/material.dart';
+
+
+class addContactsPage extends StatefulWidget {
+  const addContactsPage({super.key});
+
+  @override
+  State<addContactsPage> createState() => _addContactsPageState();
+}
+
+class _addContactsPageState extends State<addContactsPage> {
+  final _surnameController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _identifierController = TextEditingController();
+
+  get username => null;
+
+  @override
+  Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    return Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () {
+              Navigator.pop(
+                context,
+              );
+            },
+          ),
+          title: const Center(child: Text("New Contact")),
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  PersonModel person=PersonModel(name: "${_nameController.text} ${_surnameController.text}", identifier: _identifierController.text,type: PersonOriginType.contact.toString(),);
+                  try{
+                    await DatabaseManager.insertContacts(person);
+                    Navigator.pop(
+                      context,
+                    );
+                  }catch(exception){
+                    print(exception);
+                  }
+                },
+                icon: const Icon(Icons.check))
+          ],
+        ),
+        backgroundColor: Colors.white,
+        body: Center(
+          child: SizedBox(
+            height: screenHeight * 0.80,
+            width: screenWidth * 0.80,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    SizedBox(
+                        width: screenWidth * 0.15,
+                        child: const Icon(Icons.badge)),
+                    SizedBox(
+                      width: screenWidth * 0.65,
+                      child: TextField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                            hintText: "Name",
+                            labelStyle: TextStyle(color: Colors.black),
+                            border: UnderlineInputBorder()),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    SizedBox(
+                        width: screenWidth * 0.15,
+                      ),
+                    SizedBox(
+                      width: screenWidth * 0.65,
+                      child: TextField(
+                        controller: _surnameController,
+                        decoration: const InputDecoration(
+                            hintText: "Surname",
+                            labelStyle: TextStyle(color: Colors.black),
+                            border: UnderlineInputBorder()),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: screenHeight*0.02,
+                ),
+                Row(
+                  children: [
+                    SizedBox(
+                        width: screenWidth * 0.15,
+                        child: const Icon(Icons.alternate_email)),
+                    SizedBox(
+                      width: screenWidth * 0.65,
+                      child: TextField(
+                        controller: _identifierController,
+                        decoration: const InputDecoration(
+                          hintText: "E-mail or username",
+                          labelStyle: TextStyle(color: Colors.black),
+                          border: UnderlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ));
+  }
+}
