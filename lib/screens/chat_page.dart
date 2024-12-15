@@ -2,7 +2,7 @@ import 'package:chat_app/models/chat_page_base.dart';
 import 'package:chat_app/models/group.dart';
 import 'package:chat_app/models/message.dart';
 import 'package:chat_app/models/person.dart';
-import 'package:chat_app/controller/app_controller.dart';
+import 'package:chat_app/controller/auth_controller.dart';
 import 'package:chat_app/services/database/database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -19,11 +19,11 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   late Future<List<MessageModel>> _messagesFuture;
-  String? _userId;
   ChatPageBaseModel? _chatPageBaseModel;
   bool _isLoading = true;
+  late String _userId;
   final _messageController = TextEditingController();
-  final AppController appController = Get.find<AppController>();
+  final AuthController authController = Get.find<AuthController>();
 
   @override
   void initState() {
@@ -33,7 +33,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> _loadData() async {
     try {
-    //  _userId = appController.userId;
+      _userId = authController.userId.value;
       _chatPageBaseModel = await ChatPageBaseModel.createForChatPage(
           widget.groupModel, widget.personModel);
       _messagesFuture = DatabaseManager.getMessagesFromGroupById(
@@ -58,7 +58,7 @@ class _ChatPageState extends State<ChatPage> {
 
       }
 
-      DatabaseManager.sendMessageToGroup(1, messageText, _userId! as int);
+      DatabaseManager.sendMessageToGroup(1, messageText, _userId);
       _messageController.clear();
       setState(() {
         _messagesFuture = DatabaseManager.getMessagesFromGroupById(_chatPageBaseModel!.groupId.toString());
@@ -83,9 +83,6 @@ class _ChatPageState extends State<ChatPage> {
   Widget _buildChatContent(double screenWidth) {
     if (_chatPageBaseModel == null) {
       return const Center(child: Text("Chat data not available"));
-    }
-    if (_userId == null) {
-      return const Center(child: Text("UserId not available"));
     }
 
     return Container(

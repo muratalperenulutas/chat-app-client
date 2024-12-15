@@ -24,4 +24,12 @@ class Api {
   static Future<http.Response> postRegisterRequest(RegisterModel registerModel) {
     return postRequest(Url.auth.Register, registerModel.toJson());
   }
+  static Future<http.Response> postRefreshRequest(String refreshToken) {
+    return postRequest(
+        Url.auth.Refresh,
+        {
+          'refreshToken': refreshToken,
+        }
+  );
+  }
 }

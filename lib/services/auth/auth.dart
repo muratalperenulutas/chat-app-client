@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:chat_app/controller/app_controller.dart';
+import 'package:chat_app/controller/auth_controller.dart';
 import 'package:chat_app/models/login.dart';
 import 'package:chat_app/models/register.dart';
-import 'package:chat_app/screens/home_screen.dart';
 import 'package:chat_app/services/api/api.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 void showSnackBar(BuildContext context, String message) {
   ScaffoldMessenger.of(context).showSnackBar(
@@ -18,27 +18,36 @@ void showSnackBar(BuildContext context, String message) {
 }
 
 class AuthService {
-  static AppController appController = Get.find<AppController>();
+  static AuthController authController = Get.find<AuthController>();
 
   static Future<void> login(BuildContext context, LoginModel loginModel) async {
+    print("Login");
     try {
       final response = await Api.postLoginRequest(loginModel);
 
       if (response.statusCode == 200) {
-        print(response.body);
+        //print(response.body);
         Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         print(jsonResponse);
-        appController.setRefreshToken(jsonResponse['refreshToken']);
-        appController.setAccessToken(jsonResponse['accessToken']);
-        String message = jsonResponse['message'];
-        showSnackBar(context, message);
+        String accessToken = jsonResponse['accessToken'];
+        String refreshToken = jsonResponse['refreshToken'];
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomePage(),
-          ),
-        );
+        if (JwtDecoder.isExpired(refreshToken) ||
+            JwtDecoder.isExpired(accessToken)) {
+          print('Token expired');
+        } else {
+          //order is important (race condition)
+          authController.setAccessToken(accessToken);
+          authController.setRefreshToken(refreshToken);
+          authController.setLoggedIn();
+          Get.offNamed('/home');
+
+          Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
+          print('Decoded Token: $decodedToken');
+          authController.setUserId(decodedToken["sub"]);
+        }
+        String message = jsonResponse['message'];
+        //showSnackBar(context, message);
       } else if (response.statusCode == 401) {
         Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         String message = jsonResponse['message'];
@@ -58,6 +67,7 @@ class AuthService {
 
   static Future<void> register(
       BuildContext context, RegisterModel registerModel) async {
+    print("Register");
     try {
       final response = await Api.postRegisterRequest(registerModel);
 
@@ -84,8 +94,30 @@ class AuthService {
     }
   }
 
-  static Future<void> logout() async {
-    appController.setAccessToken('');
-    appController.setRefreshToken('');
+  static Future<void> refresh() async {
+    print("Refresh");
+    try {
+      final response =
+          await Api.postRefreshRequest(authController.refreshToken.value);
+
+      if (response.statusCode == 200) {
+        print(response.body);
+        Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        print(jsonResponse);
+        authController.setAccessToken(jsonResponse['accessToken']);
+      } else if (response.statusCode == 401) {
+        Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        String message = jsonResponse['message'];
+        print(message);
+        authController.logout();
+      } else {
+        print('Refresh failed: ${response.body}');
+      }
+    } on SocketException catch (e2) {
+      print('No internet connection');
+      print(e2);
+    } catch (e) {
+      print('Error: $e');
+    }
   }
 }

@@ -1,23 +1,38 @@
 import 'package:chat_app/screens/home_screen.dart';
 import 'package:chat_app/screens/login_screen.dart';
+import 'package:chat_app/screens/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'controller/app_controller.dart';
+import 'controller/auth_controller.dart';
 
 class MyApp extends StatelessWidget {
   MyApp({super.key});
-  final AppController appController = Get.put(AppController());
 
   @override
   Widget build(BuildContext context) {
+    final AuthController authController = Get.find<AuthController>();
     return Obx(() {
-      return GetMaterialApp(
-          initialRoute: '/',
+      print(
+          "Logged in: ${authController.isLoggedIn.value}, Loading: ${authController.isLoading.value}");
+      if (authController.isLoading.value) {
+        return const MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+        );
+      } else {
+        return GetMaterialApp(
+          initialRoute: authController.isLoggedIn.value ? '/home' : '/login',
           getPages: [
-            GetPage(name: '/', page: () => HomePage()),
+            GetPage(name: '/home', page: () => HomePage()),
+            GetPage(name: '/login', page: () => LoginPage()),
+            GetPage(name: '/register', page: () => RegisterPage()),
           ],
           debugShowCheckedModeBanner: false,
-          home: appController.refreshToken.value==''?LoginPage():HomePage());
+        );
+      }
     });
   }
 }

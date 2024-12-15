@@ -1,7 +1,7 @@
 import 'package:chat_app/models/login.dart';
-import 'package:chat_app/screens/register_screen.dart';
 import 'package:chat_app/services/auth/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -73,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           AuthService.login(context, LoginModel(identifier: identifierController.text,password: passwordController.text));
                         },
                         style: ElevatedButton.styleFrom(
@@ -103,10 +103,7 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(width: 4),
             TextButton(
               onPressed: () {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: ((context) => const RegisterPage())));
+                Get.toNamed('/register');
               },
               child: const Text("Register"),
             ),

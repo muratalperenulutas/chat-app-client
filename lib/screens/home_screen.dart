@@ -1,9 +1,6 @@
-import 'dart:ffi';
-
 import 'package:chat_app/models/group.dart';
 import 'package:chat_app/models/person.dart';
 import 'package:chat_app/services/database/database.dart';
-import 'package:chat_app/services/websocket/websocket.dart';
 import 'package:chat_app/widgets/build_chats_body.dart';
 import 'package:chat_app/widgets/build_contacts_body.dart';
 import 'package:chat_app/widgets/my_app_bar.dart';
@@ -45,7 +42,6 @@ class _HomePageState extends State<HomePage>  with SingleTickerProviderStateMixi
     );
     _groupsFuture =DatabaseManager.getGroups();
     _contactsFuture=DatabaseManager.getContacts();
-    WebSocketClient();
   }
 
   @override

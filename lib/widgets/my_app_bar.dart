@@ -1,8 +1,9 @@
-import 'package:chat_app/screens/login_screen.dart';
-import 'package:chat_app/services/auth/auth.dart';
+import 'package:chat_app/controller/auth_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 AppBar buildAppBar(double screenHeight, BuildContext context) {
+  AuthController authController = Get.find<AuthController>();
   return AppBar(
     leading: IconButton(
       onPressed: () {},
@@ -14,13 +15,8 @@ AppBar buildAppBar(double screenHeight, BuildContext context) {
     actions: [
       IconButton(
           onPressed: () {
-            AuthService.logout();
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: ((context) => const LoginPage()),
-              ),
-            );
+            authController.logout();
+            Get.offNamed('/login');
           },
           icon: const Icon(Icons.logout))
     ],
