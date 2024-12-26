@@ -32,7 +32,7 @@ MaterialButton myContactsButton(
                   radius: 30,
                   backgroundImage: AssetImage(
                       'assets/images/murat.png') //NetworkImage()                            ),
-              ),
+                  ),
             ),
           ),
           const SizedBox(
@@ -41,13 +41,13 @@ MaterialButton myContactsButton(
           Column(
             children: [
               Text(
-                person.name,
+                person.localName ?? "",
                 style: TextStyle(
                   fontSize: 16,
                 ),
               ),
               Text(
-                person.description??"",
+                person.description ?? "",
                 style: TextStyle(
                     fontSize: 14, color: Color.fromARGB(255, 85, 92, 94)),
               )

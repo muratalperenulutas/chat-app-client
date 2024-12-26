@@ -1,6 +1,7 @@
 import 'package:chat_app/models/person.dart';
 import 'package:chat_app/screens/chat_page.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 MaterialButton myStartConversationButton(
     BuildContext context, double screenHeight, PersonModel person) {
@@ -8,14 +9,11 @@ MaterialButton myStartConversationButton(
     height: screenHeight / 12,
     color: Color.fromARGB(255, 254, 255, 255),
     onPressed: () async {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ChatPage(
-            personModel: person,
-          ),
-        ),
-      );
+      if (person.isRegistered == 1) {
+        Get.to(() => ChatPage(
+              personModel: person,
+            ));
+      }
     },
     child: Padding(
       padding: EdgeInsets.fromLTRB(1, 1, 1, 1),
@@ -30,9 +28,7 @@ MaterialButton myStartConversationButton(
               backgroundColor: Colors.white,
               child: CircleAvatar(
                   radius: 30,
-                  backgroundImage: AssetImage(
-                      'assets/images/murat.png')
-              ),
+                  backgroundImage: AssetImage('assets/images/murat.png')),
             ),
           ),
           const SizedBox(
@@ -41,13 +37,13 @@ MaterialButton myStartConversationButton(
           Column(
             children: [
               Text(
-                person.name,
+                person.localName ?? "",
                 style: TextStyle(
                   fontSize: 16,
                 ),
               ),
               Text(
-                person.description??"",
+                person.description ?? "",
                 style: TextStyle(
                     fontSize: 14, color: Color.fromARGB(255, 85, 92, 94)),
               )

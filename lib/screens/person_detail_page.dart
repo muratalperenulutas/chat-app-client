@@ -1,9 +1,9 @@
 import 'package:chat_app/models/person.dart';
 import 'package:flutter/material.dart';
 
-
 class PersonDetailPage extends StatelessWidget {
   final PersonModel personModel;
+
   const PersonDetailPage({super.key, required this.personModel});
 
   @override
@@ -11,7 +11,8 @@ class PersonDetailPage extends StatelessWidget {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.purple,
+      appBar: AppBar(
+        backgroundColor: Colors.purple,
       ),
       body: Column(
         children: [
@@ -19,20 +20,21 @@ class PersonDetailPage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Container(
-                width: screenHeight*0.15,
-                height: screenHeight*0.15,
+                width: screenHeight * 0.15,
+                height: screenHeight * 0.15,
                 child: CircleAvatar(
-                  radius: screenHeight*0.075,
+                  radius: screenHeight * 0.075,
                   backgroundColor: Colors.white,
                   child: CircleAvatar(
-                      radius: screenHeight*0.070,
-                      backgroundImage: const AssetImage(
-                          'assets/images/murat.png')),
-                  ),
+                      radius: screenHeight * 0.070,
+                      backgroundImage:
+                          const AssetImage('assets/images/murat.png')),
                 ),
+              ),
             ),
-            ),
-          Padding(padding: EdgeInsets.all(screenWidth*0.1),
+          ),
+          Padding(
+            padding: EdgeInsets.all(screenWidth * 0.1),
             child: Column(
               children: [
                 Row(
@@ -43,12 +45,12 @@ class PersonDetailPage extends StatelessWidget {
                     ),
                     SizedBox(
                       width: screenWidth * 0.65,
-                      child: Text(personModel.name),
+                      child: Text(personModel.localName ?? ""),
                     ),
                   ],
                 ),
                 SizedBox(
-                  height: screenHeight*0.02,
+                  height: screenHeight * 0.02,
                 ),
                 Row(
                   children: [
@@ -57,8 +59,9 @@ class PersonDetailPage extends StatelessWidget {
                         child: const Icon(Icons.alternate_email)),
                     SizedBox(
                         width: screenWidth * 0.65,
-                        child: Text(personModel.identifier??"",)
-                    ),
+                        child: Text(
+                          personModel.username ?? "",
+                        )),
                   ],
                 ),
               ],
@@ -69,4 +72,3 @@ class PersonDetailPage extends StatelessWidget {
     );
   }
 }
-

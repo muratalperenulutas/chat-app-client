@@ -1,8 +1,8 @@
 import 'package:chat_app/models/person.dart';
-import 'package:chat_app/models/personOriginType.dart';
+import 'package:chat_app/models/sourceEnum.dart';
 import 'package:chat_app/services/database/database.dart';
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
 
 class addContactsPage extends StatefulWidget {
   const addContactsPage({super.key});
@@ -14,7 +14,7 @@ class addContactsPage extends StatefulWidget {
 class _addContactsPageState extends State<addContactsPage> {
   final _surnameController = TextEditingController();
   final _nameController = TextEditingController();
-  final _identifierController = TextEditingController();
+  final _usernameController = TextEditingController();
 
   get username => null;
 
@@ -27,22 +27,23 @@ class _addContactsPageState extends State<addContactsPage> {
           leading: IconButton(
             icon: const Icon(Icons.close),
             onPressed: () {
-              Navigator.pop(
-                context,
-              );
+              Get.back();
             },
           ),
           title: const Center(child: Text("New Contact")),
           actions: [
             IconButton(
                 onPressed: () async {
-                  PersonModel person=PersonModel(name: "${_nameController.text} ${_surnameController.text}", identifier: _identifierController.text,type: PersonOriginType.contact.toString(),);
-                  try{
-                    await DatabaseManager.insertContacts(person);
-                    Navigator.pop(
-                      context,
-                    );
-                  }catch(exception){
+                  PersonModel person = PersonModel(
+                      localName:
+                          "${_nameController.text} ${_surnameController.text}",
+                      username: _usernameController.text,
+                      source: SourceEnum.LOCAL,
+                      isRegistered: 0);
+                  try {
+                    await DatabaseManager.insertPerson(person);
+                    Get.back();
+                  } catch (exception) {
                     print(exception);
                   }
                 },
@@ -76,8 +77,8 @@ class _addContactsPageState extends State<addContactsPage> {
                 Row(
                   children: [
                     SizedBox(
-                        width: screenWidth * 0.15,
-                      ),
+                      width: screenWidth * 0.15,
+                    ),
                     SizedBox(
                       width: screenWidth * 0.65,
                       child: TextField(
@@ -91,7 +92,7 @@ class _addContactsPageState extends State<addContactsPage> {
                   ],
                 ),
                 SizedBox(
-                  height: screenHeight*0.02,
+                  height: screenHeight * 0.02,
                 ),
                 Row(
                   children: [
@@ -101,9 +102,9 @@ class _addContactsPageState extends State<addContactsPage> {
                     SizedBox(
                       width: screenWidth * 0.65,
                       child: TextField(
-                        controller: _identifierController,
+                        controller: _usernameController,
                         decoration: const InputDecoration(
-                          hintText: "E-mail or username",
+                          hintText: "Username",
                           labelStyle: TextStyle(color: Colors.black),
                           border: UnderlineInputBorder(),
                         ),

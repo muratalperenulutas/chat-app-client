@@ -5,28 +5,31 @@ import 'package:chat_app/services/database/database.dart';
 
 class ChatPageBaseModel {
   final int? id;
-  final int? groupId;
+  late int? groupId;
   final String? name;
   final String? ownerId;
   final int isDirectChat;
   final String? imageId;
   final Enum source;
+  final String? personId;
 
-  const ChatPageBaseModel(
+  ChatPageBaseModel(
       {this.id,
       this.groupId,
       this.name,
       this.ownerId,
       required this.isDirectChat,
       this.imageId,
-      required this.source});
+      required this.source,
+      this.personId});
 
   factory ChatPageBaseModel.fromPersonModel(PersonModel personModel) {
     return ChatPageBaseModel(
         name: personModel.name,
         isDirectChat: 1,
         imageId: personModel.imageId,
-        source: ChatPageBaseModelSource.contact);
+        source: ChatPageBaseModelSource.contact,
+    personId: personModel.personId);
   }
 
   factory ChatPageBaseModel.fromPersonModelAndGroupModel(
@@ -63,7 +66,7 @@ class ChatPageBaseModel {
       } else {
         return ChatPageBaseModel.fromPersonModel(personModel);
       }
-    } else if (groupModel?.isDirectChat == 1) {
+    } else if (groupModel?.isDirectGroup == 1) {
       PersonModel? person = await DatabaseManager.getPersonFromDirectGroup(
           groupModel!.groupId.toString());
 
@@ -73,12 +76,15 @@ class ChatPageBaseModel {
       } else {
         print("Error: PersonModel not found for direct group.");
       }
-    } else if (groupModel?.isDirectChat == 0) {
+    } else if (groupModel?.isDirectGroup == 0) {
       return ChatPageBaseModel.fromGroupModel(groupModel!);
     } else {
       print("Error: Invalid condition.");
     }
 
     return null;
+  }
+  void setGroupId(int groupId){
+    this.groupId=groupId;
   }
 }

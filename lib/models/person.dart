@@ -1,26 +1,26 @@
-import 'package:chat_app/models/personOriginType.dart';
+import 'package:chat_app/models/sourceEnum.dart';
 
 class PersonModel {
   final int? id;
   final String? personId;
-  final String name;
+  final String? name;
+  final String? localName;
   final String? username;
-  final String? identifier;
   final String? description;
   final String? imageId;
-  final String type;
+  final SourceEnum source;
   final int? isRegistered;
   final int? isSynced;
 
-  const PersonModel({
+  PersonModel({
     this.id,
     this.personId,
-    required this.name,
+    this.name,
     this.username,
-    this.identifier,
+    this.localName,
     this.description,
     this.imageId,
-    required this.type,
+    required this.source,
     this.isRegistered,
     this.isSynced
   });
@@ -30,20 +30,20 @@ class PersonModel {
       personId: map['personId'],
       name: map['name'],
       username: map['username'],
-      identifier: map['identifier'],
+      localName: map['localName'],
       description:map['description'],
       imageId: map['imageId'],
-      type: map['type'],
+      source: SourceEnum.fromString(map['source']),
       isRegistered: map['isRegistered'],
       isSynced: map['isSynced']
     );
   }
   factory PersonModel.fromJson(Map<String, dynamic> json) {
     return PersonModel(
-        personId: json['id'],
-        name: json['name'],
-        username: json['ownerId'],
-        type:PersonOriginType.server.toString()
+        personId: json['userId'],
+        username: json['username'],
+        name: "initial",
+        source:SourceEnum.LOCAL
         ////
     );
   }
@@ -52,10 +52,10 @@ class PersonModel {
     'personId':personId,
     'name': name,
     'username':username,
-    'identifier':identifier,
+    'localName':localName,
     'description':description,
     'imageId':imageId,
-    'type':type,
+    'source':source.toString(),
     'isRegistered':isRegistered,
     'isSynced':isSynced
   };

@@ -4,6 +4,8 @@ import 'package:chat_app/models/message.dart';
 import 'package:chat_app/models/person.dart';
 import 'package:chat_app/controller/auth_controller.dart';
 import 'package:chat_app/services/database/database.dart';
+import 'package:chat_app/services/group/GroupService.dart';
+import 'package:chat_app/services/message/MessageService.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -36,7 +38,7 @@ class _ChatPageState extends State<ChatPage> {
       _userId = authController.userId.value;
       _chatPageBaseModel = await ChatPageBaseModel.createForChatPage(
           widget.groupModel, widget.personModel);
-      _messagesFuture = DatabaseManager.getMessagesFromGroupById(
+      _messagesFuture = DatabaseManager.getMessagesFromGroup(
           _chatPageBaseModel!.groupId.toString());
       setState(() {
         _isLoading = false;
@@ -53,19 +55,19 @@ class _ChatPageState extends State<ChatPage> {
     String messageText = _messageController.text.trim();
     if (messageText.isNotEmpty) {
       if (_chatPageBaseModel?.groupId == null) {
-        
-        // Create a new group if it doesn't exist
-
+        int id = await GroupService.createDirectGroup(
+            null, _chatPageBaseModel?.personId ?? "");
+        _chatPageBaseModel?.setGroupId(id);
       }
 
-      DatabaseManager.sendMessageToGroup(1, messageText, _userId);
+      MessageService.sendMessage(messageText, _chatPageBaseModel!.groupId ?? 0);
       _messageController.clear();
       setState(() {
-        _messagesFuture = DatabaseManager.getMessagesFromGroupById(_chatPageBaseModel!.groupId.toString());
+        _messagesFuture = DatabaseManager.getMessagesFromGroup(
+            _chatPageBaseModel!.groupId.toString());
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -94,13 +96,10 @@ class _ChatPageState extends State<ChatPage> {
                 FutureBuilder<List<MessageModel>>(
                   future: _messagesFuture,
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Center(
-                          child: CircularProgressIndicator());
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
-                      return Center(
-                          child: Text('Error: ${snapshot.error}'));
+                      return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (snapshot.hasData) {
                       List<MessageModel> messages = snapshot.data!;
                       return ListView.builder(
@@ -109,8 +108,7 @@ class _ChatPageState extends State<ChatPage> {
                         itemCount: messages.length,
                         itemBuilder: (context, index) {
                           var message = messages[index];
-                          bool isMyMessage =
-                              message.senderId == _userId;
+                          bool isMyMessage = message.userId == _userId;
                           return Padding(
                             padding: const EdgeInsets.all(4.0),
                             child: Row(
@@ -120,8 +118,7 @@ class _ChatPageState extends State<ChatPage> {
                               children: [
                                 Card(
                                   child: Padding(
-                                    padding:
-                                        const EdgeInsets.all(12.0),
+                                    padding: const EdgeInsets.all(12.0),
                                     child: Text(message.message),
                                   ),
                                 )
@@ -157,8 +154,7 @@ class _ChatPageState extends State<ChatPage> {
                         controller: _messageController,
                         decoration: const InputDecoration(
                           hintText: "Type a message",
-                          contentPadding:
-                              EdgeInsets.fromLTRB(20, 5, 5, 5),
+                          contentPadding: EdgeInsets.fromLTRB(20, 5, 5, 5),
                           border: InputBorder.none,
                         ),
                       ),
@@ -167,7 +163,9 @@ class _ChatPageState extends State<ChatPage> {
                   CircleAvatar(
                     radius: 25,
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        sendMessage();
+                      },
                       icon: const Icon(Icons.send),
                     ),
                   )
