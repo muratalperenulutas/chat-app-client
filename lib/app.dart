@@ -1,9 +1,9 @@
-import 'package:chat_app/screens/home_screen.dart';
-import 'package:chat_app/screens/login_screen.dart';
-import 'package:chat_app/screens/register_screen.dart';
+import 'package:chat_app/features/home/screens/home_screen.dart';
+import 'package:chat_app/features/auth/screens/login_screen.dart';
+import 'package:chat_app/features/auth/screens/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'controller/auth_controller.dart';
+import 'features/auth/controllers/auth_controller.dart';
 
 class MyApp extends StatelessWidget {
   MyApp({super.key});
