@@ -1,16 +1,18 @@
 import 'package:chat_app/core/models/JsonSerializable.dart';
 
 class FindUser extends JsonSerializable {
-  late String username;
+  late String? username;
+  late String? userId;
 
-  FindUser(this.username);
 
-  void setUsername(String identifier) {
-    this.username = identifier;
-  }
+  FindUser(this.username,this.userId);
+
 
   @override
   Map<String, dynamic> toJson() {
-    return {'username': username};
+    return {
+      'username': username,
+      "userId":userId
+    };
   }
 }

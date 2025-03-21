@@ -20,7 +20,7 @@ void showSnackBar(BuildContext context, String message) {
   );
 }
 
-class AuthService {
+class AuthService extends GetxService{
   static AuthController authController = Get.find<AuthController>();
 
   static Future<void> login(BuildContext context, LoginModel loginModel) async {
@@ -31,7 +31,7 @@ class AuthService {
       if (response.statusCode == 200) {
         //print(response.body);
         Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        print(jsonResponse);
+        //print(jsonResponse);
         String accessToken = jsonResponse['accessToken'];
         String refreshToken = jsonResponse['refreshToken'];
 
@@ -107,9 +107,10 @@ class AuthService {
           await Api.postRefreshRequest(authController.refreshToken.value);
 
       if (response.statusCode == 200) {
-        print(response.body);
+        //print(response.body);
         Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        print(jsonResponse);
+        //print(jsonResponse);
+        print(jsonResponse['message']);
         authController.setAccessToken(jsonResponse['accessToken']);
       } else if (response.statusCode == 401) {
         Map<String, dynamic> jsonResponse = jsonDecode(response.body);

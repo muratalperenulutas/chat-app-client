@@ -1,9 +1,6 @@
+import 'package:chat_app/constants/enums/status.dart';
 import 'package:chat_app/data/message/message_repository.dart';
 import 'package:chat_app/features/auth/controllers/auth_controller.dart';
-import 'package:chat_app/core/services/websocket/models/send_message.dart';
-import 'package:chat_app/core/services/websocket/models/websocket_message.dart';
-import 'package:chat_app/core/services/websocket/websocket_client.dart';
-import 'package:chat_app/constants/enums/ws_message_type.dart';
 import 'package:get/get.dart';
 import 'message.dart';
 
@@ -11,19 +8,34 @@ class MessageService extends GetxService {
   final AuthController authController = Get.find<AuthController>();
   final MessageRepository messageRepository=Get.find<MessageRepository>();
 
-  Future<void> sendMessageToGroup(String messageText, int localGroupId) async {
-    MessageModel message = MessageModel(
+  Future<void> sendMessageByCollectivityId(String messageText, int collectivityId) async {
+    Message message = Message(
         message: messageText,
-        localGroupId: localGroupId,
-        userId: authController.userId.value);
+        collectivityId: collectivityId,
+        userId: authController.myId.value,
+        sendTime: DateTime.now(),
+      status: Status.CREATED
+        );
     await messageRepository.insertMessage(message);
   }
 
-  Future<void> saveMessage(MessageModel messageModel) async {
-    await messageRepository.insertMessage(messageModel);
+  Future<void> sendMessageByReceiverId(String messageText,String receiverId ) async {
+    Message message = Message(
+        message: messageText,
+        dyadReceiverId: receiverId,
+        userId: authController.myId.value,
+        sendTime: DateTime.now(),
+        status: Status.CREATED
+    );
+    await messageRepository.insertMessage(message);
   }
 
-  void updateMessage(int messageId, MessageModel messageModel) {
-    messageRepository.updateMessage(messageId, messageModel);
+  Future<void> saveMessage(Message message) async {
+    await messageRepository.insertMessage(message);
+  }
+
+  void updateMessage(int messageId, Message message) {
+    message.setId(messageId);
+    messageRepository.updateMessage(messageId, message);
   }
 }

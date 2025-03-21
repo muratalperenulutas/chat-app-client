@@ -1,44 +1,32 @@
-class GroupParticipantModel {
+class GroupParticipant {
   final int? id;
-  final int? participantId;
-  final int? localGroupId;
-  final int? groupId;
+  final int? collectivityId;
   final String? userId;
-  final int? isSynced;
 
-  const GroupParticipantModel(
-      {this.id,
-      this.localGroupId,
-      this.userId,
-      this.groupId,
-      this.isSynced,
-      this.participantId});
+  const GroupParticipant(
+      {this.id, this.userId, this.collectivityId});
 
-  factory GroupParticipantModel.fromDb(Map<String, dynamic> map) {
-    return GroupParticipantModel(
+  factory GroupParticipant.fromDb(Map<String, dynamic> map) {
+    return GroupParticipant(
       id: map['id'],
       userId: map['userId'],
-      localGroupId: map['localGroupId'],
-      groupId: map['groupId'],
-      participantId: map['participantId'],
-      isSynced: map['isSynced'],
+      collectivityId: map['collectivityId'],
     );
   }
 
-  factory GroupParticipantModel.fromJson(Map<String, dynamic> json) {
-    return GroupParticipantModel(
-        participantId: json['id'],
-        groupId: json['groupId'],
-        userId: json['userId'],
-        isSynced: 1);
+  List<GroupParticipant> fromJson(Map<String, dynamic> json) {
+    List<GroupParticipant> participants =
+        <GroupParticipant>[];
+    for (String userId in json['members']) {
+      participants.add(GroupParticipant(
+          collectivityId: json['collectivityId'], userId: json['userId']));
+    }
+    return participants;
   }
 
   Map<String, dynamic> toDb() => {
         'id': id,
         'userId': userId,
-        'localGroupId': localGroupId,
-        'groupId': groupId,
-        'participantId': participantId,
-        'isSynced': isSynced,
+        'collectivityId': collectivityId,
       };
 }

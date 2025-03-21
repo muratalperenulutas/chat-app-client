@@ -10,7 +10,7 @@ class WebsocketMessage {
 
   Map<String, dynamic> toJson() {
     return {
-      'command': type.name,
+      'type': type.name,
       'requestId': requestId,
       'data': _dataToJson(data),
     };

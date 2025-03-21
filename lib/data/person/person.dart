@@ -1,4 +1,5 @@
 import 'package:chat_app/constants/enums/source_enum.dart';
+import 'package:chat_app/constants/enums/status.dart';
 
 class PersonModel {
   final int? id;
@@ -8,9 +9,9 @@ class PersonModel {
   final String? username;
   final String? description;
   final String? imageId;
-  final SourceEnum source;
+  late SourceEnum source;
   final int? isRegistered;
-  final int? isSynced;
+  Status status;
 
   PersonModel({
     this.id,
@@ -20,9 +21,9 @@ class PersonModel {
     this.localName,
     this.description,
     this.imageId,
-    required this.source,
+    this.source=SourceEnum.SERVER,
     this.isRegistered,
-    this.isSynced
+    this.status=Status.CREATED
   });
   factory PersonModel.fromDb(Map<String, dynamic> map) {
     return PersonModel(
@@ -35,7 +36,7 @@ class PersonModel {
       imageId: map['imageId'],
       source: SourceEnum.fromString(map['source']),
       isRegistered: map['isRegistered'],
-      isSynced: map['isSynced']
+      status: Status.fromString(map['status'])
     );
   }
   factory PersonModel.fromJson(Map<String, dynamic> json) {
@@ -43,7 +44,7 @@ class PersonModel {
         personId: json['userId'],
         username: json['username'],
         name: "initial",
-        source:SourceEnum.LOCAL
+        status: Status.SYNC
         ////
     );
   }
@@ -57,6 +58,6 @@ class PersonModel {
     'imageId':imageId,
     'source':source.toString(),
     'isRegistered':isRegistered,
-    'isSynced':isSynced
+    'status':status.name
   };
 }

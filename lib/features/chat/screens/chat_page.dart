@@ -1,18 +1,14 @@
-import 'package:chat_app/constants/enums/chat_page_base_model_source.dart';
+import 'package:chat_app/constants/enums/collectivity_type.dart';
 import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/chat/controllers/message_controller.dart';
-import 'package:chat_app/features/chat/models/chat_page_base.dart';
-import 'package:chat_app/features/chat/services/chat_page_service.dart';
+import 'package:chat_app/features/chat/models/chat_base.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../data/group/group.dart';
-import '../../../data/person/person.dart';
 
 class ChatPage extends StatefulWidget {
-  final GroupModel? groupModel;
-  final PersonModel? personModel;
+  final ChatBaseModel chatBaseModel;
 
-  const ChatPage({super.key, this.groupModel, this.personModel});
+  const ChatPage({super.key, required this.chatBaseModel});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -21,10 +17,8 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   MessageController messageController = Get.put(MessageController());
   AuthController authController = Get.find<AuthController>();
-  ChatPageService chatPageService = Get.find<ChatPageService>();
-  ChatPageBaseModel? _chatPageBaseModel;
   bool _isLoading = true;
-  final _messageController = TextEditingController();
+  final _messageTextController = TextEditingController();
 
   @override
   void initState() {
@@ -34,13 +28,14 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> _loadData() async {
     try {
-      _chatPageBaseModel = await chatPageService
-          .createChatPageBaseModelFromGroupModelAndPersonModel(
-              widget.groupModel, widget.personModel);
-      if (_chatPageBaseModel?.source != ChatPageBaseModelSource.CONTACT) {
+      if(widget.chatBaseModel.collectivityId!=null) {
         messageController
-            .setLocalGroupId(_chatPageBaseModel!.localGroupId ?? 0);
+            .setCollectivityId(widget.chatBaseModel.collectivityId ?? 0);
       }
+      if(widget.chatBaseModel.personId!=null) {
+        messageController.setUserId(widget.chatBaseModel.personId??"");
+      }
+
       setState(() {
         _isLoading = false;
       });
@@ -52,11 +47,6 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  void _setGroupId(int id) {
-    _chatPageBaseModel?.localGroupId = id;
-    messageController.setLocalGroupId(id);
-  }
-
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -64,7 +54,7 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue[900],
-        title: Text(_chatPageBaseModel?.name ?? "Chat"),
+        title: Text(widget.chatBaseModel.name ?? "Chat"),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -73,10 +63,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildChatContent(double screenWidth) {
-    if (_chatPageBaseModel == null) {
-      return const Center(child: Text("Chat data not available"));
-    }
-
     return Container(
       child: Stack(
         children: [
@@ -95,7 +81,7 @@ class _ChatPageState extends State<ChatPage> {
                     itemBuilder: (context, index) {
                       var message = messages[index];
                       bool isMyMessage =
-                          message.userId == authController.userId.value;
+                          message.userId == authController.myId.value;
                       return Padding(
                         padding: const EdgeInsets.all(4.0),
                         child: Row(
@@ -135,7 +121,7 @@ class _ChatPageState extends State<ChatPage> {
                     child: SizedBox(
                       width: screenWidth - 80,
                       child: TextFormField(
-                        controller: _messageController,
+                        controller: _messageTextController,
                         decoration: const InputDecoration(
                           hintText: "Type a message",
                           contentPadding: EdgeInsets.fromLTRB(20, 5, 5, 5),
@@ -149,11 +135,10 @@ class _ChatPageState extends State<ChatPage> {
                     child: IconButton(
                       onPressed: () {
                         messageController.sendMessage(
-                            _messageController.text,
-                            _chatPageBaseModel?.localGroupId,
-                            _chatPageBaseModel?.personId,
-                            _setGroupId);
-                        _messageController.clear();
+                            _messageTextController.text,
+                            widget.chatBaseModel.collectivityId,
+                        widget.chatBaseModel.personId);
+                        _messageTextController.clear();
                       },
                       icon: const Icon(Icons.send),
                     ),

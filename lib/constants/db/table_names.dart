@@ -1,7 +1,7 @@
 
 class DbTableNames{
-  static const String messagesTableName = "messages";
-  static const String groupParticipantsTableName = "groupParticipants";
-  static const String groupsTableName = "groups";
-  static const String personsTableName = "persons";
+  static const String messages = "messages";
+  static const String groupParticipants = "groupParticipants";
+  static const String collectivity = "collectivity";
+  static const String persons = "persons";
 }

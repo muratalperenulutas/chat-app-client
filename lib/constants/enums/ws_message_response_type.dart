@@ -1,9 +1,11 @@
 enum WsMessageResponseType {
-  FIND_USER_RESPONSE,
-  SEND_MESSAGE_RESPONSE,
-  GET_GROUPS_RESPONSE,
-  GET_MESSAGES_RESPONSE,
-  CREATE_GROUP_RESPONSE;
+  USER_FOUND,
+  MESSAGE_SEND,
+  NEW_MESSAGE,
+  GROUP_CREATED,
+  NEW_GROUP,
+  DYAD_CREATED,
+  NEW_DYAD;
 
   const WsMessageResponseType();
 
@@ -15,6 +17,7 @@ enum WsMessageResponseType {
   static WsMessageResponseType fromString(String value) {
     for (WsMessageResponseType command in WsMessageResponseType.values) {
       if (command.name == value) {
+        print(command.name);
         return command;
       }
     }

@@ -1,0 +1,4 @@
+enum CollectivityType {
+  DYAD,
+  GROUP,
+}

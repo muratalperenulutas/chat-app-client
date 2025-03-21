@@ -1,8 +1,13 @@
+import 'package:chat_app/data/collectivity/collectivity_repository.dart';
+import 'package:chat_app/data/collectivity/collectivity_service.dart';
+import 'package:chat_app/data/collectivity/dyad.dart';
+import 'package:chat_app/features/chat/models/chat_base.dart';
 import 'package:chat_app/features/chat/screens/chat_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../data/person/person.dart';
+import '../../../data/person/person_repository.dart';
 
 MaterialButton myStartConversationButton(
     BuildContext context, double screenHeight, PersonModel person) {
@@ -11,8 +16,16 @@ MaterialButton myStartConversationButton(
     color: Color.fromARGB(255, 254, 255, 255),
     onPressed: () async {
       if (person.isRegistered == 1) {
+        DyadModel? dyadModel = await Get.find<CollectivityRepository>()
+            .getDyadByUserId(person.personId??"");
+        ChatBaseModel chatBase;
+        if (dyadModel == null) {
+          chatBase = ChatBaseModel.fromPersonModel(person);
+        } else {
+          chatBase = ChatBaseModel.fromPersonAndDyadModel(person, dyadModel);
+        }
         Get.to(() => ChatPage(
-              personModel: person,
+              chatBaseModel: chatBase,
             ));
       }
     },

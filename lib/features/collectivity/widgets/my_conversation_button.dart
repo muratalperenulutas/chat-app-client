@@ -1,17 +1,17 @@
+import 'package:chat_app/features/chat/models/chat_base.dart';
 import 'package:chat_app/features/chat/screens/chat_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../data/group/group.dart';
 
 myConversationButton(
-    BuildContext context, double screenHeight, GroupModel group) async {
+    BuildContext context, double screenHeight, ChatBaseModel chatBase) {
   return MaterialButton(
     height: screenHeight / 12,
     color: Color.fromARGB(255, 254, 255, 255),
     onPressed: () {
       Get.to(() => ChatPage(
-            groupModel: group,
+            chatBaseModel: chatBase,
           ));
     },
     child: Padding(
@@ -38,13 +38,13 @@ myConversationButton(
           Column(
             children: [
               Text(
-                group.name ?? "",
+                chatBase.name ?? "",
                 style: TextStyle(
                   fontSize: 16,
                 ),
               ),
               Text(
-                group.ownerId.toString(),
+                chatBase.creatorId.toString(),
                 style: TextStyle(
                     fontSize: 14, color: Color.fromARGB(255, 85, 92, 94)),
               )

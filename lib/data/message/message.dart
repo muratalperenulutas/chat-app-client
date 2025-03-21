@@ -1,56 +1,58 @@
-import 'package:chat_app/constants/enums/source_enum.dart';
+import 'package:chat_app/constants/enums/status.dart';
 
-class MessageModel {
+class Message {
   late int? id;
   final int? messageId;
   final String message;
-  final int? groupId;
-  final int? localGroupId;
+  final int? collectivityId;
+  final String? dyadReceiverId;
   final String userId;
-  final DateTime? syncTime;
+  final DateTime sendTime;
   final bool? isRead;
-  final bool? isSynced;
+  late final Status status;
 
-  MessageModel({
+  Message({
     this.id,
     this.messageId,
-    this.localGroupId,
     required this.message,
-    this.groupId,
+    this.collectivityId,
+    this.dyadReceiverId,
     required this.userId,
-    this.syncTime,
+    required this.sendTime,
     this.isRead,
-    this.isSynced
+    required this.status
   });
 
-  factory MessageModel.fromDb(Map<String, dynamic> map) {
-    return MessageModel(
+  factory Message.fromDb(Map<String, dynamic> map) {
+    return Message(
       id: map['id'],
       messageId: map['messageId'],
-      localGroupId: map['localGroupId'],
       message: map['message'],
-      groupId: map['groupId'],
+      collectivityId: map['collectivityId'],
+        dyadReceiverId: map['dyadReceiverId'],
       userId: map['userId'],
-      syncTime: map['syncTime'],
-      isRead: map['isRead']
+      sendTime: DateTime.parse(map['sendTime']),
+      isRead: map['isRead'],
+      status: Status.fromString(map['status'])
     );
   }
 
-  factory MessageModel.fromJson(Map<String, dynamic> json) {
-    return MessageModel(
+  factory Message.fromJson(Map<String, dynamic> json) {
+    return Message(
       message: json['message'],
       messageId: json['id'],
-      groupId: int.parse(json['groupId']),
+        collectivityId: int.parse(json['collectivityId'].toString()),
       userId: json['userId'],
-      syncTime: json['syncTime'],
-      isRead: json['isRead']
+      sendTime: DateTime.parse(json['sendDate'].toString()),
+      isRead: json['isRead'],
+      status: Status.SYNC
     );
   }
 
   Map<String, dynamic> toJson() {
     return { 
       'message': message,
-      'groupId': groupId.toString(),
+      'collectivityId': collectivityId.toString(),
     };
   }
   Map<String, dynamic> toDb() {
@@ -58,12 +60,12 @@ class MessageModel {
       'id': id,
       'messageId': messageId,
       'message': message,
-      'localGroupId':localGroupId,
-      'groupId': groupId,
+      'collectivityId': collectivityId,
+      'dyadReceiverId':dyadReceiverId,
       'userId': userId,
-      'syncTime': syncTime?.toIso8601String(),
+      'sendTime': sendTime.toIso8601String(),
       'isRead': isRead,
-      'isSynced': isSynced
+      'status':status.name
     };
   }
   void setId(int id){

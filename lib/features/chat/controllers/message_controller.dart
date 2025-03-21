@@ -1,47 +1,61 @@
-import 'package:chat_app/data/group/group_service.dart';
+import 'package:chat_app/data/collectivity/collectivity_service.dart';
 import 'package:chat_app/data/message/message.dart';
 import 'package:chat_app/data/message/message_repository.dart';
 import 'package:chat_app/data/message/message_service.dart';
 import 'package:chat_app/core/general_change_notifier.dart';
+import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:get/get.dart';
 
-class MessageController extends GetxController{
-  RxInt localGroupId=0.obs;
-  RxList<MessageModel> messages=<MessageModel>[].obs;
+class MessageController extends GetxController {
+  RxInt collectivityId=999999.obs;
+  RxString userId="".obs;
+  RxList<Message> messages = <Message>[].obs;
 
-  MessageService messageService=Get.find<MessageService>();
-  MessageRepository messageRepository=Get.find<MessageRepository>();
-  GroupService groupService=Get.find<GroupService>();
-  GeneralChangeNotifier generalChangeNotifier=Get.find<GeneralChangeNotifier>();
+  MessageService messageService = Get.find<MessageService>();
+  MessageRepository messageRepository = Get.find<MessageRepository>();
+  CollectivityService collectivityService = Get.find<CollectivityService>();
+  GeneralChangeNotifier generalChangeNotifier =
+      Get.find<GeneralChangeNotifier>();
+  AuthController authController = Get.find<AuthController>();
 
   @override
   void onInit() {
     super.onInit();
-    ever(generalChangeNotifier.isMessagesChanged, (_){
-      print("object");
+    ever(generalChangeNotifier.isMessagesChanged, (_) {
+      print("message controller");
       _loadData();
     });
-    ever(localGroupId, (_){
+    ever(collectivityId, (_){
+      _loadData();
+    });
+    ever(userId, (_){
       _loadData();
     });
   }
 
-  void _loadData()async{
-    messages.value=await messageRepository.getMessagesFromGroupById(localGroupId.value);
+  void _loadData() async {
+    messages.value =await messageRepository.
+    getMessagesByCollectivityIdOrDyadReceiverId(collectivityId.value,userId.value);
   }
 
-  void sendMessage(String message,int? localGroupId,String? personId,Function setId) async{
+  void sendMessage(
+      String message, int? collectivityId,String? userId ) async {
     if (message.isNotEmpty) {
-      if (localGroupId == null) {
-        int id = await groupService.createDirectGroup(
-            null, personId??"");
-        setId(id);
-        localGroupId=id;
+      if (collectivityId != null) {
+        messageService.sendMessageByCollectivityId(message, collectivityId);
+      }else if(userId!=null){
+        collectivityService.createDyadIfNotExist(userId);
+        messageService.sendMessageByReceiverId(message, userId);
+      }else{
+        throw Error();
       }
-      messageService.sendMessageToGroup(message, localGroupId);
     }
   }
-  void setLocalGroupId(int id){
-    localGroupId.value=id;
+
+  void setCollectivityId(int id) {
+    collectivityId.value = id;
+  }
+  void setUserId(String id) {
+    userId.value = id;
   }
 }

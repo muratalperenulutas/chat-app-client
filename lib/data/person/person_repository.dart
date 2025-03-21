@@ -1,4 +1,5 @@
 import 'package:chat_app/constants/db/table_names.dart';
+import 'package:chat_app/constants/enums/status.dart';
 import 'package:chat_app/data/person/person.dart';
 import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/core/general_change_notifier.dart';
@@ -17,12 +18,13 @@ class PersonRepository {
     final db = await database;
     try {
       await db.insert(
-        DbTableNames.personsTableName,
+        DbTableNames.persons,
         person.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.fail,
+        conflictAlgorithm: ConflictAlgorithm.abort,
       );
     } catch (e) {
       print("Error inserting person: $e");
+
       rethrow;
     }
     generalChangeNotifier.contactsChanged();
@@ -31,7 +33,7 @@ class PersonRepository {
   Future<PersonModel?> findPersonByUsername(String username) async {
     final db = await database;
     final List<Map<String, dynamic>> result = await db.query(
-      DbTableNames.personsTableName,
+      DbTableNames.persons,
       where: 'username = ?',
       whereArgs: [username],
     );
@@ -42,10 +44,48 @@ class PersonRepository {
       return null;
     }
   }
+
+  Future<PersonModel?> findPersonByUsernameOrUserId(String username, String userId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> result = await db.query(
+      DbTableNames.persons,
+      where: 'username = ? OR personId = ?',
+      whereArgs: [username, userId],
+    );
+
+    if (result.isNotEmpty) {
+      return PersonModel.fromDb(result.first);
+    } else {
+      return null;
+    }
+  }
+
+
+  Future<PersonModel?> findPersonByPersonId(String personId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> result = await db.query(
+      DbTableNames.persons,
+      where: 'personId = ?',
+      whereArgs: [personId],
+    );
+    if(result.isEmpty){
+      return null;
+    }
+    return PersonModel.fromDb(result.first);
+  }
+
+  Future<void> createPersonIfNotExist(String personId)async{
+    PersonModel? person=await findPersonByPersonId(personId);
+    if(person==null){
+      PersonModel personModel=PersonModel(status: Status.CREATED,personId: personId);
+      insertPerson(personModel);
+    }
+  }
+
   Future<List<PersonModel>> getContacts() async {
     final db = await database;
     final list = await db.rawQuery(
-        'SELECT * FROM ${DbTableNames.personsTableName} WHERE source = ?',
+        'SELECT * FROM ${DbTableNames.persons} WHERE source = ?',
         [SourceEnum.LOCAL.toString()]);
     return list.map((map) => PersonModel.fromDb(map)).toList();
   }
@@ -53,7 +93,7 @@ class PersonRepository {
   Future<List<PersonModel>> getContactsOnChatApp() async {
     final db = await database;
     final list = await db.rawQuery(
-        'SELECT * FROM ${DbTableNames.personsTableName} WHERE source = ? AND isRegistered = ?',
+        'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND isRegistered = ?',
         [SourceEnum.LOCAL.toString(), 1]);
     return list.map((map) => PersonModel.fromDb(map)).toList();
   }
@@ -61,35 +101,34 @@ class PersonRepository {
   Future<List<PersonModel>> getContactsNotOnChatApp() async {
     final db = await database;
     final list = await db.rawQuery(
-        'SELECT * FROM ${DbTableNames.personsTableName} WHERE source = ? AND isRegistered = ?',
+        'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND isRegistered = ?',
         [SourceEnum.LOCAL.toString(), 0]);
     return list.map((map) => PersonModel.fromDb(map)).toList();
   }
-  Future<int> updatePerson(PersonModel person,int personId) async {
+  Future<List<PersonModel>> getUnscncedPerson() async {
     final db = await database;
-    return db.update(
-      DbTableNames.personsTableName,
+    final list = await db.rawQuery(
+        'SELECT * FROM ${DbTableNames.persons} WHERE status != ?',
+        [Status.SYNC.name]);
+    return list.map((map) => PersonModel.fromDb(map)).toList();
+  }
+
+  Future<void> updatePerson(PersonModel person,int personId) async {
+    final db = await database;
+    await db.update(
+      DbTableNames.persons,
       person.toDb(),
       where: 'id = ?',
       whereArgs: [personId],
     );
+    generalChangeNotifier.contactsChanged();
   }
 
-  Future<PersonModel?> getPersonFromDirectGroupByLocalId(int id) async {
-    final db = await database;
-    final list = await db.rawQuery('''
-    SELECT p.* FROM ${DbTableNames.personsTableName} p
-    JOIN ${DbTableNames.groupParticipantsTableName} gp ON p.personId = gp.userId
-    JOIN ${DbTableNames.groupsTableName} g ON gp.localGroupId = g.id
-    WHERE g.isDirectGroup = 1 AND g.id = ?
-  ''', [id]);
-
-    if (list.isNotEmpty && list.length == 2) {
-      final otherParticipant =
-      list.firstWhere((map) => map['personId'] != authController.userId.value.toString());
-      PersonModel personModel= PersonModel.fromDb(otherParticipant);
-      return personModel;
-    }
-    return null;
+  Future<void> printAll() async {
+      final db = await database;
+      final list = await db.rawQuery(
+          'SELECT * FROM ${DbTableNames.persons} ');
+     print(list);
   }
+
 }

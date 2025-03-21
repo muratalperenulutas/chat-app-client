@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../chat/widgets/build_chats_body.dart';
+import '../../collectivity/widgets/build_chats_body.dart';
 import '../../person/widgets/build_contacts_body.dart';
 import '../widgets/my_app_bar.dart';
 import '../widgets/my_bottom_navigation_app_bar.dart';

@@ -2,27 +2,25 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:chat_app/config/urls.dart';
 import 'package:chat_app/core/services/websocket/models/websocket_message.dart';
+import 'package:chat_app/data/collectivity/collectivity_service.dart';
+import 'package:chat_app/data/collectivity/dyad.dart';
 import 'package:chat_app/data/person/person_repository.dart';
 import 'package:get/get.dart';
 import 'package:web_socket_channel/io.dart';
 
 import '../../../constants/enums/ws_message_response_type.dart';
-import '../../../constants/enums/ws_message_type.dart';
-import '../../../data/group/group.dart';
-import '../../../data/group/group_service.dart';
+import '../../../data/collectivity/group.dart';
 import '../../../data/message/message.dart';
 import '../../../data/message/message_service.dart';
 import '../../../data/person/person.dart';
 import '../../../data/person/person_service.dart';
 import '../../../features/auth/controllers/auth_controller.dart';
-import 'models/create_group.dart';
-import 'models/find_user.dart';
 
 class WebSocketClient extends GetxService {
   AuthController authController = Get.find<AuthController>();
   PersonService personService=Get.find<PersonService>();
   MessageService messageService=Get.find<MessageService>();
-  GroupService groupService=Get.find<GroupService>();
+  CollectivityService collectivityService=Get.find<CollectivityService>();
   PersonRepository personRepository=Get.find<PersonRepository>();
 
   RxBool isWsConnected = false.obs;
@@ -66,7 +64,7 @@ class WebSocketClient extends GetxService {
           isWsConnected.value = false;
         },
       );
-      syncDataAfterConnection();
+     // syncDataAfterConnection();
     } catch (e) {
       print("WebSocket connection failed: $e");
       isWsConnected.value = false;
@@ -76,7 +74,7 @@ class WebSocketClient extends GetxService {
   void sendWebsocketMessage(WebsocketMessage message) {
     String jsonMessage = jsonEncode(message.toJson());
     channel?.sink.add(jsonMessage);
-    print("s");
+    print("send  "+jsonMessage);
   }
 
   void close() {
@@ -86,85 +84,53 @@ class WebSocketClient extends GetxService {
   void handleMessage(dynamic message) async {
     final jsonData = jsonDecode(message);
     print(jsonData);
-    switch (WsMessageResponseType.fromString(jsonData['command'])) {
-      case WsMessageResponseType.FIND_USER_RESPONSE:
-        print("find user response");
+    switch (WsMessageResponseType.fromString(jsonData['type'])) {
+      case WsMessageResponseType.USER_FOUND:
         var message = jsonData["data"];
         if (message != null) {
           PersonModel personModel = PersonModel.fromJson(message);
           personService.fetchPersonFromServer(personModel);
         }
         break;
-      case WsMessageResponseType.SEND_MESSAGE_RESPONSE:
-        print("send message response");
-        var message = jsonData["data"];
-        MessageModel messageModel = MessageModel.fromJson(message);
-        messageModel.setId(int.parse(jsonData["requestId"]));
+      case WsMessageResponseType.MESSAGE_SEND:
+        var data = jsonData["data"];
+        Message message = Message.fromJson(data);
         messageService.updateMessage(
-            int.parse(jsonData["requestId"]), messageModel);
+            int.parse(jsonData["requestId"].toString()), message);
         break;
-      case WsMessageResponseType.GET_MESSAGES_RESPONSE:
-        print("get messages response");
-        var messages = jsonData["data"];
-        for (var message in messages) {
-          print("loop");
-          MessageModel messageModel = MessageModel.fromJson(message);
+      case WsMessageResponseType.NEW_MESSAGE:
+        var message = jsonData["data"];
+          Message messageModel = Message.fromJson(message);
           await messageService.saveMessage(messageModel);
-        }
         break;
-      case WsMessageResponseType.CREATE_GROUP_RESPONSE:
-        print("create group response");
+      case WsMessageResponseType.GROUP_CREATED:
         var group = jsonData["data"];
         GroupModel groupModel = GroupModel.fromJson(group);
         int reqId = jsonData["requestId"];
-        groupService.updateGroup(groupModel, reqId);
+        collectivityService.updateGroup(groupModel, reqId);
         break;
-      case WsMessageResponseType.GET_GROUPS_RESPONSE:
-        print("get group response");
+      case WsMessageResponseType.NEW_GROUP:
         List<dynamic> groups = jsonData["data"];
         for (var group in groups) {
           print("loop");
           GroupModel groupModel = GroupModel.fromJson(group);
-          await groupService.saveGroup(groupModel);
+          await collectivityService.saveGroup(groupModel);
         }
         break;
+      case WsMessageResponseType.DYAD_CREATED:
+        var dyad = jsonData["data"];
+        DyadModel dyadModel=DyadModel.fromJson(dyad);
+        await collectivityService.fetchDyad(dyadModel,int.parse(jsonData["requestId"].toString()));
+        break;
+
+       case WsMessageResponseType.NEW_DYAD:
+         var dyad = jsonData["data"];
+         DyadModel dyadModel = DyadModel.fromJson(dyad);
+         await collectivityService.saveDyad(dyadModel);
+         personRepository.createPersonIfNotExist(dyadModel.userId);
+        break;
+
       default:
     }
-  }
-
-  void syncDataAfterConnection(){
-    if (isWsConnected.value) {
-      getGroups();
-      getMessages();
-      findRegisteredContacts();
-    }
-  }
-  void getGroups() {
-    sendWebsocketMessage(
-        WebsocketMessage(WsMessageType.GET_GROUPS, null, null));
-  }
-  void createGroup(int id,List<String> members){
-    WebsocketMessage message = WebsocketMessage(WsMessageType.CREATE_GROUP,
-        id.toString(), CreateGroup(null, true, members));
-    sendWebsocketMessage(message);
-  }
-
-  void getMessages() {
-    sendWebsocketMessage(
-        WebsocketMessage(WsMessageType.GET_MESSAGES, null, null));
-  }
-  wsFindUser(String username, int id) {
-    FindUser findUser = FindUser(username);
-    WebsocketMessage message =
-    WebsocketMessage(WsMessageType.FIND_USER, id.toString(), findUser);
-    sendWebsocketMessage(message);
-  }
-
-  void findRegisteredContacts() async {
-    List<PersonModel> persons = await personRepository.getContacts();
-    for (PersonModel person in persons) {
-      wsFindUser(person.username ?? '', person.id ?? 0);
-    }
-
   }
 }

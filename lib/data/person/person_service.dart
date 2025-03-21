@@ -3,6 +3,7 @@ import 'package:chat_app/data/person/person_repository.dart';
 import 'package:get/get.dart';
 
 import '../../constants/enums/source_enum.dart';
+import '../../constants/enums/status.dart';
 
 class PersonService extends GetxService {
   PersonRepository personRepository=Get.find<PersonRepository>();
@@ -18,22 +19,25 @@ class PersonService extends GetxService {
 
   Future<void> fetchPersonFromServer(PersonModel person) async {
     try {
-      final existingPerson = await personRepository.findPersonByUsername(person.username ?? '');
+      final existingPerson = await personRepository.findPersonByUsernameOrUserId(person.username ?? '',person.personId??"");
+
       if (existingPerson != null) {
 
         PersonModel personModel = PersonModel(
             name: person.name,
             source: existingPerson.source,
             personId: person.personId,
-            isSynced: 1,
             isRegistered: 1,
             description: person.description,
             imageId: person.imageId,
             localName: existingPerson.localName,
             username: existingPerson.username,
-            id: existingPerson.id);
+            id: existingPerson.id,
+        status: Status.SYNC);
         personRepository.updatePerson(personModel, existingPerson.id??0);
       } else {
+        person.source=SourceEnum.SERVER;
+        person.status=Status.SYNC;
         personRepository.insertPerson(person);
       }
     } catch (e) {

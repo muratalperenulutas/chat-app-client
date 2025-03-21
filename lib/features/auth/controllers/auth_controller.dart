@@ -5,7 +5,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends GetxController {
-  final userId = ''.obs;
+  final myId = ''.obs;
   var accessToken = ''.obs;
   var refreshToken = ''.obs;
   var isLoggedIn = false.obs;
@@ -19,7 +19,7 @@ class AuthController extends GetxController {
 
   void _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    userId.value = prefs.getString(SharedPrefKey.userIdKey) ?? '';
+    myId.value = prefs.getString(SharedPrefKey.userIdKey) ?? '';
     accessToken.value = prefs.getString(SharedPrefKey.accessTokenKey) ?? '';
     refreshToken.value = prefs.getString(SharedPrefKey.refreshTokenKey) ?? '';
     isLoggedIn.value = refreshToken.value.isNotEmpty;
@@ -27,7 +27,7 @@ class AuthController extends GetxController {
   }
 
   void setUserId(String value) async {
-    userId.value = value;
+    myId.value = value;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(SharedPrefKey.userIdKey, value);
   }

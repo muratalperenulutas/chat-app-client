@@ -27,27 +27,25 @@ class DatabaseService extends GetxService {
         onCreate: (Database db, int version) async {
       await db.execute('PRAGMA foreign_keys = ON');
       await db.execute(
-          'CREATE TABLE IF NOT EXISTS ${DbTableNames.groupsTableName} ('
+          'CREATE TABLE IF NOT EXISTS ${DbTableNames.collectivity} ('
           'id INTEGER PRIMARY KEY, '
-          'groupId INTEGER UNIQUE,'
+          'collectivityId INTEGER UNIQUE,'
           'name TEXT, '
-          'ownerId TEXT, '
-          // 'description TEXT, '
-          'isDirectGroup INTEGER NOT NULL, '
-          'imageId TEXT, '
-          'isSynced INTEGER DEFAULT 0)');
+          'creatorId TEXT, '
+          'description TEXT, '
+          'imageId TEXT ,'
+          'collectivityType TEXT,'
+          'userId TEXT,'
+          'status TEXT DEFAULT \'CREATED\')');
       await db.execute(
-          'CREATE TABLE IF NOT EXISTS ${DbTableNames.groupParticipantsTableName} ('
+          'CREATE TABLE IF NOT EXISTS ${DbTableNames.groupParticipants} ('
           'id INTEGER PRIMARY KEY, '
           'userId TEXT NOT NULL, '
-          'groupId INTEGER, '
-          'localGroupId INTEGER,'
-          'participantId TEXT, '
-          'isSynced INTEGER DEFAULT 0, '
-          'FOREIGN KEY(groupId) REFERENCES ${DbTableNames.groupsTableName}(groupId) ON DELETE CASCADE, '
-          'FOREIGN KEY(userId) REFERENCES ${DbTableNames.personsTableName}(personId) ON DELETE CASCADE)');
+          'collectivityId INTEGER, '
+          'FOREIGN KEY(collectivityId) REFERENCES ${DbTableNames.collectivity}(collectivityId) ON DELETE CASCADE, '
+          'FOREIGN KEY(userId) REFERENCES ${DbTableNames.persons}(personId) ON DELETE CASCADE)');
       await db.execute(
-          'CREATE TABLE IF NOT EXISTS ${DbTableNames.personsTableName} ('
+          'CREATE TABLE IF NOT EXISTS ${DbTableNames.persons} ('
           'id INTEGER PRIMARY KEY, '
           'personId TEXT UNIQUE, '
           'name TEXT, '
@@ -55,22 +53,22 @@ class DatabaseService extends GetxService {
           'username TEXT UNIQUE, '
           'description TEXT, '
           'imageId TEXT, '
-          'source TEXT NOT NULL, '
-          'isRegistered INTEGER DEFAULT 0, '
-          'isSynced INTEGER DEFAULT 0)');
+          'source TEXT DEFAULT \'SERVER\', '
+          'isRegistered INTEGER DEFAULT 0,'
+          'status TEXT DEFAULT \'CREATED\')');
       await db.execute(
-          'CREATE TABLE IF NOT EXISTS ${DbTableNames.messagesTableName} ('
+          'CREATE TABLE IF NOT EXISTS ${DbTableNames.messages} ('
           'id INTEGER PRIMARY KEY, '
           'messageId INTEGER UNIQUE, '
           'message TEXT NOT NULL, '
           'userId TEXT NOT NULL, '
-          'groupId INTEGER, '
-          'localGroupId INTEGER,'
-          'syncTime DATE, '
+          'collectivityId INTEGER, '
+          'dyadReceiverId TEXT, '
+          'sendTime DATE, '
           'isRead INTEGER DEFAULT 0, '
-          'isSynced INTEGER DEFAULT 0, '
-          'FOREIGN KEY(groupId) REFERENCES ${DbTableNames.groupsTableName}(groupId) ON DELETE CASCADE, '
-          'FOREIGN KEY(userId) REFERENCES ${DbTableNames.personsTableName}(personId) ON DELETE CASCADE)');
+          'status TEXT DEFAULT \'CREATED\', '
+          'FOREIGN KEY(collectivityId) REFERENCES ${DbTableNames.collectivity}(collectivityId) ON DELETE CASCADE, '
+          'FOREIGN KEY(userId) REFERENCES ${DbTableNames.persons}(personId) ON DELETE CASCADE)');
     });
     return _database!;
   }
