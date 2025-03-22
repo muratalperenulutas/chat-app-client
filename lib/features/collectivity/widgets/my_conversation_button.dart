@@ -3,7 +3,6 @@ import 'package:chat_app/features/chat/screens/chat_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
 myConversationButton(
     BuildContext context, double screenHeight, ChatBaseModel chatBase) {
   return MaterialButton(
@@ -44,7 +43,7 @@ myConversationButton(
                 ),
               ),
               Text(
-                chatBase.creatorId.toString(),
+                chatBase.collectivityId.toString(),
                 style: TextStyle(
                     fontSize: 14, color: Color.fromARGB(255, 85, 92, 94)),
               )

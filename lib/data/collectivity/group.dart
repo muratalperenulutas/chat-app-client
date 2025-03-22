@@ -10,22 +10,21 @@ class GroupModel extends Collectivity {
 
   GroupModel(
       {int? id,
-      required int collectivityId,
+      int? collectivityId,
       this.name,
       this.creatorId,
       this.imageId,
-      required Status status})
+      Status status = Status.CREATED,
+      CollectivityType type = CollectivityType.GROUP})
       : super(
-            collectivityId: collectivityId,
-            type: CollectivityType.GROUP,
-            status: status,
-            id: id);
+            collectivityId: collectivityId, type: type, status: status, id: id);
 
   factory GroupModel.fromDb(Map<String, dynamic> map) {
     return GroupModel(
         id: map['id'],
         collectivityId: map['collectivityId'],
         name: map['name'],
+        type:CollectivityType.fromString(map['collectivityType']),
         creatorId: map['creatorId'],
         imageId: map['imageId'],
         status: Status.fromString(map['status']));
@@ -46,6 +45,7 @@ class GroupModel extends Collectivity {
         'name': name,
         'creatorId': creatorId,
         'imageId': imageId,
+        'collectivityType': type.name,
         'status': status.name,
       };
 }

@@ -1,7 +1,8 @@
-import 'package:chat_app/constants/enums/collectivity_type.dart';
+import 'package:chat_app/constants/colors/message_card.dart';
 import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/chat/controllers/message_controller.dart';
 import 'package:chat_app/features/chat/models/chat_base.dart';
+import 'package:chat_app/features/person/screens/collectivity_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -15,7 +16,8 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  MessageController messageController = Get.put(MessageController());
+  MessageController messageController = Get.find<MessageController>();
+
   AuthController authController = Get.find<AuthController>();
   bool _isLoading = true;
   final _messageTextController = TextEditingController();
@@ -28,17 +30,18 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> _loadData() async {
     try {
-      if(widget.chatBaseModel.collectivityId!=null) {
+      if (widget.chatBaseModel.collectivityId != null) {
         messageController
             .setCollectivityId(widget.chatBaseModel.collectivityId ?? 0);
       }
-      if(widget.chatBaseModel.personId!=null) {
-        messageController.setUserId(widget.chatBaseModel.personId??"");
+      if (widget.chatBaseModel.personId != null) {
+        messageController.setUserId(widget.chatBaseModel.personId ?? "");
       }
 
       setState(() {
         _isLoading = false;
       });
+
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -53,8 +56,19 @@ class _ChatPageState extends State<ChatPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue[900],
-        title: Text(widget.chatBaseModel.name ?? "Chat"),
+        backgroundColor: Colors.blue[700],
+        title: Container(
+          width: double.infinity,
+          child: GestureDetector(
+            onTap: () {
+              Get.to(() => CollectivityDetailPage(chatBaseModel: widget.chatBaseModel,));
+            },
+            child: Text(
+              widget.chatBaseModel.name ?? "Chat",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -90,7 +104,7 @@ class _ChatPageState extends State<ChatPage> {
                               : MainAxisAlignment.start,
                           children: [
                             Card(
-                              color: Colors.purpleAccent,
+                              color: MessageCardColorHelper.getColorFromPredefined(message.userId,widget.chatBaseModel.collectivityId??0),
                               child: Padding(
                                 padding: const EdgeInsets.all(12.0),
                                 child: Text(message.message),
@@ -137,7 +151,7 @@ class _ChatPageState extends State<ChatPage> {
                         messageController.sendMessage(
                             _messageTextController.text,
                             widget.chatBaseModel.collectivityId,
-                        widget.chatBaseModel.personId);
+                            widget.chatBaseModel.personId);
                         _messageTextController.clear();
                       },
                       icon: const Icon(Icons.send),

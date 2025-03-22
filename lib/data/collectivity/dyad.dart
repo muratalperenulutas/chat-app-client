@@ -12,10 +12,11 @@ class DyadModel extends Collectivity {
       {int? id,
       required this.userId,
       int? collectivityId,
-      required Status status})
+      required Status status,
+      CollectivityType type= CollectivityType.DYAD})
       : super(
             collectivityId: collectivityId,
-            type: CollectivityType.DYAD,
+            type:type,
             status: status,
             id: id);
 
@@ -26,6 +27,7 @@ class DyadModel extends Collectivity {
       userId: map['userId'],
       collectivityId: map['collectivityId'],
       status: Status.fromString(map['status']),
+      type:CollectivityType.fromString(map['collectivityType'])
     );
   }
 
@@ -45,5 +47,6 @@ class DyadModel extends Collectivity {
         'userId': userId,
         'collectivityId': collectivityId,
         'status': status.name,
+        'collectivityType':type.name
       };
 }

@@ -5,6 +5,7 @@ import 'package:chat_app/core/general_change_notifier.dart';
 import 'package:get/get.dart';
 
 class PersonController extends GetxController{
+  RxSet<String> selectedContacts = <String>{}.obs;
   RxList<PersonModel> contacts=<PersonModel>[].obs;
   RxList<PersonModel> contactsOnChatApp=<PersonModel>[].obs;
   RxList<PersonModel> contactsNotOnChatApp=<PersonModel>[].obs;
@@ -31,4 +32,26 @@ class PersonController extends GetxController{
     personService.createContact(name, username);
   }
 
+  void addToSelectedContactsSet(String? value){
+    if(value!=null) {
+      selectedContacts.add(value);
+    }
+  }
+
+  void ejectFromSelectedContactsSet(String? value) {
+    if(value!=null) {
+      selectedContacts.remove(value);
+    }
+  }
+
+  bool isInSelectedContactsSet(String? value) {
+    return selectedContacts.contains(value);
+  }
+
+  bool isSelectingMode(){
+    return selectedContacts.isNotEmpty;
+  }
+  void resetSelectedContacts(){
+    selectedContacts=<String>{}.obs;
+  }
 }

@@ -1,5 +1,4 @@
 import 'package:chat_app/data/collectivity/collectivity_repository.dart';
-import 'package:chat_app/data/collectivity/collectivity_service.dart';
 import 'package:chat_app/data/collectivity/dyad.dart';
 import 'package:chat_app/features/chat/models/chat_base.dart';
 import 'package:chat_app/features/chat/screens/chat_page.dart';
@@ -7,17 +6,34 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../data/person/person.dart';
-import '../../../data/person/person_repository.dart';
+import '../controller/person_controller.dart';
 
 MaterialButton myStartConversationButton(
-    BuildContext context, double screenHeight, PersonModel person) {
+    double screenHeight, PersonModel person) {
+  PersonController personController = Get.find<PersonController>();
+  bool isSelected = personController.isInSelectedContactsSet(person.personId);
+  print("a");
   return MaterialButton(
     height: screenHeight / 12,
-    color: Color.fromARGB(255, 254, 255, 255),
+    onLongPress: () {
+      if (person.isRegistered == 1 &&
+          !personController.isSelectingMode()) {
+        personController.addToSelectedContactsSet(person.personId);
+      }
+    },
+    color: isSelected
+        ? Color.fromARGB(254, 110, 221, 70)
+        : Color.fromARGB(255, 254, 255, 255),
     onPressed: () async {
-      if (person.isRegistered == 1) {
+      if (personController.isSelectingMode()) {
+        if (!isSelected) {
+          personController.addToSelectedContactsSet(person.personId);
+        } else {
+          personController.ejectFromSelectedContactsSet(person.personId);
+        }
+      } else if (person.isRegistered == 1) {
         DyadModel? dyadModel = await Get.find<CollectivityRepository>()
-            .getDyadByUserId(person.personId??"");
+            .getDyadByUserId(person.personId ?? "");
         ChatBaseModel chatBase;
         if (dyadModel == null) {
           chatBase = ChatBaseModel.fromPersonModel(person);

@@ -5,7 +5,7 @@ class PersonModel {
   final int? id;
   final String? personId;
   final String? name;
-  final String? localName;
+  late String? localName;
   final String? username;
   final String? description;
   final String? imageId;
@@ -60,4 +60,8 @@ class PersonModel {
     'isRegistered':isRegistered,
     'status':status.name
   };
+
+  void setLocalName(String name){
+    localName=name;
+  }
 }

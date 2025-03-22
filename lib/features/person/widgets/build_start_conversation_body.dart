@@ -30,7 +30,7 @@ Widget buildStartConversationBody(double screenHeight) {
               itemCount: contactsOnChatApp.length,
               itemBuilder: (context, index) {
                 return myStartConversationButton(
-                    context, screenHeight, contactsOnChatApp[index]);
+                    screenHeight, contactsOnChatApp[index]);
               },
             ),
             const Divider(),
@@ -47,7 +47,7 @@ Widget buildStartConversationBody(double screenHeight) {
               itemCount: contactsNotOnChatApp.length,
               itemBuilder: (context, index) {
                 return myStartConversationButton(
-                    context, screenHeight, contactsNotOnChatApp[index]);
+                    screenHeight, contactsNotOnChatApp[index]);
               },
             ),
           ],

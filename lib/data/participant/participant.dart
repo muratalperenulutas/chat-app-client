@@ -1,25 +1,24 @@
-class GroupParticipant {
+class Participant {
   final int? id;
   final int? collectivityId;
   final String? userId;
 
-  const GroupParticipant(
+  const Participant(
       {this.id, this.userId, this.collectivityId});
 
-  factory GroupParticipant.fromDb(Map<String, dynamic> map) {
-    return GroupParticipant(
+  factory Participant.fromDb(Map<String, dynamic> map) {
+    return Participant(
       id: map['id'],
       userId: map['userId'],
       collectivityId: map['collectivityId'],
     );
   }
-
-  List<GroupParticipant> fromJson(Map<String, dynamic> json) {
-    List<GroupParticipant> participants =
-        <GroupParticipant>[];
+  static List<Participant> fromJson(Map<String, dynamic> json) {
+    List<Participant> participants =
+    <Participant>[];
     for (String userId in json['members']) {
-      participants.add(GroupParticipant(
-          collectivityId: json['collectivityId'], userId: json['userId']));
+      participants.add(Participant(
+          collectivityId: json['id'], userId: userId));
     }
     return participants;
   }

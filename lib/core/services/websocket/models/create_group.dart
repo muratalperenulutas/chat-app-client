@@ -2,10 +2,9 @@ import 'package:chat_app/core/models/JsonSerializable.dart';
 
 class CreateGroup extends JsonSerializable {
   late String? name;
-  late bool isDirectGroup;
   late List<String> members;
 
-  CreateGroup(this.name, this.isDirectGroup, this.members);
+  CreateGroup(this.name, this.members);
 
   void setName(String name) {
     this.name = name;
@@ -13,6 +12,6 @@ class CreateGroup extends JsonSerializable {
 
   @override
   Map<String, dynamic> toJson() {
-    return {"name": name, "isDirectGroup": isDirectGroup, "members": members};
+    return {"name": name, "members": members};
   }
 }

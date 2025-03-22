@@ -113,13 +113,12 @@ class PersonRepository {
     return list.map((map) => PersonModel.fromDb(map)).toList();
   }
 
-  Future<void> updatePerson(PersonModel person,int personId) async {
+  Future<void> updatePerson(PersonModel person) async {
     final db = await database;
     await db.update(
       DbTableNames.persons,
       person.toDb(),
-      where: 'id = ?',
-      whereArgs: [personId],
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
     generalChangeNotifier.contactsChanged();
   }

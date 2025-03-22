@@ -22,7 +22,7 @@ Widget buildContactsBody(double screenHeight) {
             primary: false,
             itemCount: contacts.length,
             itemBuilder: (context, index) {
-              return myContactsButton(context, screenHeight, contacts[index]);
+              return MyContactsButton(context, screenHeight, contacts[index]);
             },
           ),
           SizedBox(

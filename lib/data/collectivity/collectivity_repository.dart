@@ -53,7 +53,7 @@ class CollectivityRepository {
     final db = await database;
     final list =
         await db.rawQuery('SELECT * FROM ${DbTableNames.collectivity}');
-    return list.map((map) => map["collectivityType"]==CollectivityType.GROUP?
+    return list.map((map) => map["collectivityType"]==CollectivityType.GROUP.name?
     GroupModel.fromDb(map):DyadModel.fromDb(map)).toList();
   }
 

@@ -2,21 +2,15 @@ import 'package:chat_app/constants/enums/status.dart';
 import 'package:chat_app/data/collectivity/collectivity_repository.dart';
 import 'package:chat_app/data/collectivity/dyad.dart';
 import 'package:chat_app/data/message/message_repository.dart';
-import 'package:chat_app/data/person/person_repository.dart';
-import 'package:chat_app/features/auth/controllers/auth_controller.dart';
+import 'package:chat_app/features/chat/controllers/message_controller.dart';
 import 'package:get/get.dart';
-
-import '../group_participant/group_participant_repository.dart';
 import 'group.dart';
 
 class CollectivityService extends GetxService {
   final CollectivityRepository collectivityRepository =
       Get.find<CollectivityRepository>();
-  final GroupParticipantRepository groupParticipantRepository =
-      Get.find<GroupParticipantRepository>();
-  final AuthController authController = Get.find<AuthController>();
   final MessageRepository messageRepository=Get.find<MessageRepository>();
-  final PersonRepository personRepository=Get.find<PersonRepository>();
+  final MessageController messageController=Get.find<MessageController>();
 
   Future<void> updateGroup(GroupModel groupModel, int reqId) async {
     await collectivityRepository.updateGroup(groupModel, reqId);
@@ -29,9 +23,14 @@ class CollectivityService extends GetxService {
     await collectivityRepository.insertDyad(dyad);
   }
   Future<void> fetchDyad(DyadModel dyad,int id) async {
-    dyad.setId(id);
+    dyad.setId(id);//find by userId not request id
     await collectivityRepository.updateDyad(dyad,id);
    messageRepository.batchFixCollectivityIdJob(dyad.collectivityId??0, dyad.userId);
+   if(messageController.userId.value==dyad.userId){
+     if(dyad.collectivityId!=null) {
+       messageController.collectivityId.value = dyad.collectivityId!;
+     }
+   }
   }
   Future<void> createDyadIfNotExist(String userId)async {
     DyadModel? dyad=await collectivityRepository.getDyadByUserId(userId);

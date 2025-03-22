@@ -11,13 +11,13 @@ import '../websocket/models/create_dyad.dart';
 import '../websocket/models/create_group.dart';
 import '../websocket/models/websocket_message.dart';
 
-class GroupDataIngest extends GetxService{
+class CollectivityIngest extends GetxService{
     final GeneralChangeNotifier generalChangeNotifier=Get.find<GeneralChangeNotifier>();
     final CollectivityService collectivityService=Get.find<CollectivityService>();
     final WebSocketClient webSocketClient=Get.find<WebSocketClient>();
     final CollectivityRepository collectivityRepository=Get.find<CollectivityRepository>();
 
-    GroupDataIngest(){
+    CollectivityIngest(){
         ever(generalChangeNotifier.isCollectivitiesChanged, (count) async {
             List<Collectivity> unsyncedCollectivities=await collectivityRepository.getUnsyncedCollectivities();
             await collectivityRepository.printAll();
@@ -30,9 +30,9 @@ class GroupDataIngest extends GetxService{
             }
         });
     }
-    void createGroup(String name,int id,List<String> members){
+    void createGroup(String name,List<String> members){
         WebsocketMessage message = WebsocketMessage(WsMessageType.CREATE_GROUP,
-            id.toString(), CreateGroup(name, true, members));
+            "1", CreateGroup(name, members));
         webSocketClient.sendWebsocketMessage(message);
     }
 

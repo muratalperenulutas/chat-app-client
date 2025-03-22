@@ -38,12 +38,11 @@ class DatabaseService extends GetxService {
           'userId TEXT,'
           'status TEXT DEFAULT \'CREATED\')');
       await db.execute(
-          'CREATE TABLE IF NOT EXISTS ${DbTableNames.groupParticipants} ('
+          'CREATE TABLE IF NOT EXISTS ${DbTableNames.participants} ('
           'id INTEGER PRIMARY KEY, '
           'userId TEXT NOT NULL, '
           'collectivityId INTEGER, '
-          'FOREIGN KEY(collectivityId) REFERENCES ${DbTableNames.collectivity}(collectivityId) ON DELETE CASCADE, '
-          'FOREIGN KEY(userId) REFERENCES ${DbTableNames.persons}(personId) ON DELETE CASCADE)');
+          'FOREIGN KEY(collectivityId) REFERENCES ${DbTableNames.collectivity}(collectivityId) ON DELETE CASCADE)');
       await db.execute(
           'CREATE TABLE IF NOT EXISTS ${DbTableNames.persons} ('
           'id INTEGER PRIMARY KEY, '
@@ -67,8 +66,7 @@ class DatabaseService extends GetxService {
           'sendTime DATE, '
           'isRead INTEGER DEFAULT 0, '
           'status TEXT DEFAULT \'CREATED\', '
-          'FOREIGN KEY(collectivityId) REFERENCES ${DbTableNames.collectivity}(collectivityId) ON DELETE CASCADE, '
-          'FOREIGN KEY(userId) REFERENCES ${DbTableNames.persons}(personId) ON DELETE CASCADE)');
+          'FOREIGN KEY(collectivityId) REFERENCES ${DbTableNames.collectivity}(collectivityId) ON DELETE CASCADE)');
     });
     return _database!;
   }

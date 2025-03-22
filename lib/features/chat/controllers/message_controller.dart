@@ -13,7 +13,6 @@ class MessageController extends GetxController {
 
   MessageService messageService = Get.find<MessageService>();
   MessageRepository messageRepository = Get.find<MessageRepository>();
-  CollectivityService collectivityService = Get.find<CollectivityService>();
   GeneralChangeNotifier generalChangeNotifier =
       Get.find<GeneralChangeNotifier>();
   AuthController authController = Get.find<AuthController>();
@@ -44,6 +43,7 @@ class MessageController extends GetxController {
       if (collectivityId != null) {
         messageService.sendMessageByCollectivityId(message, collectivityId);
       }else if(userId!=null){
+        CollectivityService collectivityService = Get.find<CollectivityService>();
         collectivityService.createDyadIfNotExist(userId);
         messageService.sendMessageByReceiverId(message, userId);
       }else{

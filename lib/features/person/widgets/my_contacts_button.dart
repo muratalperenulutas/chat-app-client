@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import '../../../data/person/person.dart';
 import '../screens/person_detail_page.dart';
 
-MaterialButton myContactsButton(
+MaterialButton MyContactsButton(
     BuildContext context, double screenHeight, PersonModel person) {
   return MaterialButton(
     height: screenHeight / 12,

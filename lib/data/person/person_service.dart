@@ -9,15 +9,21 @@ class PersonService extends GetxService {
   PersonRepository personRepository=Get.find<PersonRepository>();
 
   Future<void> createContact(String name,String username)async {
-    PersonModel person = PersonModel(
-        localName: name,
-        username: username,
-        source: SourceEnum.LOCAL,
-        isRegistered: 0);
-    personRepository.insertPerson(person);
+    PersonModel? existingPerson=await personRepository.findPersonByUsername(username);
+    if(existingPerson!=null){
+      existingPerson.setLocalName(name);
+      personRepository.updatePerson(existingPerson);
+    }else {
+      PersonModel person = PersonModel(
+          localName: name,
+          username: username,
+          source: SourceEnum.LOCAL,
+      isRegistered: 0);
+      personRepository.insertPerson(person);
+    }
   }
 
-  Future<void> fetchPersonFromServer(PersonModel person) async {
+  Future<void> fetchPerson(PersonModel person) async {
     try {
       final existingPerson = await personRepository.findPersonByUsernameOrUserId(person.username ?? '',person.personId??"");
 
@@ -31,10 +37,10 @@ class PersonService extends GetxService {
             description: person.description,
             imageId: person.imageId,
             localName: existingPerson.localName,
-            username: existingPerson.username,
+            username: person.username,
             id: existingPerson.id,
-        status: Status.SYNC);
-        personRepository.updatePerson(personModel, existingPerson.id??0);
+            status: Status.SYNC);
+        personRepository.updatePerson(personModel);
       } else {
         person.source=SourceEnum.SERVER;
         person.status=Status.SYNC;
