@@ -9,9 +9,12 @@ class PersonService extends GetxService {
   PersonRepository personRepository=Get.find<PersonRepository>();
 
   Future<void> createContact(String name,String username)async {
+    print("name:$name  username:$username");
     PersonModel? existingPerson=await personRepository.findPersonByUsername(username);
     if(existingPerson!=null){
+      print(existingPerson);
       existingPerson.setLocalName(name);
+      existingPerson.setSource(SourceEnum.LOCAL);
       personRepository.updatePerson(existingPerson);
     }else {
       PersonModel person = PersonModel(

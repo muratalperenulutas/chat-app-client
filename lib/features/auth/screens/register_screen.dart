@@ -1,5 +1,8 @@
+import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/auth/models/register.dart';
+import 'package:chat_app/features/auth/models/register_progress.dart';
 import 'package:chat_app/features/auth/services/auth.dart';
+import 'package:chat_app/features/auth/widgets/email_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -15,6 +18,24 @@ class _RegisterPageState extends State<RegisterPage> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final usernameController = TextEditingController();
+  final AuthController authController=Get.find<AuthController>();
+
+  @override
+  void initState() {
+    super.initState();
+    ever(authController.registerProgress, (RegisterProgress progress){
+      if(progress==RegisterProgress.EMAIL){
+        showEmailDialog(context);
+        emailController.clear();
+        passwordController.clear();
+        confirmPasswordController.clear();
+        usernameController.clear();
+      }else if(progress==RegisterProgress.COMPLETED){
+        Get.toNamed("/login");
+        authController.setRegisterProgress(RegisterProgress.INITIAL);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,13 +113,15 @@ class _RegisterPageState extends State<RegisterPage> {
                   children: [
                     ElevatedButton(
                         onPressed: () async {
-                          if(passwordController.text==confirmPasswordController.text) {
+                          if(usernameController.text.isEmpty){
+                            print("username empty");
+                          }else if(passwordController.text.isEmpty&&confirmPasswordController.text.isEmpty){
+                            print("password empty");
+                          }else if(passwordController.text==confirmPasswordController.text) {
                             await AuthService.register(context, RegisterModel(
                                 password: passwordController.text,
                                 email: emailController.text,
                                 username: usernameController.text));
-                            //show verification email send dialog
-                            //open login page
                           }else{
                             print("passwords not match");
                           }

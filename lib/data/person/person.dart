@@ -56,12 +56,15 @@ class PersonModel {
     'localName':localName,
     'description':description,
     'imageId':imageId,
-    'source':source.toString(),
+    'source':source.name,
     'isRegistered':isRegistered,
     'status':status.name
   };
 
   void setLocalName(String name){
     localName=name;
+  }
+  void setSource(SourceEnum s){
+    source=s;
   }
 }

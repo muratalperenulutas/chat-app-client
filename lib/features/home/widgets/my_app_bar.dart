@@ -17,7 +17,7 @@ AppBar buildAppBar(double screenHeight, BuildContext context) {
       IconButton(
           onPressed: () {
             authController.logout();
-            Get.offNamed('/login');
+            Get.offAllNamed('/login');
           },
           icon: const Icon(Icons.logout))
     ],

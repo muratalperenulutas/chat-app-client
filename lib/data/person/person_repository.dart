@@ -86,7 +86,7 @@ class PersonRepository {
     final db = await database;
     final list = await db.rawQuery(
         'SELECT * FROM ${DbTableNames.persons} WHERE source = ?',
-        [SourceEnum.LOCAL.toString()]);
+        [SourceEnum.LOCAL.name]);
     return list.map((map) => PersonModel.fromDb(map)).toList();
   }
 
@@ -94,7 +94,7 @@ class PersonRepository {
     final db = await database;
     final list = await db.rawQuery(
         'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND isRegistered = ?',
-        [SourceEnum.LOCAL.toString(), 1]);
+        [SourceEnum.LOCAL.name, 1]);
     return list.map((map) => PersonModel.fromDb(map)).toList();
   }
 
@@ -102,7 +102,7 @@ class PersonRepository {
     final db = await database;
     final list = await db.rawQuery(
         'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND isRegistered = ?',
-        [SourceEnum.LOCAL.toString(), 0]);
+        [SourceEnum.LOCAL.name, 0]);
     return list.map((map) => PersonModel.fromDb(map)).toList();
   }
   Future<List<PersonModel>> getUnscncedPerson() async {
@@ -118,7 +118,8 @@ class PersonRepository {
     await db.update(
       DbTableNames.persons,
       person.toDb(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      where: 'id = ?',
+      whereArgs: [person.id],
     );
     generalChangeNotifier.contactsChanged();
   }

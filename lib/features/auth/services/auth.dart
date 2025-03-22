@@ -8,6 +8,7 @@ import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/auth/models/login.dart';
 import 'package:chat_app/features/auth/models/register.dart';
 import 'package:chat_app/core/services/api/api.dart';
+import 'package:chat_app/features/auth/models/register_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -76,19 +77,16 @@ class AuthService extends GetxService{
     print("Register");
     try {
       final response = await Api.postRegisterRequest(registerModel);
-
+      Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      String message = jsonResponse['message'];
+      print(jsonResponse);
       if (response.statusCode == 201) {
-        print(response.body);
-        Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        print(jsonResponse);
-        String message = jsonResponse['message'];
         showSnackBar(context, message);
-      } else if (response.statusCode == 401) {
-        Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        String message = jsonResponse['message'];
+        authController.setRegisterProgress(RegisterProgress.EMAIL);
+      } else if (response.statusCode == 400) {
         showSnackBar(context, message);
       } else {
-        showSnackBar(context, 'Error');
+        showSnackBar(context, message);
         print('Register failed: ${response.body}');
       }
     } on SocketException catch (e2) {

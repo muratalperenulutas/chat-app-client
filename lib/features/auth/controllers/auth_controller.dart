@@ -4,12 +4,16 @@ import 'package:get/get.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/register_progress.dart';
+
 class AuthController extends GetxController {
   final myId = ''.obs;
   var accessToken = ''.obs;
   var refreshToken = ''.obs;
   var isLoggedIn = false.obs;
   var isLoading = true.obs;
+
+  Rx<RegisterProgress> registerProgress=RegisterProgress.INITIAL.obs;
 
   @override
   void onInit() {
@@ -51,6 +55,10 @@ class AuthController extends GetxController {
     setRefreshToken('');
     setAccessToken('');
     isLoggedIn.value = false;
+  }
+
+  void setRegisterProgress(RegisterProgress progress){
+    registerProgress.value=progress;
   }
 
   Future<String> getAccessToken()  async {
