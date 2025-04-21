@@ -5,6 +5,7 @@ import 'package:chat_app/features/chat/models/chat_base.dart';
 import 'package:chat_app/features/person/screens/collectivity_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ChatPage extends StatefulWidget {
   final ChatBaseModel chatBaseModel;
@@ -17,15 +18,33 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   MessageController messageController = Get.find<MessageController>();
-
   AuthController authController = Get.find<AuthController>();
   bool _isLoading = true;
   final _messageTextController = TextEditingController();
+  final ItemScrollController itemScrollController=ItemScrollController();
+  final ItemPositionsListener itemPositionsListener=ItemPositionsListener.create();
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    itemPositionsListener.itemPositions.addListener(() {
+      final positions = itemPositionsListener.itemPositions.value;
+      final visibleIndexes = positions.map((e) => e.index).toList();
+
+      if (!visibleIndexes.contains(messageController.messages.length)) {
+        //print("Bottom is not visible — maybe show 'scroll to bottom' button");
+      }
+    });
+  }
+  void scrollToBottom() {
+    if (itemScrollController.isAttached) {
+      itemScrollController.scrollTo(
+        index: messageController.messages.length,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   Future<void> _loadData() async {
@@ -41,7 +60,6 @@ class _ChatPageState extends State<ChatPage> {
       setState(() {
         _isLoading = false;
       });
-
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -61,7 +79,9 @@ class _ChatPageState extends State<ChatPage> {
           width: double.infinity,
           child: GestureDetector(
             onTap: () {
-              Get.to(() => CollectivityDetailPage(chatBaseModel: widget.chatBaseModel,));
+              Get.to(() => CollectivityDetailPage(
+                    chatBaseModel: widget.chatBaseModel,
+                  ));
             },
             child: Text(
               widget.chatBaseModel.name ?? "Chat",
@@ -80,48 +100,48 @@ class _ChatPageState extends State<ChatPage> {
     return Container(
       child: Stack(
         children: [
-          SingleChildScrollView(
-            child: Column(
-              children: [
                 Obx(() {
                   var messages = messageController.messages;
                   if (messages.isEmpty) {
                     return const Center(child: Text("No messages available"));
                   }
-                  return ListView.builder(
+                  return ScrollablePositionedList.builder(
                     shrinkWrap: true,
-                    primary: false,
-                    itemCount: messages.length,
+                    itemCount: messages.length+1,
+                    itemScrollController: itemScrollController,
+                    itemPositionsListener: itemPositionsListener,
                     itemBuilder: (context, index) {
+                      if(messages.length==index){
+                        return const SizedBox(
+                          height: 60,
+                        );
+                      }
                       var message = messages[index];
-                      bool isMyMessage =
-                          message.userId == authController.myId.value;
-                      return Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Row(
-                          mainAxisAlignment: isMyMessage
-                              ? MainAxisAlignment.end
-                              : MainAxisAlignment.start,
-                          children: [
-                            Card(
-                              color: MessageCardColorHelper.getColorFromPredefined(message.userId,widget.chatBaseModel.collectivityId??0),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Text(message.message),
-                              ),
-                            )
-                          ],
-                        ),
-                      );
-                    },
+                        bool isMyMessage =
+                            message.userId == authController.myId.value;
+                        return Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Row(
+                            mainAxisAlignment: isMyMessage
+                                ? MainAxisAlignment.end
+                                : MainAxisAlignment.start,
+                            children: [
+                              Card(
+                                color:
+                                MessageCardColorHelper.getColorFromPredefined(
+                                    message.userId,
+                                    widget.chatBaseModel.collectivityId ?? 0),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Text(message.message),
+                                ),
+                              )
+                            ],
+                          ),
+                        );
+                      }
                   );
                 }),
-                const SizedBox(
-                  height: 60,
-                ),
-              ],
-            ),
-          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
@@ -153,6 +173,7 @@ class _ChatPageState extends State<ChatPage> {
                             widget.chatBaseModel.collectivityId,
                             widget.chatBaseModel.personId);
                         _messageTextController.clear();
+                        scrollToBottom();
                       },
                       icon: const Icon(Icons.send),
                     ),
