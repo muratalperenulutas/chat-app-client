@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:chat_app/config/urls.dart';
@@ -6,6 +7,7 @@ import 'package:chat_app/data/collectivity/collectivity_service.dart';
 import 'package:chat_app/data/collectivity/dyad.dart';
 import 'package:chat_app/data/participant/participant_service.dart';
 import 'package:chat_app/data/person/person_repository.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 import 'package:web_socket_channel/io.dart';
 
@@ -16,6 +18,7 @@ import '../../../data/message/message_service.dart';
 import '../../../data/person/person.dart';
 import '../../../data/person/person_service.dart';
 import '../../../features/auth/controllers/auth_controller.dart';
+import '../notification/notification_service.dart';
 
 class WebSocketClient extends GetxService {
   AuthController authController = Get.find<AuthController>();
@@ -23,10 +26,15 @@ class WebSocketClient extends GetxService {
   MessageService messageService = Get.find<MessageService>();
   CollectivityService collectivityService = Get.find<CollectivityService>();
   PersonRepository personRepository = Get.find<PersonRepository>();
-  ParticipantService participantService=Get.find<ParticipantService>();
+  ParticipantService participantService = Get.find<ParticipantService>();
 
   RxBool isWsConnected = false.obs;
   IOWebSocketChannel? channel;
+
+  bool _isConnecting = false;
+
+  Connectivity _connectivity = Connectivity();
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   WebSocketClient() {
     ever(authController.isLoggedIn, (isLoggedIn) {
@@ -39,10 +47,32 @@ class WebSocketClient extends GetxService {
           close();
         }
       }
+    }
+    );
+    ever(isWsConnected, (isConnected){
+      if(isConnected){
+        NotificationService.showNotification(id: 3, title: "Websocket connected", body: "body");
+      }else{
+        NotificationService.showNotification(id: 3, title: "Websocket not connected", body: "body");
+      }
+
     });
+
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
+          (List<ConnectivityResult> results) {
+        if (results.any((result) => result != ConnectivityResult.none) &&
+            !isWsConnected.value) {
+          print("Connectivity restored. Attempting to reconnect...");
+          _connect();
+        }
+      },
+    );
+
   }
 
   Future<void> _connect() async {
+    if (isWsConnected.value || _isConnecting) return;
+    _isConnecting = true;
     //print('Function called from: ${StackTrace.current}');
     String accessToken = await authController.getAccessToken();
     final headers = {
@@ -53,23 +83,30 @@ class WebSocketClient extends GetxService {
       final webSocket =
           await WebSocket.connect(Url.websocket, headers: headers);
       channel = IOWebSocketChannel(webSocket);
-      isWsConnected.value = true;
       channel?.stream.listen(
         (message) {
           handleMessage(message);
         },
         onError: (error) {
           print("WebSocket: Error occurred: $error");
+          _setDisconnected();
+          _attemptReconnection();
         },
         onDone: () {
           print("WebSocket: Connection closed.");
-          isWsConnected.value = false;
+          _setDisconnected();
+          _attemptReconnection();
         },
       );
+      isWsConnected.value=true;
+      print("ws connected");
       // syncDataAfterConnection();
     } catch (e) {
       print("WebSocket connection failed: $e");
-      isWsConnected.value = false;
+      _setDisconnected();
+      _attemptReconnection();
+    }finally{
+      _isConnecting = false;
     }
   }
 
@@ -81,6 +118,29 @@ class WebSocketClient extends GetxService {
 
   void close() {
     channel?.sink.close();
+  }
+
+  void _attemptReconnection() {
+    if (!isWsConnected.value) {
+      print("Attempting to reconnect...");
+      Future.delayed(Duration(seconds: 15), () {
+        if (isWsConnected.value == false) {
+          _connect();
+        }
+      });
+    }
+  }
+
+  @override
+  void onClose() {
+    print("on close");
+    _connectivitySubscription.cancel();
+    super.onClose();
+  }
+
+  void _setDisconnected() {
+    isWsConnected.value = false;
+    channel = null;
   }
 
   void handleMessage(dynamic message) async {

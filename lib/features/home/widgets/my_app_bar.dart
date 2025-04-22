@@ -1,3 +1,4 @@
+import 'package:chat_app/core/services/notification/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -7,7 +8,9 @@ AppBar buildAppBar(double screenHeight, BuildContext context) {
   AuthController authController = Get.find<AuthController>();
   return AppBar(
     leading: IconButton(
-      onPressed: () {},
+      onPressed: () {
+        NotificationService.showNotification(id: 3, title: "title", body: "body");
+      },
       icon: Icon(Icons.menu),
     ),
     backgroundColor: Colors.green,

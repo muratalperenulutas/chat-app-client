@@ -2,6 +2,7 @@ import 'package:chat_app/app.dart';
 import 'package:chat_app/core/services/ingest/contact_ingest.dart';
 import 'package:chat_app/core/services/ingest/collectivity_ingest.dart';
 import 'package:chat_app/core/services/ingest/message_ingest.dart';
+import 'package:chat_app/core/services/notification/notification_service.dart';
 import 'package:chat_app/data/collectivity/collectivity_repository.dart';
 import 'package:chat_app/data/collectivity/collectivity_service.dart';
 import 'package:chat_app/data/database_service.dart';
@@ -27,6 +28,8 @@ void main() async {
   await databaseService.onInit();
   Get.put<DatabaseService>(databaseService);
 
+  NotificationService.initialize();
+
   Get.lazyPut(()=>GeneralChangeNotifier());
   Get.put(AuthController());
   Get.put(PersonRepository());
@@ -40,7 +43,7 @@ void main() async {
   Get.put(CollectivityController());
   Get.put(PersonController());
   Get.put(ParticipantService());
-  Get.put(WebSocketClient());
+  Get.put(WebSocketClient(),permanent: true);
   Get.put(ContactDataIngest());
   Get.put(MessageDataIngest());
   Get.put(CollectivityIngest());
