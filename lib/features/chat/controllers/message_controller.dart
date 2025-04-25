@@ -37,7 +37,7 @@ class MessageController extends GetxController {
     getMessagesByCollectivityIdOrDyadReceiverId(collectivityId.value,userId.value);
   }
 
-  void sendMessage(
+  Future<void> sendMessage(
       String message, int? collectivityId,String? userId ) async {
     if (message.isNotEmpty) {
       if (collectivityId != null) {

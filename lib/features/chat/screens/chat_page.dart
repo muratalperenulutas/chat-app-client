@@ -21,8 +21,11 @@ class _ChatPageState extends State<ChatPage> {
   AuthController authController = Get.find<AuthController>();
   bool _isLoading = true;
   final _messageTextController = TextEditingController();
-  final ItemScrollController itemScrollController=ItemScrollController();
-  final ItemPositionsListener itemPositionsListener=ItemPositionsListener.create();
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener =
+      ItemPositionsListener.create();
+  late bool hasJumpedToBottom = false;
+  List visibleIndexes = List.empty();
 
   @override
   void initState() {
@@ -30,17 +33,18 @@ class _ChatPageState extends State<ChatPage> {
     _loadData();
     itemPositionsListener.itemPositions.addListener(() {
       final positions = itemPositionsListener.itemPositions.value;
-      final visibleIndexes = positions.map((e) => e.index).toList();
+      visibleIndexes = positions.map((e) => e.index).toList();
 
       if (!visibleIndexes.contains(messageController.messages.length)) {
         //print("Bottom is not visible — maybe show 'scroll to bottom' button");
       }
     });
   }
+
   void scrollToBottom() {
     if (itemScrollController.isAttached) {
       itemScrollController.scrollTo(
-        index: messageController.messages.length,
+        index: messageController.messages.length-1,
         duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
@@ -100,48 +104,57 @@ class _ChatPageState extends State<ChatPage> {
     return Container(
       child: Stack(
         children: [
-                Obx(() {
-                  var messages = messageController.messages;
-                  if (messages.isEmpty) {
-                    return const Center(child: Text("No messages available"));
+          Obx(() {
+            var messages = messageController.messages;
+            if (messages.isEmpty) {
+              return const Center(child: Text("No messages available"));
+            }
+            if (messages.isNotEmpty &&
+                (!hasJumpedToBottom ||
+                    visibleIndexes.contains(messages.length-1) ||
+                    messages[messages.length - 1].userId ==
+                        authController.myId.value)) {
+              print(visibleIndexes);
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                scrollToBottom();
+                hasJumpedToBottom = true;
+              });
+            }
+            return ScrollablePositionedList.builder(
+                shrinkWrap: true,
+                itemCount: messages.length + 1,
+                itemScrollController: itemScrollController,
+                itemPositionsListener: itemPositionsListener,
+                itemBuilder: (context, index) {
+                  if (messages.length == index) {
+                    return const SizedBox(
+                      height: 60,
+                    );
                   }
-                  return ScrollablePositionedList.builder(
-                    shrinkWrap: true,
-                    itemCount: messages.length+1,
-                    itemScrollController: itemScrollController,
-                    itemPositionsListener: itemPositionsListener,
-                    itemBuilder: (context, index) {
-                      if(messages.length==index){
-                        return const SizedBox(
-                          height: 60,
-                        );
-                      }
-                      var message = messages[index];
-                        bool isMyMessage =
-                            message.userId == authController.myId.value;
-                        return Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Row(
-                            mainAxisAlignment: isMyMessage
-                                ? MainAxisAlignment.end
-                                : MainAxisAlignment.start,
-                            children: [
-                              Card(
-                                color:
-                                MessageCardColorHelper.getColorFromPredefined(
-                                    message.userId,
-                                    widget.chatBaseModel.collectivityId ?? 0),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Text(message.message),
-                                ),
-                              )
-                            ],
+                  var message = messages[index];
+                  bool isMyMessage =
+                      message.userId == authController.myId.value;
+                  return Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Row(
+                      mainAxisAlignment: isMyMessage
+                          ? MainAxisAlignment.end
+                          : MainAxisAlignment.start,
+                      children: [
+                        Card(
+                          color: MessageCardColorHelper.getColorFromPredefined(
+                              message.userId,
+                              widget.chatBaseModel.collectivityId ?? 0),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Text(message.message),
                           ),
-                        );
-                      }
+                        )
+                      ],
+                    ),
                   );
-                }),
+                });
+          }),
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
@@ -167,13 +180,12 @@ class _ChatPageState extends State<ChatPage> {
                   CircleAvatar(
                     radius: 25,
                     child: IconButton(
-                      onPressed: () {
-                        messageController.sendMessage(
+                      onPressed: () async {
+                        await messageController.sendMessage(
                             _messageTextController.text,
                             widget.chatBaseModel.collectivityId,
                             widget.chatBaseModel.personId);
                         _messageTextController.clear();
-                        scrollToBottom();
                       },
                       icon: const Icon(Icons.send),
                     ),

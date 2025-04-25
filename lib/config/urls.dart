@@ -2,7 +2,7 @@ String address1 = "http://localhost:8090";
 String address2 = "http://10.0.2.2:8090";
 String address3 = "ws://10.0.2.2:9004/ws";
 String address4 = "https://example.com";
-String address5 = "wss://example.com";
+String address5 = "wss://example.com/ws";
 
 String authAddress = address4;
 String websocketAddress = address5;

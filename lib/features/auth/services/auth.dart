@@ -28,11 +28,10 @@ class AuthService extends GetxService{
     print("Login");
     try {
       final response = await Api.postLoginRequest(loginModel);
+      Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      String message = jsonResponse['message'];
 
       if (response.statusCode == 200) {
-        //print(response.body);
-        Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        //print(jsonResponse);
         String accessToken = jsonResponse['accessToken'];
         String refreshToken = jsonResponse['refreshToken'];
 
@@ -53,14 +52,11 @@ class AuthService extends GetxService{
           PersonModel person=PersonModel(source: SourceEnum.SERVER,personId:userId );
           Get.find<PersonRepository>().insertPerson(person);
         }
-        String message = jsonResponse['message'];
         //showSnackBar(context, message);
       } else if (response.statusCode == 401) {
-        Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        String message = jsonResponse['message'];
         showSnackBar(context, message);
       } else {
-        showSnackBar(context, 'Error');
+        showSnackBar(context, message);
         print('Login failed: ${response.body}');
       }
     } on SocketException catch (e2) {
