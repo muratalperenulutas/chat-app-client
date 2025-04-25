@@ -15,6 +15,7 @@ import 'package:chat_app/core/general_change_notifier.dart';
 import 'package:chat_app/features/chat/controllers/message_controller.dart';
 import 'package:chat_app/features/collectivity/controller/collectivity_controller.dart';
 import 'package:chat_app/features/person/controller/person_controller.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -22,13 +23,16 @@ import 'core/services/websocket/websocket_client.dart';
 import 'data/participant/participant_repository.dart';
 import 'features/auth/controllers/auth_controller.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
+  await NotificationService.instance.initialize();
+
   final databaseService=DatabaseService();
   await databaseService.onInit();
   Get.put<DatabaseService>(databaseService);
-
-  NotificationService.initialize();
 
   Get.lazyPut(()=>GeneralChangeNotifier());
   Get.put(AuthController());

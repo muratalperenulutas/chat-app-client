@@ -9,7 +9,7 @@ AppBar buildAppBar(double screenHeight, BuildContext context) {
   return AppBar(
     leading: IconButton(
       onPressed: () {
-        NotificationService.showNotification(id: 3, title: "title", body: "body");
+        NotificationService.instance.showLocalNotification(id: 3, title: "title", body: "body");
       },
       icon: Icon(Icons.menu),
     ),

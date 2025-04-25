@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "913565537458",
+    "project_id": "chat-app-a0f04",
+    "storage_bucket": "chat-app-a0f04.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:913565537458:android:c005561cf7d7c7c716e5ab",
+        "android_client_info": {
+          "package_name": "com.murat.chat_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALrqQUkkKUEZYwBYFDeN6Jxt4WJUs_UzQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

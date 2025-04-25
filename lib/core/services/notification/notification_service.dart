@@ -1,58 +1,175 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'dart:async';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await NotificationService.instance.setupFlutterNotifications();
+  await NotificationService.instance.showNotification(message);
+}
 
 class NotificationService {
-  static final FlutterLocalNotificationsPlugin
-      _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  NotificationService._();
+  static final NotificationService instance = NotificationService._();
 
-  static Future<void> initialize() async {
-    final androidInitializationSettings =
-        AndroidInitializationSettings('murat');
-    final initializationSettings = InitializationSettings(
-      android: androidInitializationSettings,
-    );
+  final _messaging = FirebaseMessaging.instance;
+  final _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  bool _isFlutterLocalNotificationsInitialized = false;
 
-    await _flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onDidReceiveNotificationResponse: (response) {
-      print('Notification payload: ${response.payload}');
-    });
-    await _requestPermission();
+  Future<void> initialize() async {
+    // Background message handler
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // Request permission
+    await _requestNotificationPermissions();
+
+    // Set up foreground & background handlers
+    await _setupMessageHandlers();
+
+    // Setup local notification
+    await setupFlutterNotifications();
+
+    // Print FCM token
+    final token = await _messaging.getToken();
+    print('FCM Token: $token');
   }
 
-  static Future<void> _requestPermission() async {
-    final androidImplementation =
-        _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+  Future<void> _requestNotificationPermissions() async {
+    final fcmSettings = await _messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+      provisional: false,
+      announcement: false,
+      carPlay: false,
+      criticalAlert: false,
+    );
+    print('FCM Permission status: ${fcmSettings.authorizationStatus}');
 
-    final granted =
-        await androidImplementation?.requestNotificationsPermission();
+    final androidImpl = _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
 
+    final granted = await androidImpl?.requestNotificationsPermission();
     if (granted != true) {
-      print('Notification permission not granted.');
+      print('Local notification permission not granted.');
     }
   }
 
-  static Future<void> showNotification({
+  Future<void> setupFlutterNotifications() async {
+    if (_isFlutterLocalNotificationsInitialized) return;
+
+    const channel = AndroidNotificationChannel(
+      'high_importance_channel',
+      'High Importance Notifications',
+      description: 'Used for important notifications.',
+      importance: Importance.high,
+    );
+
+    await _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+
+    const androidSettings =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    final iOSSettings = DarwinInitializationSettings();
+
+    final initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: iOSSettings,
+    );
+
+    await _flutterLocalNotificationsPlugin.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (response) {
+        print('Notification payload: ${response.payload}');
+      },
+    );
+
+    _isFlutterLocalNotificationsInitialized = true;
+  }
+
+  Future<void> _setupMessageHandlers() async {
+    // Foreground message
+    FirebaseMessaging.onMessage.listen((message) {
+      showNotification(message);
+    });
+
+    // Background & terminated message tap
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+
+    final initialMessage = await _messaging.getInitialMessage();
+    if (initialMessage != null) {
+      _handleNotificationTap(initialMessage);
+    }
+  }
+
+  void _handleNotificationTap(RemoteMessage message) {
+    if (message.data['type'] == 'chat') {
+      // Handle chat screen navigation
+    }
+  }
+
+  Future<void> showNotification(RemoteMessage message) async {
+    final notification = message.notification;
+    final android = notification?.android;
+
+    if (notification != null) {
+      await _flutterLocalNotificationsPlugin.show(
+        notification.hashCode,
+        notification.title,
+        notification.body,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'high_importance_channel',
+            'High Importance Notifications',
+            channelDescription: 'Used for important notifications.',
+            importance: Importance.high,
+            priority: Priority.high,
+            icon: android?.smallIcon ?? '@mipmap/ic_launcher',
+          ),
+          iOS: const DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+        payload: message.data.toString(),
+      );
+    }
+  }
+
+  // Manual notification trigger (optional, for local-only notifications)
+  Future<void> showLocalNotification({
     required int id,
     required String title,
     required String body,
   }) async {
     const androidDetails = AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
+      'high_importance_channel',
+      'High Importance Notifications',
+      channelDescription: 'Used for important notifications.',
       importance: Importance.high,
       priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
     );
 
-    const notificationDetails = NotificationDetails(
+    const iOSDetails = DarwinNotificationDetails();
+
+    final details = NotificationDetails(
       android: androidDetails,
+      iOS: iOSDetails,
     );
 
     await _flutterLocalNotificationsPlugin.show(
       id,
       title,
       body,
-      notificationDetails,
-      payload: 'custom_payload',
+      details,
+      payload: 'manual_trigger',
     );
   }
 }

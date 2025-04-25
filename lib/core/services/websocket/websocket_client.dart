@@ -51,9 +51,9 @@ class WebSocketClient extends GetxService {
     );
     ever(isWsConnected, (isConnected){
       if(isConnected){
-        NotificationService.showNotification(id: 3, title: "Websocket connected", body: "body");
+        NotificationService.instance.showLocalNotification(id: 3, title: "Websocket connected", body: "body");
       }else{
-        NotificationService.showNotification(id: 3, title: "Websocket not connected", body: "body");
+        NotificationService.instance.showLocalNotification(id: 3, title: "Websocket not connected", body: "body");
       }
 
     });
@@ -61,7 +61,7 @@ class WebSocketClient extends GetxService {
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
           (List<ConnectivityResult> results) {
         if (results.any((result) => result != ConnectivityResult.none) &&
-            !isWsConnected.value) {
+            !isWsConnected.value&&authController.isLoggedIn.value) {
           print("Connectivity restored. Attempting to reconnect...");
           _connect();
         }
