@@ -9,9 +9,11 @@ import 'package:chat_app/data/participant/participant_service.dart';
 import 'package:chat_app/data/person/person_repository.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/io.dart';
 
 import '../../../constants/enums/ws_message_response_type.dart';
+import '../../../constants/shared_pref_key.dart';
 import '../../../data/collectivity/group.dart';
 import '../../../data/message/message.dart';
 import '../../../data/message/message_service.dart';
@@ -33,7 +35,7 @@ class WebSocketClient extends GetxService {
 
   bool _isConnecting = false;
 
-  Connectivity _connectivity = Connectivity();
+  final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   WebSocketClient() {
@@ -75,8 +77,13 @@ class WebSocketClient extends GetxService {
     _isConnecting = true;
     //print('Function called from: ${StackTrace.current}');
     String accessToken = await authController.getAccessToken();
+    final prefs = await SharedPreferences.getInstance();
+
+    String fcmToken=prefs.getString(SharedPrefKey.fcmKey)??'';
     final headers = {
       'Authorization': 'Bearer $accessToken',
+      'device-type' : 'PHONE',
+      'fcm-token' : fcmToken
     };
 
     try {

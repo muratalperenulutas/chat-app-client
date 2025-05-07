@@ -1,6 +1,9 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../constants/shared_pref_key.dart';
 
 
 @pragma('vm:entry-point')
@@ -33,6 +36,10 @@ class NotificationService {
     // Print FCM token
     final token = await _messaging.getToken();
     print('FCM Token: $token');
+    if(token!=null) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString(SharedPrefKey.fcmKey, token);
+    }
   }
 
   Future<void> _requestNotificationPermissions() async {
@@ -159,7 +166,7 @@ class NotificationService {
 
     const iOSDetails = DarwinNotificationDetails();
 
-    final details = NotificationDetails(
+    const details = NotificationDetails(
       android: androidDetails,
       iOS: iOSDetails,
     );
