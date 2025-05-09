@@ -36,6 +36,6 @@ class MessageService extends GetxService {
 
   void updateMessage(int messageId, Message message) {
     message.setId(messageId);
-    messageRepository.updateMessage(messageId, message);
+    messageRepository.updateMessage(message);
   }
 }

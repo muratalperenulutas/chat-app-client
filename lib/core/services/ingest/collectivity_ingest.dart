@@ -18,16 +18,17 @@ class CollectivityIngest extends GetxService{
     final CollectivityRepository collectivityRepository=Get.find<CollectivityRepository>();
 
     CollectivityIngest(){
-        ever(generalChangeNotifier.isCollectivitiesChanged, (count) async {
+        everAll([generalChangeNotifier.isCollectivitiesChanged,webSocketClient.isWsConnected], (count) async {
+            if(webSocketClient.isWsConnected.value){
             List<Collectivity> unsyncedCollectivities=await collectivityRepository.getUnsyncedCollectivities();
-            await collectivityRepository.printAll();
-            print("unscnced "+unsyncedCollectivities.toString());
+            //await collectivityRepository.printAll();
+            //print("unscnced "+unsyncedCollectivities.toString());
             for(Collectivity collectivity in unsyncedCollectivities){
                 if(collectivity is DyadModel){
-                    print("dyadId ${collectivity.id}");
+                    //print("dyadId ${collectivity.id}");
                     createDyad(collectivity.id??0, collectivity.userId);
                 }
-            }
+            }}
         });
     }
     void createGroup(String name,List<String> members){

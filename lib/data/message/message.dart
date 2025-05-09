@@ -8,8 +8,7 @@ class Message {
   final String? dyadReceiverId;
   final String userId;
   final DateTime sendTime;
-  final bool? isRead;
-  late final Status status;
+  Status status;
 
   Message({
     this.id,
@@ -19,7 +18,6 @@ class Message {
     this.dyadReceiverId,
     required this.userId,
     required this.sendTime,
-    this.isRead,
     required this.status
   });
 
@@ -32,7 +30,6 @@ class Message {
         dyadReceiverId: map['dyadReceiverId'],
       userId: map['userId'],
       sendTime: DateTime.parse(map['sendTime']),
-      isRead: map['isRead'],
       status: Status.fromString(map['status'])
     );
   }
@@ -43,8 +40,7 @@ class Message {
       messageId: json['id'],
         collectivityId: int.parse(json['collectivityId'].toString()),
       userId: json['userId'],
-      sendTime: DateTime.parse(json['sendDate'].toString()),
-      isRead: json['isRead'],
+      sendTime: DateTime.fromMillisecondsSinceEpoch(int.parse(json['sendDate'].toString())*1000),
       status: Status.SYNC
     );
   }
@@ -64,7 +60,6 @@ class Message {
       'dyadReceiverId':dyadReceiverId,
       'userId': userId,
       'sendTime': sendTime.toIso8601String(),
-      'isRead': isRead,
       'status':status.name
     };
   }

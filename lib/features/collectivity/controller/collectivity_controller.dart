@@ -17,10 +17,7 @@ class CollectivityController extends GetxController{
   void onInit() {
     super.onInit();
     _loadData();
-    ever(generalChangeNotifier.isCollectivitiesChanged, (_){
-      _loadData();
-    });
-    ever(generalChangeNotifier.isContactsChanged, (_){
+    everAll([generalChangeNotifier.isCollectivitiesChanged,generalChangeNotifier.isContactsChanged], (_){
       _loadData();
     });
   }

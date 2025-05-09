@@ -33,6 +33,7 @@ class _RegisterPageState extends State<RegisterPage> {
       }else if(progress==RegisterProgress.COMPLETED){
         Get.toNamed("/login");
         authController.setRegisterProgress(RegisterProgress.INITIAL);
+        authController.registerProgress.close();
       }
     });
   }

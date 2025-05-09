@@ -64,7 +64,6 @@ class DatabaseService extends GetxService {
           'collectivityId INTEGER, '
           'dyadReceiverId TEXT, '
           'sendTime DATE, '
-          'isRead INTEGER DEFAULT 0, '
           'status TEXT DEFAULT \'CREATED\', '
           'FOREIGN KEY(collectivityId) REFERENCES ${DbTableNames.collectivity}(collectivityId) ON DELETE CASCADE)');
     });

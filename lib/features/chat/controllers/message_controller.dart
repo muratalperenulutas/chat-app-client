@@ -7,7 +7,7 @@ import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:get/get.dart';
 
 class MessageController extends GetxController {
-  RxInt collectivityId=999999.obs;
+  RxInt collectivityId=999999999.obs;
   RxString userId="".obs;
   RxList<Message> messages = <Message>[].obs;
 
@@ -20,14 +20,8 @@ class MessageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    ever(generalChangeNotifier.isMessagesChanged, (_) {
+    everAll([generalChangeNotifier.isMessagesChanged,collectivityId,userId], (_) {
       print("message controller");
-      _loadData();
-    });
-    ever(collectivityId, (_){
-      _loadData();
-    });
-    ever(userId, (_){
       _loadData();
     });
   }

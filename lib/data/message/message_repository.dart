@@ -21,15 +21,24 @@ class MessageRepository {
     generalChangeNotifier.messagesChanged();
   }
 
-  Future<void> updateMessage(int messageId, Message message) async {
+  Future<void> updateMessage(Message message) async {
     final db = await database;
     await db.update(
       DbTableNames.messages,
       message.toDb(),
       where: 'id = ?',
-      whereArgs: [messageId],
+      whereArgs: [message.id],
     );
     generalChangeNotifier.messagesChanged();
+  }
+  Future<void> updateMessageWithoutNotifier(Message message) async {
+    final db = await database;
+    await db.update(
+      DbTableNames.messages,
+      message.toDb(),
+      where: 'id = ?',
+      whereArgs: [message.id],
+    );
   }
 
   Future<void> batchFixCollectivityIdJob(int collectivityId, String userId) async {

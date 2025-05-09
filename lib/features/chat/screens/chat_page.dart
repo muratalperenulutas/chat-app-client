@@ -1,4 +1,3 @@
-import 'package:chat_app/constants/colors/message_card.dart';
 import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/chat/controllers/message_controller.dart';
 import 'package:chat_app/features/chat/models/chat_base.dart';
@@ -6,6 +5,8 @@ import 'package:chat_app/features/person/screens/collectivity_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
+import '../widgets/my_message_bubble.dart';
 
 class ChatPage extends StatefulWidget {
   final ChatBaseModel chatBaseModel;
@@ -44,7 +45,7 @@ class _ChatPageState extends State<ChatPage> {
   void scrollToBottom() {
     if (itemScrollController.isAttached) {
       itemScrollController.scrollTo(
-        index: messageController.messages.length-1,
+        index: messageController.messages.length - 1,
         duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
@@ -106,19 +107,24 @@ class _ChatPageState extends State<ChatPage> {
         children: [
           Obx(() {
             var messages = messageController.messages;
+            print(messages.length);
             if (messages.isEmpty) {
               return const Center(child: Text("No messages available"));
             }
-            if (messages.isNotEmpty &&
-                (!hasJumpedToBottom ||
-                    visibleIndexes.contains(messages.length-1) ||
-                    messages[messages.length - 1].userId ==
-                        authController.myId.value)) {
-              print(visibleIndexes);
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                scrollToBottom();
-                hasJumpedToBottom = true;
-              });
+            if (messages.isNotEmpty) {
+              if (!hasJumpedToBottom) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  itemScrollController.jumpTo(index: messages.length - 1);
+                  hasJumpedToBottom = true;
+                });
+              } else if (visibleIndexes.contains(messages.length - 1) ||
+                  messages[messages.length - 1].userId ==
+                      authController.myId.value) {
+                print(visibleIndexes);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  scrollToBottom();
+                });
+              }
             }
             return ScrollablePositionedList.builder(
                 shrinkWrap: true,
@@ -141,15 +147,7 @@ class _ChatPageState extends State<ChatPage> {
                           ? MainAxisAlignment.end
                           : MainAxisAlignment.start,
                       children: [
-                        Card(
-                          color: MessageCardColorHelper.getColorFromPredefined(
-                              message.userId,
-                              widget.chatBaseModel.collectivityId ?? 0),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Text(message.message),
-                          ),
-                        )
+                        MyMessageBubble(message: message, collectivityId: widget.chatBaseModel.collectivityId??0)
                       ],
                     ),
                   );
@@ -160,6 +158,7 @@ class _ChatPageState extends State<ChatPage> {
             child: Padding(
               padding: const EdgeInsets.all(5.0),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Card(
                     shape: RoundedRectangleBorder(
@@ -168,6 +167,8 @@ class _ChatPageState extends State<ChatPage> {
                     child: SizedBox(
                       width: screenWidth - 80,
                       child: TextFormField(
+                        maxLines: 6,
+                        minLines: 1,
                         controller: _messageTextController,
                         decoration: const InputDecoration(
                           hintText: "Type a message",

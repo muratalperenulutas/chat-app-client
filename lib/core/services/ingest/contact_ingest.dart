@@ -17,8 +17,10 @@ class ContactDataIngest extends GetxService{
   final PersonRepository personRepository=Get.find<PersonRepository>();
 
   ContactDataIngest(){
-    ever(generalChangeNotifier.isContactsChanged, (count) async {
-      findRegisteredPersons();
+    everAll([generalChangeNotifier.isContactsChanged,webSocketClient.isWsConnected], (count) async {
+      if(webSocketClient.isWsConnected.value) {
+        findRegisteredPersons();
+      }
     });
   }
   void findRegisteredPersons() async {

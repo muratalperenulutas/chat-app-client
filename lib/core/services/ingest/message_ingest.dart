@@ -1,3 +1,4 @@
+import 'package:chat_app/constants/enums/status.dart';
 import 'package:chat_app/core/services/websocket/websocket_client.dart';
 import 'package:chat_app/data/message/message.dart';
 import 'package:chat_app/data/message/message_repository.dart';
@@ -14,12 +15,15 @@ class MessageDataIngest extends GetxService{
   final WebSocketClient webSocketClient=Get.find<WebSocketClient>();
 
   MessageDataIngest(){
-    ever(generalChangeNotifier.isMessagesChanged, (count) async {
+    everAll([generalChangeNotifier.isMessagesChanged,webSocketClient.isWsConnected], (_) async {
+      if(webSocketClient.isWsConnected.value){
         List<Message> messages=await messageRepository.getAllUnsyncedCollectivityMessages();
         await messageRepository.printAll();
         for(Message message in messages){
             sendMessage(message.message, message.collectivityId, message.id);
-        }
+            message.status=Status.PENDING;
+            messageRepository.updateMessageWithoutNotifier(message);
+        }}
     });
   }
   void sendMessage(message,collectivityId,requestId) async {
