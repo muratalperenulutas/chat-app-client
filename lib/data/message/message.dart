@@ -2,9 +2,9 @@ import 'package:chat_app/constants/enums/status.dart';
 
 class Message {
   late int? id;
-  final int? messageId;
+  final String? messageId;
   final String message;
-  final int? collectivityId;
+  final String? collectivityId;
   final String? dyadReceiverId;
   final String userId;
   final DateTime sendTime;
@@ -37,10 +37,10 @@ class Message {
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
       message: json['message'],
-      messageId: json['id'],
-        collectivityId: int.parse(json['collectivityId'].toString()),
+      messageId: json['messageId'],
+        collectivityId: json['collectivityId'].toString(),
       userId: json['userId'],
-      sendTime: DateTime.fromMillisecondsSinceEpoch(int.parse(json['sendDate'].toString())*1000),
+      sendTime: DateTime.fromMillisecondsSinceEpoch(int.parse(json['sendTime'].toString())*1000),
       status: Status.SYNC
     );
   }

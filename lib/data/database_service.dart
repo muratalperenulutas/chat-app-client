@@ -29,7 +29,7 @@ class DatabaseService extends GetxService {
       await db.execute(
           'CREATE TABLE IF NOT EXISTS ${DbTableNames.collectivity} ('
           'id INTEGER PRIMARY KEY, '
-          'collectivityId INTEGER UNIQUE,'
+          'collectivityId TEXT UNIQUE,'
           'name TEXT, '
           'creatorId TEXT, '
           'description TEXT, '
@@ -41,7 +41,7 @@ class DatabaseService extends GetxService {
           'CREATE TABLE IF NOT EXISTS ${DbTableNames.participants} ('
           'id INTEGER PRIMARY KEY, '
           'userId TEXT NOT NULL, '
-          'collectivityId INTEGER, '
+          'collectivityId TEXT, '
           'FOREIGN KEY(collectivityId) REFERENCES ${DbTableNames.collectivity}(collectivityId) ON DELETE CASCADE)');
       await db.execute(
           'CREATE TABLE IF NOT EXISTS ${DbTableNames.persons} ('
@@ -58,10 +58,10 @@ class DatabaseService extends GetxService {
       await db.execute(
           'CREATE TABLE IF NOT EXISTS ${DbTableNames.messages} ('
           'id INTEGER PRIMARY KEY, '
-          'messageId INTEGER UNIQUE, '
+          'messageId TEXT UNIQUE, '
           'message TEXT NOT NULL, '
           'userId TEXT NOT NULL, '
-          'collectivityId INTEGER, '
+          'collectivityId TEXT, '
           'dyadReceiverId TEXT, '
           'sendTime DATE, '
           'status TEXT DEFAULT \'CREATED\', '

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../data/person/person.dart';
 
 class PersonDetailPage extends StatelessWidget {
-  final PersonModel personModel;
+  final Person person;
 
-  const PersonDetailPage({super.key, required this.personModel});
+  const PersonDetailPage({super.key, required this.person});
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +46,7 @@ class PersonDetailPage extends StatelessWidget {
                     ),
                     SizedBox(
                       width: screenWidth * 0.65,
-                      child: Text(personModel.localName ?? ""),
+                      child: Text(person.localName ?? ""),
                     ),
                   ],
                 ),
@@ -61,7 +61,7 @@ class PersonDetailPage extends StatelessWidget {
                     SizedBox(
                         width: screenWidth * 0.65,
                         child: Text(
-                          personModel.username ?? "",
+                          person.username ?? "",
                         )),
                   ],
                 ),

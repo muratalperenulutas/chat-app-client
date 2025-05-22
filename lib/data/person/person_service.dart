@@ -10,14 +10,14 @@ class PersonService extends GetxService {
 
   Future<void> createContact(String name,String username)async {
     print("name:$name  username:$username");
-    PersonModel? existingPerson=await personRepository.findPersonByUsername(username);
+    Person? existingPerson=await personRepository.findPersonByUsername(username);
     if(existingPerson!=null){
       print(existingPerson);
       existingPerson.setLocalName(name);
       existingPerson.setSource(SourceEnum.LOCAL);
       personRepository.updatePerson(existingPerson);
     }else {
-      PersonModel person = PersonModel(
+      Person person = Person(
           localName: name,
           username: username,
           source: SourceEnum.LOCAL,
@@ -26,13 +26,13 @@ class PersonService extends GetxService {
     }
   }
 
-  Future<void> fetchPerson(PersonModel person) async {
+  Future<void> fetchPerson(Person person) async {
     try {
       final existingPerson = await personRepository.findPersonByUsernameOrUserId(person.username ?? '',person.personId??"");
 
       if (existingPerson != null) {
 
-        PersonModel personModel = PersonModel(
+        Person personModel = Person(
             name: person.name,
             source: existingPerson.source,
             personId: person.personId,

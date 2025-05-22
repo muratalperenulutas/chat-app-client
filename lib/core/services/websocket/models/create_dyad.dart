@@ -7,6 +7,6 @@ class CreateDyad extends JsonSerializable {
 
   @override
   Map<String, dynamic> toJson() {
-    return {"userId": userId};
+    return {"id": userId};
   }
 }

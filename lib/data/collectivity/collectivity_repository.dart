@@ -14,14 +14,28 @@ class CollectivityRepository {
   Future<Database> get database async => databaseService.getDatabase();
   GeneralChangeNotifier generalChangeNotifier=Get.find<GeneralChangeNotifier>();
 
-  Future<void> insertGroup(GroupModel group) async {
+  Future<void> insertGroup(Group group) async {
     final db = await database;
     await db.insert(DbTableNames.collectivity, group.toDb(),
         conflictAlgorithm: ConflictAlgorithm.replace);
     generalChangeNotifier.collectivitiesChanged();
   }
+  Future<void> insertGroupList(List<Group> groups) async {
+    final db = await database;
 
-  Future<void> updateGroup(GroupModel group, int collectivityId) async {
+    Batch batch = db.batch();
+    for (var group in groups) {
+      batch.insert(
+        DbTableNames.collectivity,
+        group.toDb(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+    generalChangeNotifier.collectivitiesChanged();
+  }
+
+  Future<void> updateGroup(Group group, int collectivityId) async {
     final db = await database;
     await db.update(
       DbTableNames.collectivity,
@@ -31,22 +45,42 @@ class CollectivityRepository {
     );
     generalChangeNotifier.collectivitiesChanged();
   }
-  Future<void> insertDyad(DyadModel dyad) async {
+  Future<void> insertDyad(Dyad dyad) async {
     final db = await database;
     await db.insert(DbTableNames.collectivity, dyad.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.abort);
+        conflictAlgorithm: ConflictAlgorithm.replace);
     generalChangeNotifier.collectivitiesChanged();
   }
-
-  Future<void> updateDyad(DyadModel dyad,int id) async {
+  Future<void> insertDyadList(List<Dyad> dyads) async {
     final db = await database;
-      await db.update(
-        DbTableNames.collectivity,
-        dyad.toDb(),
-        where: 'id = ?',
-        whereArgs: [id],
-      );
-      generalChangeNotifier.collectivitiesChanged();
+      Batch batch = db.batch();
+      for (var dyad in dyads) {
+        batch.insert(
+          DbTableNames.collectivity,
+          dyad.toDb(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      await batch.commit(noResult: true);
+    generalChangeNotifier.collectivitiesChanged();
+  }
+  Future<void> updateDyad(Dyad dyad) async {
+    final db = await database;
+    await db.update(
+      DbTableNames.collectivity,
+      dyad.toDb(),
+      where: 'userId = ?',
+      whereArgs: [dyad.userId],
+      conflictAlgorithm: ConflictAlgorithm.replace
+    );
+    generalChangeNotifier.collectivitiesChanged();
+  }
+  Future<void> createCollectivityIfNotExist(String collectivityId)async{
+    int a=await isExistByCollectivityIdId(collectivityId);
+    if(a==0){
+      Group group=Group(collectivityId: collectivityId);
+      await insertGroup(group);
+    }
   }
 
   Future<List<Collectivity>> getCollectivities() async {
@@ -54,23 +88,29 @@ class CollectivityRepository {
     final list =
         await db.rawQuery('SELECT * FROM ${DbTableNames.collectivity}');
     return list.map((map) => map["collectivityType"]==CollectivityType.GROUP.name?
-    GroupModel.fromDb(map):DyadModel.fromDb(map)).toList();
+    Group.fromDb(map):Dyad.fromDb(map)).toList();
   }
-
-  Future<GroupModel> getGroupByCollectivityId(int collectivityId) async {
+  Future<int> isExistByCollectivityIdId(String collectivityId) async {
     final db = await database;
     final list = await db.rawQuery(
         'SELECT * FROM ${DbTableNames.collectivity} WHERE collectivityId = ?', [collectivityId]);
-    return list.map((map) => GroupModel.fromDb(map)).toList().first;
+    return list.length;
   }
-  Future<DyadModel?> getDyadByUserId(String userId) async {
+
+  Future<Group> getGroupByCollectivityId(int collectivityId) async {
+    final db = await database;
+    final list = await db.rawQuery(
+        'SELECT * FROM ${DbTableNames.collectivity} WHERE collectivityId = ?', [collectivityId]);
+    return list.map((map) => Group.fromDb(map)).toList().first;
+  }
+  Future<Dyad?> getDyadByUserId(String userId) async {
     final db = await database;
     final list = await db.rawQuery(
       'SELECT * FROM ${DbTableNames.collectivity} WHERE userId = ?', [userId],
     );
 
     if (list.isNotEmpty) {
-      return DyadModel.fromDb(list.first);
+      return Dyad.fromDb(list.first);
     } else {
       return null;
     }
@@ -79,8 +119,9 @@ class CollectivityRepository {
     final db = await database;
     final list =
     await db.rawQuery('SELECT * FROM ${DbTableNames.collectivity} WHERE status = \'CREATED\'');
+    print("UnsyncedCollectivity $list");
     return list.map((map) => map["collectivityType"]==CollectivityType.GROUP?
-    GroupModel.fromDb(map):DyadModel.fromDb(map)).toList();
+    Group.fromDb(map):Dyad.fromDb(map)).toList();
   }
   Future<void> printAll() async {
     final db = await database;

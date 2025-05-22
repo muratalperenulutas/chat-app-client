@@ -1,10 +1,11 @@
 class Participant {
   final int? id;
-  final int? collectivityId;
+  final String? participantId;
+  final String? collectivityId;
   final String? userId;
 
   const Participant(
-      {this.id, this.userId, this.collectivityId});
+      {this.participantId,this.id, this.userId, this.collectivityId});
 
   factory Participant.fromDb(Map<String, dynamic> map) {
     return Participant(
@@ -13,12 +14,12 @@ class Participant {
       collectivityId: map['collectivityId'],
     );
   }
-  static List<Participant> fromJson(Map<String, dynamic> json) {
+  static List<Participant> fromJsonList(List<Map<String, dynamic>> json) {
     List<Participant> participants =
     <Participant>[];
-    for (String userId in json['members']) {
+    for (Map<String,dynamic> participant in json) {
       participants.add(Participant(
-          collectivityId: json['id'], userId: userId));
+          collectivityId: participant['collectivityId'], userId:participant['userId'] ));
     }
     return participants;
   }

@@ -16,7 +16,7 @@ class MyMessageBubble extends StatelessWidget {
   });
 
   final Message message;
-  final int collectivityId;
+  final String collectivityId;
 
   @override
   Widget build(BuildContext context) {

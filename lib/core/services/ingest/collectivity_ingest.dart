@@ -1,4 +1,5 @@
 import 'package:chat_app/core/general_change_notifier.dart';
+import 'package:chat_app/core/services/websocket/models/collectivity_id.dart';
 import 'package:chat_app/core/services/websocket/websocket_client.dart';
 import 'package:chat_app/data/collectivity/collectivity_abstract.dart';
 import 'package:chat_app/data/collectivity/collectivity_repository.dart';
@@ -24,9 +25,13 @@ class CollectivityIngest extends GetxService{
             //await collectivityRepository.printAll();
             //print("unscnced "+unsyncedCollectivities.toString());
             for(Collectivity collectivity in unsyncedCollectivities){
-                if(collectivity is DyadModel){
-                    //print("dyadId ${collectivity.id}");
-                    createDyad(collectivity.id??0, collectivity.userId);
+                if(collectivity.collectivityId!=null || collectivity.collectivityId==""){
+                    findCollectivity(collectivity.collectivityId!);
+                }else {
+                    if (collectivity is Dyad) {
+                        //print("dyadId ${collectivity.id}");
+                        createDyad(collectivity.id ?? 0, collectivity.userId);
+                    }
                 }
             }}
         });
@@ -40,6 +45,11 @@ class CollectivityIngest extends GetxService{
     void createDyad(int id,String userId){
         WebsocketMessage message = WebsocketMessage(WsMessageType.CREATE_DYAD,
             id.toString(), CreateDyad(userId));
+        webSocketClient.sendWebsocketMessage(message);
+    }
+    void findCollectivity(String collectivityId){
+        WebsocketMessage message = WebsocketMessage(WsMessageType.GET_COLLECTIVITY,
+            null, CollectivityId(collectivityId));
         webSocketClient.sendWebsocketMessage(message);
     }
 }

@@ -5,13 +5,13 @@ import '../../../data/person/person.dart';
 import '../screens/person_detail_page.dart';
 
 MaterialButton MyContactsButton(
-    BuildContext context, double screenHeight, PersonModel person) {
+    BuildContext context, double screenHeight, Person person) {
   return MaterialButton(
     height: screenHeight / 12,
     color: Color.fromARGB(255, 254, 255, 255),
     onPressed: () {
       Get.to(() => PersonDetailPage(
-        personModel: person,
+        person: person,
       ));
     },
     child: Padding(

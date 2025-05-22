@@ -4,7 +4,7 @@ import '../../constants/enums/status.dart';
 
 abstract class Collectivity {
   int? id;
-  late final int? collectivityId;
+  late final String? collectivityId;
   late final CollectivityType type;
   late final Status status;
   Collectivity({required this.collectivityId,required this.type,required this.status,this.id});

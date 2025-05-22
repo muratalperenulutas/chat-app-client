@@ -33,7 +33,7 @@ class ParticipantRepository {
     generalChangeNotifier.groupParticipantsChanged();
   }
 
-  Future<List<Participant>> getAllParticipants(int collectivityId) async {
+  Future<List<Participant>> getAllParticipants(String collectivityId) async {
     printAll();
     final db = await database;
     final list = await db.rawQuery(

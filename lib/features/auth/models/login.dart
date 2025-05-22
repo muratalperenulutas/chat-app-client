@@ -1,8 +1,8 @@
-class LoginModel{
+class Login{
   final String password;
   final String identifier;
 
-  const LoginModel({required this.password, required this.identifier});
+  const Login({required this.password, required this.identifier});
 
   Map<String,String> toJson() => {
     'identifier': identifier,

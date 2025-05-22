@@ -3,14 +3,14 @@ import 'package:chat_app/data/collectivity/collectivity_abstract.dart';
 
 import '../../constants/enums/status.dart';
 
-class GroupModel extends Collectivity {
+class Group extends Collectivity {
   final String? name;
   final String? creatorId;
   final String? imageId;
 
-  GroupModel(
+  Group(
       {int? id,
-      int? collectivityId,
+      String? collectivityId,
       this.name,
       this.creatorId,
       this.imageId,
@@ -19,8 +19,8 @@ class GroupModel extends Collectivity {
       : super(
             collectivityId: collectivityId, type: type, status: status, id: id);
 
-  factory GroupModel.fromDb(Map<String, dynamic> map) {
-    return GroupModel(
+  factory Group.fromDb(Map<String, dynamic> map) {
+    return Group(
         id: map['id'],
         collectivityId: map['collectivityId'],
         name: map['name'],
@@ -30,9 +30,9 @@ class GroupModel extends Collectivity {
         status: Status.fromString(map['status']));
   }
 
-  factory GroupModel.fromJson(Map<String, dynamic> json) {
-    return GroupModel(
-        collectivityId: json['id'],
+  factory Group.fromJson(Map<String, dynamic> json) {
+    return Group(
+        collectivityId: json['collectivityId'],
         name: json['name'],
         creatorId: json['creatorId'],
         imageId: json['imageId'],

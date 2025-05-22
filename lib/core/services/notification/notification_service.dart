@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -8,6 +9,7 @@ import '../../../constants/shared_pref_key.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
   await NotificationService.instance.setupFlutterNotifications();
   await NotificationService.instance.showNotification(message);
 }
@@ -34,11 +36,15 @@ class NotificationService {
     await setupFlutterNotifications();
 
     // Print FCM token
-    final token = await _messaging.getToken();
-    print('FCM Token: $token');
-    if(token!=null) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString(SharedPrefKey.fcmKey, token);
+    try {
+      final token = await _messaging.getToken();
+      print('FCM Token: $token');
+      if (token != null) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString(SharedPrefKey.fcmKey, token);
+      }
+    }catch(e){
+      print("Fcm error:$e");
     }
   }
 
@@ -122,38 +128,20 @@ class NotificationService {
 
   Future<void> showNotification(RemoteMessage message) async {
     final notification = message.notification;
-    final android = notification?.android;
-
+    final data=message.data;
     if (notification != null) {
-      await _flutterLocalNotificationsPlugin.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            'high_importance_channel',
-            'High Importance Notifications',
-            channelDescription: 'Used for important notifications.',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: android?.smallIcon ?? '@mipmap/ic_launcher',
-          ),
-          iOS: const DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
-        ),
-        payload: message.data.toString(),
-      );
+      showLocalNotification(id: notification.hashCode, title: notification.title, body: notification.body,payload: data.toString());
+    }else {
+      showLocalNotification(id: data.hashCode, title: "data message", body: data.toString(),payload: data.toString());
     }
   }
 
   // Manual notification trigger (optional, for local-only notifications)
   Future<void> showLocalNotification({
     required int id,
-    required String title,
-    required String body,
+    String? title,
+    String? body,
+    String? payload
   }) async {
     const androidDetails = AndroidNotificationDetails(
       'high_importance_channel',
@@ -161,10 +149,14 @@ class NotificationService {
       channelDescription: 'Used for important notifications.',
       importance: Importance.high,
       priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
+      icon: '@mipmap/ic_launcher',//notification.android?.smallIcon
     );
 
-    const iOSDetails = DarwinNotificationDetails();
+    const iOSDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
 
     const details = NotificationDetails(
       android: androidDetails,
@@ -176,7 +168,7 @@ class NotificationService {
       title,
       body,
       details,
-      payload: 'manual_trigger',
+      payload: payload,
     );
   }
 }

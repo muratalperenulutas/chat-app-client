@@ -21,6 +21,21 @@ class MessageRepository {
     generalChangeNotifier.messagesChanged();
   }
 
+  Future<void> insertMessageList(List<Message> messages) async {
+    final db = await database;
+
+    Batch batch = db.batch();
+    for (var message in messages) {
+      batch.insert(
+        DbTableNames.messages,
+        message.toDb(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+    generalChangeNotifier.messagesChanged();
+  }
+
   Future<void> updateMessage(Message message) async {
     final db = await database;
     await db.update(
@@ -41,16 +56,16 @@ class MessageRepository {
     );
   }
 
-  Future<void> batchFixCollectivityIdJob(int collectivityId, String userId) async {
+  Future<void> batchFixCollectivityIdJob(String collectivityId, String userId) async {
     final db = await database;
     await db.rawUpdate(
-      'UPDATE ${DbTableNames.messages} SET collectivityId = ? WHERE dyadReceiverId = ?',
+      'UPDATE ${DbTableNames.messages} SET collectivityId = ?, dyadReceiverId = NULL WHERE dyadReceiverId = ?',
       [collectivityId, userId],
     );
     generalChangeNotifier.messagesChanged();
   }
 
-  Future<List<Message>> getMessagesByCollectivityIdOrDyadReceiverId(int collectivityId, String dyadReceiverId) async {
+  Future<List<Message>> getMessagesByCollectivityIdOrDyadReceiverId(String collectivityId, String dyadReceiverId) async {
     final db = await database;
     final list = await db.rawQuery(
         'SELECT * FROM ${DbTableNames.messages} WHERE collectivityId = ? OR dyadReceiverId = ?',

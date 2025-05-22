@@ -2,7 +2,8 @@ enum WsMessageType {
   FIND_USER,
   SEND_MESSAGE,
   CREATE_GROUP,
-  CREATE_DYAD;
+  CREATE_DYAD,
+  GET_COLLECTIVITY;
 
   const WsMessageType();
 

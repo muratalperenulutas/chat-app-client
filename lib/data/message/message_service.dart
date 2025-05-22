@@ -8,7 +8,7 @@ class MessageService extends GetxService {
   final AuthController authController = Get.find<AuthController>();
   final MessageRepository messageRepository=Get.find<MessageRepository>();
 
-  Future<void> sendMessageByCollectivityId(String messageText, int collectivityId) async {
+  Future<void> sendMessageByCollectivityId(String messageText, String collectivityId) async {
     Message message = Message(
         message: messageText,
         collectivityId: collectivityId,
@@ -32,6 +32,14 @@ class MessageService extends GetxService {
 
   Future<void> saveMessage(Message message) async {
     await messageRepository.insertMessage(message);
+  }
+  Future<void> syncMessages(List<Map<String, dynamic>> json) async {
+    List<Message> messages=[];
+    for(Map<String,dynamic> dyad in json){
+      Message message=Message.fromJson(dyad);
+      messages.add(message);
+    }
+    await messageRepository.insertMessageList(messages);
   }
 
   void updateMessage(int messageId, Message message) {

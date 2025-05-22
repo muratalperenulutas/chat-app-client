@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class CollectivityDetailPage extends StatefulWidget {
-  final ChatBaseModel chatBaseModel;
-  const CollectivityDetailPage({required this.chatBaseModel,super.key});
+  final ChatBase chatBase;
+  const CollectivityDetailPage({required this.chatBase,super.key});
 
   @override
   State<CollectivityDetailPage> createState() => _CollectivityDetailPageState();
@@ -27,7 +27,7 @@ class _CollectivityDetailPageState extends State<CollectivityDetailPage> {
 
   Future<void> _loadData() async {
     final data = await participantRepository.getAllParticipants(
-        widget.chatBaseModel.collectivityId ?? 0);
+        widget.chatBase.collectivityId ?? "");
 
     setState(() {
       participnats = data;

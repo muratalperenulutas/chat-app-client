@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:chat_app/constants/enums/source_enum.dart';
 import 'package:chat_app/data/person/person.dart';
 import 'package:chat_app/data/person/person_repository.dart';
+import 'package:chat_app/data/person/person_service.dart';
 import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/auth/models/login.dart';
 import 'package:chat_app/features/auth/models/register.dart';
@@ -24,10 +25,10 @@ void showSnackBar(BuildContext context, String message) {
 class AuthService extends GetxService{
   static AuthController authController = Get.find<AuthController>();
 
-  static Future<void> login(BuildContext context, LoginModel loginModel) async {
+  static Future<void> login(BuildContext context, Login login) async {
     print("Login");
     try {
-      final response = await Api.postLoginRequest(loginModel);
+      final response = await Api.postLoginRequest(login);
       Map<String, dynamic> jsonResponse = jsonDecode(response.body);
       String message = jsonResponse['message'];
 
@@ -49,8 +50,8 @@ class AuthService extends GetxService{
           print('Decoded Token: $decodedToken');
           String userId=decodedToken["sub"];
           authController.setUserId(userId);
-          PersonModel person=PersonModel(source: SourceEnum.SERVER,personId:userId );
-          Get.find<PersonRepository>().insertPerson(person);
+          //Person person=Person(source: SourceEnum.SERVER,personId:userId );
+          //Get.find<PersonRepository>().insertPerson(person);
         }
         //showSnackBar(context, message);
       } else if (response.statusCode == 401) {
@@ -69,10 +70,10 @@ class AuthService extends GetxService{
   }
 
   static Future<void> register(
-      BuildContext context, RegisterModel registerModel) async {
+      BuildContext context, Register register) async {
     print("Register");
     try {
-      final response = await Api.postRegisterRequest(registerModel);
+      final response = await Api.postRegisterRequest(register);
       Map<String, dynamic> jsonResponse = jsonDecode(response.body);
       String message = jsonResponse['message'];
       print(jsonResponse);

@@ -5,13 +5,13 @@ import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
-class DyadModel extends Collectivity {
+class Dyad extends Collectivity {
   final String userId;
 
-  DyadModel(
+  Dyad(
       {int? id,
       required this.userId,
-      int? collectivityId,
+      String? collectivityId,
       required Status status,
       CollectivityType type= CollectivityType.DYAD})
       : super(
@@ -20,23 +20,29 @@ class DyadModel extends Collectivity {
             status: status,
             id: id);
 
-  factory DyadModel.fromDb(Map<String, dynamic> map) {
+  factory Dyad.fromDb(Map<String, dynamic> map) {
     print("from db" + map.toString());
-    return DyadModel(
+    return Dyad(
       id: map['id'],
-      userId: map['userId'],
+      userId: map['userId']??"",
       collectivityId: map['collectivityId'],
       status: Status.fromString(map['status']),
       type:CollectivityType.fromString(map['collectivityType'])
     );
   }
 
-  factory DyadModel.fromJson(Map<String, dynamic> json) {
+  factory Dyad.fromJson(Map<String, dynamic> json) {
     AuthController authController = Get.find<AuthController>();
     var userIds = List<String>.from(json['members']);
     String? otherUserId = userIds
-        .firstWhere((id) => id != authController.myId.value, orElse: () => '');
-    return DyadModel(
+        .firstWhere((id) => id != authController.myId.value, orElse: ()=>"");
+    if(otherUserId==""){
+      print("userIds"+userIds.toString());
+      print("myId:"+authController.myId.value);
+      print("other userId null");
+      throw Error();
+    }
+    return Dyad(
         collectivityId: json['collectivityId'],
         userId: otherUserId,
         status: Status.SYNC);

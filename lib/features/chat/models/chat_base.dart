@@ -6,57 +6,57 @@ import 'package:get/get.dart';
 import '../../../data/collectivity/group.dart';
 import '../../../data/person/person.dart';
 
-class ChatBaseModel {
-  late int? collectivityId;
+class ChatBase {
+  late String? collectivityId;
   final String? name;
   final String? creatorId;
   final String? imageId;
   final String? personId;
 
-  ChatBaseModel(
+  ChatBase(
       {this.collectivityId,
       this.name,
       this.creatorId,
       this.imageId,
       this.personId,});
 
-  factory ChatBaseModel.fromPersonModel(PersonModel personModel) {
-    return ChatBaseModel(
-        name: personModel.localName,
-        imageId: personModel.imageId,
-        personId: personModel.personId,);
+  factory ChatBase.fromPerson(Person person) {
+    return ChatBase(
+        name: person.localName,
+        imageId: person.imageId,
+        personId: person.personId,);
   }
-  factory ChatBaseModel.fromPersonAndDyadModel(PersonModel personModel,DyadModel dyad) {
-    return ChatBaseModel(
+  factory ChatBase.fromPersonAndDyad(Person person,Dyad dyad) {
+    return ChatBase(
       collectivityId: dyad.collectivityId,
-        name: personModel.localName,
-        imageId: personModel.imageId,
-        personId: personModel.personId,);
+        name: person.localName??person.username,
+        imageId: person.imageId,
+        personId: person.personId,);
   }
 
-  factory ChatBaseModel.fromGroupModel(GroupModel groupModel) {
-    return ChatBaseModel(
-        name: groupModel.name,
-        creatorId: groupModel.creatorId,
-        imageId: groupModel.imageId,
-        collectivityId: groupModel.collectivityId,);
+  factory ChatBase.fromGroup(Group group) {
+    return ChatBase(
+        name: group.name,
+        creatorId: group.creatorId,
+        imageId: group.imageId,
+        collectivityId: group.collectivityId,);
   }
 
-   static Future<List<ChatBaseModel>> fromCollectivities(List<Collectivity> collectivities) async {
-    List<ChatBaseModel> chatBaseModels=<ChatBaseModel>[];
+   static Future<List<ChatBase>> fromCollectivities(List<Collectivity> collectivities) async {
+    List<ChatBase> chatBaseModels=<ChatBase>[];
     for(Collectivity collectivity in collectivities) {
-      if (collectivity is GroupModel) {
-        chatBaseModels.add(ChatBaseModel.fromGroupModel(collectivity));
-      } else if (collectivity is DyadModel) {
+      if (collectivity is Group) {
+        chatBaseModels.add(ChatBase.fromGroup(collectivity));
+      } else if (collectivity is Dyad) {
           PersonRepository personRepository=Get.find<PersonRepository>();
-          PersonModel? personModel = await personRepository
+          Person? person = await personRepository
               .findPersonByPersonId(collectivity.userId);
-          if(personModel!=null) {
+          if(person!=null) {
             chatBaseModels.add(
-                ChatBaseModel.fromPersonAndDyadModel(
-                    personModel, collectivity));
+                ChatBase.fromPersonAndDyad(
+                    person, collectivity));
           }
-          print(personModel==null?"person model null":"");
+          print(person==null?"person model null":"");
       } else {
         print("Error: Invalid condition." + collectivity.toString());
         throw Error();

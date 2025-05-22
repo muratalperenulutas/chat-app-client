@@ -9,9 +9,9 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../widgets/my_message_bubble.dart';
 
 class ChatPage extends StatefulWidget {
-  final ChatBaseModel chatBaseModel;
+  final ChatBase chatBase;
 
-  const ChatPage({super.key, required this.chatBaseModel});
+  const ChatPage({super.key, required this.chatBase});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -25,7 +25,7 @@ class _ChatPageState extends State<ChatPage> {
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
-  late bool hasJumpedToBottom = false;
+  bool hasJumpedToBottom = false;
   List visibleIndexes = List.empty();
 
   @override
@@ -54,12 +54,12 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> _loadData() async {
     try {
-      if (widget.chatBaseModel.collectivityId != null) {
+      if (widget.chatBase.collectivityId != null) {
         messageController
-            .setCollectivityId(widget.chatBaseModel.collectivityId ?? 0);
+            .setCollectivityId(widget.chatBase.collectivityId ??"");
       }
-      if (widget.chatBaseModel.personId != null) {
-        messageController.setUserId(widget.chatBaseModel.personId ?? "");
+      if (widget.chatBase.personId != null) {
+        messageController.setUserId(widget.chatBase.personId ?? "");
       }
 
       setState(() {
@@ -85,11 +85,11 @@ class _ChatPageState extends State<ChatPage> {
           child: GestureDetector(
             onTap: () {
               Get.to(() => CollectivityDetailPage(
-                    chatBaseModel: widget.chatBaseModel,
+                    chatBase: widget.chatBase,
                   ));
             },
             child: Text(
-              widget.chatBaseModel.name ?? "Chat",
+              widget.chatBase.name ?? "Chat",
               style: TextStyle(color: Colors.white),
             ),
           ),
@@ -126,8 +126,7 @@ class _ChatPageState extends State<ChatPage> {
                 });
               }
             }
-            return ScrollablePositionedList.builder(
-                shrinkWrap: true,
+            return Positioned.fill( child:ScrollablePositionedList.builder(
                 itemCount: messages.length + 1,
                 itemScrollController: itemScrollController,
                 itemPositionsListener: itemPositionsListener,
@@ -147,11 +146,13 @@ class _ChatPageState extends State<ChatPage> {
                           ? MainAxisAlignment.end
                           : MainAxisAlignment.start,
                       children: [
-                        MyMessageBubble(message: message, collectivityId: widget.chatBaseModel.collectivityId??0)
+                        MyMessageBubble(message: message, collectivityId: widget.chatBase.collectivityId??"")
                       ],
                     ),
                   );
-                });
+                }
+                )
+            );
           }),
           Align(
             alignment: Alignment.bottomCenter,
@@ -184,8 +185,8 @@ class _ChatPageState extends State<ChatPage> {
                       onPressed: () async {
                         await messageController.sendMessage(
                             _messageTextController.text,
-                            widget.chatBaseModel.collectivityId,
-                            widget.chatBaseModel.personId);
+                            widget.chatBase.collectivityId,
+                            widget.chatBase.personId);
                         _messageTextController.clear();
                       },
                       icon: const Icon(Icons.send),

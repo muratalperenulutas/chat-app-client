@@ -5,7 +5,11 @@ enum WsMessageResponseType {
   GROUP_CREATED,
   NEW_GROUP,
   DYAD_CREATED,
-  NEW_DYAD;
+  NEW_DYAD,
+  SYNC_DYAD,
+  NEW_PARTICIPANT,
+  SYNC_MESSAGES,
+  SYNC_GROUP;
 
   const WsMessageResponseType();
 

@@ -74,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     ElevatedButton(
                         onPressed: () async {
-                          AuthService.login(context, LoginModel(identifier: identifierController.text,password: passwordController.text));
+                          AuthService.login(context, Login(identifier: identifierController.text,password: passwordController.text));
                         },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.indigo,

@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 
 class CollectivityController extends GetxController{
   RxList<Collectivity> collectivities=<Collectivity>[].obs;
-  RxList<ChatBaseModel> chatBaseModels=<ChatBaseModel>[].obs;
+  RxList<ChatBase> chatBaseModels=<ChatBase>[].obs;
 
   CollectivityService collectivityService=Get.find<CollectivityService>();
   CollectivityRepository collectivityRepository=Get.find<CollectivityRepository>();
@@ -24,6 +24,6 @@ class CollectivityController extends GetxController{
 
   void _loadData()async{
     collectivities.value=await collectivityRepository.getCollectivities();
-    chatBaseModels.value=await ChatBaseModel.fromCollectivities(collectivities);
+    chatBaseModels.value=await ChatBase.fromCollectivities(collectivities);
   }
 }

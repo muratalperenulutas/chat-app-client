@@ -7,7 +7,7 @@ import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:get/get.dart';
 
 class MessageController extends GetxController {
-  RxInt collectivityId=999999999.obs;
+  RxString collectivityId="".obs;
   RxString userId="".obs;
   RxList<Message> messages = <Message>[].obs;
 
@@ -32,7 +32,7 @@ class MessageController extends GetxController {
   }
 
   Future<void> sendMessage(
-      String message, int? collectivityId,String? userId ) async {
+      String message, String? collectivityId,String? userId ) async {
     if (message.isNotEmpty) {
       if (collectivityId != null) {
         messageService.sendMessageByCollectivityId(message, collectivityId);
@@ -46,7 +46,7 @@ class MessageController extends GetxController {
     }
   }
 
-  void setCollectivityId(int id) {
+  void setCollectivityId(String id) {
     collectivityId.value = id;
   }
   void setUserId(String id) {

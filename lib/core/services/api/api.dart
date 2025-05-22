@@ -16,12 +16,12 @@ class Api {
     );
   }
 
-  static Future<http.Response> postLoginRequest(LoginModel loginModel) {
-    return postRequest(Url.auth.Login, loginModel.toJson());
+  static Future<http.Response> postLoginRequest(Login login) {
+    return postRequest(Url.auth.Login, login.toJson());
   }
 
-  static Future<http.Response> postRegisterRequest(RegisterModel registerModel) {
-    return postRequest(Url.auth.Register, registerModel.toJson());
+  static Future<http.Response> postRegisterRequest(Register register) {
+    return postRequest(Url.auth.Register, register.toJson());
   }
   static Future<http.Response> postRefreshRequest(String refreshToken) {
     return postRequest(

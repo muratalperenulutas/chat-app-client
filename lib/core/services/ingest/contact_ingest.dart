@@ -1,4 +1,3 @@
-
 import 'package:chat_app/core/general_change_notifier.dart';
 import 'package:chat_app/core/services/websocket/websocket_client.dart';
 import 'package:chat_app/data/person/person_repository.dart';
@@ -24,9 +23,9 @@ class ContactDataIngest extends GetxService{
     });
   }
   void findRegisteredPersons() async {
-    personRepository.printAll();
-    List<PersonModel> persons = await personRepository.getUnscncedPerson();
-    for (PersonModel person in persons) {
+    //personRepository.printAll();
+    List<Person> persons = await personRepository.getUnscncedPerson();
+    for (Person person in persons) {
       FindUser findUser = FindUser(person.username,person.personId);
       WebsocketMessage message =
       WebsocketMessage(WsMessageType.FIND_USER, person.id.toString(), findUser);

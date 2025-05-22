@@ -14,7 +14,7 @@ class PersonRepository {
   Future<Database> get database async => databaseService.getDatabase();
   GeneralChangeNotifier generalChangeNotifier=Get.find<GeneralChangeNotifier>();
 
-  Future<void> insertPerson(PersonModel person) async {
+  Future<void> insertPerson(Person person) async {
     final db = await database;
     try {
       await db.insert(
@@ -30,7 +30,7 @@ class PersonRepository {
     generalChangeNotifier.contactsChanged();
   }
 
-  Future<PersonModel?> findPersonByUsername(String username) async {
+  Future<Person?> findPersonByUsername(String username) async {
     final db = await database;
     final List<Map<String, dynamic>> result = await db.query(
       DbTableNames.persons,
@@ -39,13 +39,13 @@ class PersonRepository {
     );
 
     if (result.isNotEmpty) {
-      return PersonModel.fromDb(result.first);
+      return Person.fromDb(result.first);
     } else {
       return null;
     }
   }
 
-  Future<PersonModel?> findPersonByUsernameOrUserId(String username, String userId) async {
+  Future<Person?> findPersonByUsernameOrUserId(String username, String userId) async {
     final db = await database;
     final List<Map<String, dynamic>> result = await db.query(
       DbTableNames.persons,
@@ -54,14 +54,14 @@ class PersonRepository {
     );
 
     if (result.isNotEmpty) {
-      return PersonModel.fromDb(result.first);
+      return Person.fromDb(result.first);
     } else {
       return null;
     }
   }
 
 
-  Future<PersonModel?> findPersonByPersonId(String personId) async {
+  Future<Person?> findPersonByPersonId(String personId) async {
     final db = await database;
     final List<Map<String, dynamic>> result = await db.query(
       DbTableNames.persons,
@@ -71,49 +71,49 @@ class PersonRepository {
     if(result.isEmpty){
       return null;
     }
-    return PersonModel.fromDb(result.first);
+    return Person.fromDb(result.first);
   }
 
   Future<void> createPersonIfNotExist(String personId)async{
-    PersonModel? person=await findPersonByPersonId(personId);
+    Person? person=await findPersonByPersonId(personId);
     if(person==null){
-      PersonModel personModel=PersonModel(status: Status.CREATED,personId: personId);
+      Person personModel=Person(status: Status.CREATED,personId: personId);
       insertPerson(personModel);
     }
   }
 
-  Future<List<PersonModel>> getContacts() async {
+  Future<List<Person>> getContacts() async {
     final db = await database;
     final list = await db.rawQuery(
         'SELECT * FROM ${DbTableNames.persons} WHERE source = ?',
         [SourceEnum.LOCAL.name]);
-    return list.map((map) => PersonModel.fromDb(map)).toList();
+    return list.map((map) => Person.fromDb(map)).toList();
   }
 
-  Future<List<PersonModel>> getContactsOnChatApp() async {
+  Future<List<Person>> getContactsOnChatApp() async {
     final db = await database;
     final list = await db.rawQuery(
         'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND isRegistered = ?',
         [SourceEnum.LOCAL.name, 1]);
-    return list.map((map) => PersonModel.fromDb(map)).toList();
+    return list.map((map) => Person.fromDb(map)).toList();
   }
 
-  Future<List<PersonModel>> getContactsNotOnChatApp() async {
+  Future<List<Person>> getContactsNotOnChatApp() async {
     final db = await database;
     final list = await db.rawQuery(
         'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND isRegistered = ?',
         [SourceEnum.LOCAL.name, 0]);
-    return list.map((map) => PersonModel.fromDb(map)).toList();
+    return list.map((map) => Person.fromDb(map)).toList();
   }
-  Future<List<PersonModel>> getUnscncedPerson() async {
+  Future<List<Person>> getUnscncedPerson() async {
     final db = await database;
     final list = await db.rawQuery(
         'SELECT * FROM ${DbTableNames.persons} WHERE status != ?',
         [Status.SYNC.name]);
-    return list.map((map) => PersonModel.fromDb(map)).toList();
+    return list.map((map) => Person.fromDb(map)).toList();
   }
 
-  Future<void> updatePerson(PersonModel person) async {
+  Future<void> updatePerson(Person person) async {
     final db = await database;
     await db.update(
       DbTableNames.persons,

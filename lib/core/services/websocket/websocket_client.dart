@@ -80,10 +80,12 @@ class WebSocketClient extends GetxService {
     final prefs = await SharedPreferences.getInstance();
 
     String fcmToken=prefs.getString(SharedPrefKey.fcmKey)??'';
+    int lastFetchTime=prefs.getInt(SharedPrefKey.lastFetchTimeKey)??100;
     final headers = {
       'Authorization': 'Bearer $accessToken',
       'device-type' : 'PHONE',
-      'fcm-token' : fcmToken
+      'fcm-token' : fcmToken,
+      'last-fetch-time': lastFetchTime
     };
 
     try {
@@ -107,7 +109,6 @@ class WebSocketClient extends GetxService {
       );
       isWsConnected.value=true;
       print("ws connected");
-      // syncDataAfterConnection();
     } catch (e) {
       print("WebSocket connection failed: $e");
       _setDisconnected();
@@ -130,7 +131,7 @@ class WebSocketClient extends GetxService {
   void _attemptReconnection() {
     if (!isWsConnected.value) {
       print("Attempting to reconnect...");
-      Future.delayed(Duration(seconds: 15), () {
+      Future.delayed(Duration(seconds: 10), () {
         if (isWsConnected.value == false) {
           _connect();
         }
@@ -154,11 +155,13 @@ class WebSocketClient extends GetxService {
     final jsonData = jsonDecode(message);
     print(jsonData);
     var data = jsonData["data"];
+    var timestamp=jsonData["timestamp"];
+    setLastSyncTime(timestamp);
     switch (WsMessageResponseType.fromString(jsonData['type'])) {
       case WsMessageResponseType.USER_FOUND:
         if (message != null) {
-          PersonModel personModel = PersonModel.fromJson(data);
-          personService.fetchPerson(personModel);
+          Person person = Person.fromJson(data);
+          personService.fetchPerson(person);
         }
         break;
       case WsMessageResponseType.MESSAGE_SEND:
@@ -167,32 +170,67 @@ class WebSocketClient extends GetxService {
             int.parse(jsonData["requestId"].toString()), message);
         break;
       case WsMessageResponseType.NEW_MESSAGE:
-        Message messageModel = Message.fromJson(data);
-        await messageService.saveMessage(messageModel);
+        Message message = Message.fromJson(data);
+        await messageService.saveMessage(message);
         break;
       case WsMessageResponseType.GROUP_CREATED:
-        GroupModel groupModel = GroupModel.fromJson(data);
-        collectivityService.saveGroup(groupModel);
-        participantService.addParticipants(data);
+        //int.parse(jsonData["requestId"].toString())
+        Group group = Group.fromJson(data);
+        await collectivityService.saveGroup(group);
         break;
       case WsMessageResponseType.NEW_GROUP:
-        GroupModel groupModel = GroupModel.fromJson(data);
-        await collectivityService.saveGroup(groupModel);
-        participantService.addParticipants(data);
+        Group group = Group.fromJson(data);
+        await collectivityService.saveGroup(group);
         break;
       case WsMessageResponseType.DYAD_CREATED:
-        DyadModel dyadModel = DyadModel.fromJson(data);
-        await collectivityService.fetchDyad(
-            dyadModel, int.parse(jsonData["requestId"].toString()));
+        Dyad dyad = Dyad.fromJson(data);
+        dyad.setId(int.parse(jsonData["requestId"].toString()));
+        await collectivityService.fetchDyad(dyad);
         break;
-
       case WsMessageResponseType.NEW_DYAD:
-        DyadModel dyadModel = DyadModel.fromJson(data);
-        await collectivityService.saveDyad(dyadModel);
-        personRepository.createPersonIfNotExist(dyadModel.userId);
+        Dyad dyad = Dyad.fromJson(data);
+        await collectivityService.saveDyad(dyad);
         break;
-
+      case WsMessageResponseType.SYNC_DYAD:
+        List<Map<String, dynamic>> dtos = (data["dtos"] as List)
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+        collectivityService.syncDyadList(dtos);
+        break;
+      case WsMessageResponseType.NEW_PARTICIPANT:
+        List<Map<String, dynamic>> participants = (data["participants"] as List)
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+        participantService.addParticipants(participants);
+        break;
+      case WsMessageResponseType.SYNC_MESSAGES:
+        List<Map<String, dynamic>> dtos = (data["dtos"] as List)
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+        messageService.syncMessages(dtos);
+        break;
+      case WsMessageResponseType.SYNC_GROUP:
+        List<Map<String, dynamic>> dtos = (data["dtos"] as List)
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+        collectivityService.saveGroupList(dtos);
+        break;
       default:
+    }
+  }
+
+  Future<void> setLastSyncTime(dynamic timestamp) async {
+    print(timestamp);
+    try{
+      int? unix=int.tryParse(timestamp.toString());
+      if(unix==null) {
+        print("timestamp error: $timestamp");
+        return;
+      }
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setInt(SharedPrefKey.lastFetchTimeKey, unix);
+    }catch(e){
+      print(e);
     }
   }
 }

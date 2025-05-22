@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 myConversationButton(
-    BuildContext context, double screenHeight, ChatBaseModel chatBase) {
+    BuildContext context, double screenHeight, ChatBase chatBase) {
   return MaterialButton(
     height: screenHeight / 12,
     color: Color.fromARGB(255, 254, 255, 255),
     onPressed: () {
       Get.to(() => ChatPage(
-            chatBaseModel: chatBase,
+            chatBase: chatBase,
           ));
     },
     child: Padding(

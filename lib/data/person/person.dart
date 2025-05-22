@@ -1,7 +1,7 @@
 import 'package:chat_app/constants/enums/source_enum.dart';
 import 'package:chat_app/constants/enums/status.dart';
 
-class PersonModel {
+class Person {
   final int? id;
   final String? personId;
   final String? name;
@@ -13,7 +13,7 @@ class PersonModel {
   final int? isRegistered;
   Status status;
 
-  PersonModel({
+  Person({
     this.id,
     this.personId,
     this.name,
@@ -25,8 +25,8 @@ class PersonModel {
     this.isRegistered,
     this.status=Status.CREATED
   });
-  factory PersonModel.fromDb(Map<String, dynamic> map) {
-    return PersonModel(
+  factory Person.fromDb(Map<String, dynamic> map) {
+    return Person(
       id: map['id'],
       personId: map['personId'],
       name: map['name'],
@@ -39,8 +39,8 @@ class PersonModel {
       status: Status.fromString(map['status'])
     );
   }
-  factory PersonModel.fromJson(Map<String, dynamic> json) {
-    return PersonModel(
+  factory Person.fromJson(Map<String, dynamic> json) {
+    return Person(
         personId: json['userId'],
         username: json['username'],
         name: "initial",

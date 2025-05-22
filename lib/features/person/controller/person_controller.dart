@@ -6,9 +6,9 @@ import 'package:get/get.dart';
 
 class PersonController extends GetxController{
   RxSet<String> selectedContacts = <String>{}.obs;
-  RxList<PersonModel> contacts=<PersonModel>[].obs;
-  RxList<PersonModel> contactsOnChatApp=<PersonModel>[].obs;
-  RxList<PersonModel> contactsNotOnChatApp=<PersonModel>[].obs;
+  RxList<Person> contacts=<Person>[].obs;
+  RxList<Person> contactsOnChatApp=<Person>[].obs;
+  RxList<Person> contactsNotOnChatApp=<Person>[].obs;
 
   PersonRepository personRepository=Get.find<PersonRepository>();
   PersonService personService=Get.find<PersonService>();

@@ -119,7 +119,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           }else if(passwordController.text.isEmpty&&confirmPasswordController.text.isEmpty){
                             print("password empty");
                           }else if(passwordController.text==confirmPasswordController.text) {
-                            await AuthService.register(context, RegisterModel(
+                            await AuthService.register(context, Register(
                                 password: passwordController.text,
                                 email: emailController.text,
                                 username: usernameController.text));

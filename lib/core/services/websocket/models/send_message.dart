@@ -2,7 +2,7 @@ import 'package:chat_app/core/models/JsonSerializable.dart';
 
 class SendMessage extends JsonSerializable {
   late String message;
-  late int collectivityId;
+  late String collectivityId;
 
   SendMessage(this.message, this.collectivityId);
 
@@ -10,7 +10,7 @@ class SendMessage extends JsonSerializable {
     this.message = message;
   }
 
-  void setCollectivityId(int id) {
+  void setCollectivityId(String id) {
     this.collectivityId = id;
   }
 

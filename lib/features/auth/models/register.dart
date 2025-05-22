@@ -1,9 +1,9 @@
-class RegisterModel{
+class Register{
   final String email;
   final String password;
   final String username;
 
-  const RegisterModel({required this.password, required this.email,required this.username});
+  const Register({required this.password, required this.email,required this.username});
 
   Map<String,String> toJson() => {
     'email': email,

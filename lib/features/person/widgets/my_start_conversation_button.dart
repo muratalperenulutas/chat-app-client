@@ -9,7 +9,7 @@ import '../../../data/person/person.dart';
 import '../controller/person_controller.dart';
 
 MaterialButton myStartConversationButton(
-    double screenHeight, PersonModel person) {
+    double screenHeight, Person person) {
   PersonController personController = Get.find<PersonController>();
   bool isSelected = personController.isInSelectedContactsSet(person.personId);
   print("a");
@@ -32,16 +32,16 @@ MaterialButton myStartConversationButton(
           personController.ejectFromSelectedContactsSet(person.personId);
         }
       } else if (person.isRegistered == 1) {
-        DyadModel? dyadModel = await Get.find<CollectivityRepository>()
+        Dyad? dyad = await Get.find<CollectivityRepository>()
             .getDyadByUserId(person.personId ?? "");
-        ChatBaseModel chatBase;
-        if (dyadModel == null) {
-          chatBase = ChatBaseModel.fromPersonModel(person);
+        ChatBase chatBase;
+        if (dyad == null) {
+          chatBase = ChatBase.fromPerson(person);
         } else {
-          chatBase = ChatBaseModel.fromPersonAndDyadModel(person, dyadModel);
+          chatBase = ChatBase.fromPersonAndDyad(person, dyad);
         }
         Get.to(() => ChatPage(
-              chatBaseModel: chatBase,
+              chatBase: chatBase,
             ));
       }
     },

@@ -36,7 +36,7 @@ class MessageCardColorHelper {
     return Color.fromARGB(255, r, g, b);
   }
 
-  static Color getColorFromPredefined(String userId,int value) {
+  static Color getColorFromPredefined(String userId,String value) {
     final combined='$userId-$value';
     final hash = sha256.convert(utf8.encode(combined)).bytes;
     final index = hash[0] % predefinedMessageCardColors.length;
