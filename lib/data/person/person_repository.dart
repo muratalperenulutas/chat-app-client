@@ -22,19 +22,18 @@ class PersonRepository {
     try {
       await db.customInsert(
         'INSERT INTO ${DbTableNames.persons} '
-        '(id, personId, name, localName, username, description, imageId, source, isRegistered, status) '
-        'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        '(person_id, name, local_name, username, description, image_id, source, is_registered, status) '
+        'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
         variables: [
-          drift.Variable.withInt(map['id']),
-          drift.Variable.withString(map['personId']),
-          drift.Variable.withString(map['name']),
-          drift.Variable.withString(map['localName']),
-          drift.Variable.withString(map['username']),
-          drift.Variable.withString(map['description']),
-          drift.Variable.withString(map['imageId']),
-          drift.Variable.withString(map['source']),
-          drift.Variable.withInt(map['isRegistered']),
-          drift.Variable.withString(map['status']),
+          drift.Variable.withString(map['person_id'] ?? ''),
+          drift.Variable.withString(map['name'] ?? ''),
+          drift.Variable.withString(map['local_name'] ?? ''),
+          drift.Variable.withString(map['username'] ?? ''),
+          drift.Variable.withString(map['description'] ?? ''),
+          drift.Variable.withString(map['image_id'] ?? ''),
+          drift.Variable.withString(map['source'] ?? 'SERVER'),
+          drift.Variable.withInt(map['is_registered'] ?? 0),
+          drift.Variable.withString(map['status'] ?? 'CREATED'),
         ],
         updates: {db.persons},
       );
@@ -64,7 +63,7 @@ class PersonRepository {
   Future<Person?> findPersonByUsernameOrUserId(String username, String userId) async {
     final db = database;
     final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.persons} WHERE username = ? OR personId = ?',
+      'SELECT * FROM ${DbTableNames.persons} WHERE username = ? OR person_id = ?',
       variables: [
         drift.Variable.withString(username),
         drift.Variable.withString(userId),
@@ -83,7 +82,7 @@ class PersonRepository {
   Future<Person?> findPersonByPersonId(String personId) async {
     final db = database;
     final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.persons} WHERE personId = ?',
+      'SELECT * FROM ${DbTableNames.persons} WHERE person_id = ?',
       variables: [drift.Variable.withString(personId)],
       readsFrom: {db.persons},
     );
@@ -118,7 +117,7 @@ class PersonRepository {
   Future<List<Person>> getContactsOnChatApp() async {
     final db = database;
     final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND isRegistered = ?',
+      'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND is_registered = ?',
       variables: [
         drift.Variable.withString(SourceEnum.LOCAL.name),
         drift.Variable.withInt(1),
@@ -133,7 +132,7 @@ class PersonRepository {
   Future<List<Person>> getContactsNotOnChatApp() async {
     final db = database;
     final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND isRegistered = ?',
+      'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND is_registered = ?',
       variables: [
         drift.Variable.withString(SourceEnum.LOCAL.name),
         drift.Variable.withInt(0),
@@ -162,18 +161,18 @@ class PersonRepository {
     final map = person.toDb();
     await db.customUpdate(
       'UPDATE ${DbTableNames.persons} SET '
-      'personId = ?, name = ?, localName = ?, username = ?, description = ?, '
-      'imageId = ?, source = ?, isRegistered = ?, status = ? WHERE id = ?',
+      'person_id = ?, name = ?, local_name = ?, username = ?, description = ?, '
+      'image_id = ?, source = ?, is_registered = ?, status = ? WHERE id = ?',
       variables: [
-        drift.Variable.withString(map['personId']),
-        drift.Variable.withString(map['name']),
-        drift.Variable.withString(map['localName']),
-        drift.Variable.withString(map['username']),
-        drift.Variable.withString(map['description']),
-        drift.Variable.withString(map['imageId']),
-        drift.Variable.withString(map['source']),
-        drift.Variable.withInt(map['isRegistered']),
-        drift.Variable.withString(map['status']),
+        drift.Variable.withString(map['person_id'] ?? ''),
+        drift.Variable.withString(map['name'] ?? ''),
+        drift.Variable.withString(map['local_name'] ?? ''),
+        drift.Variable.withString(map['username'] ?? ''),
+        drift.Variable.withString(map['description'] ?? ''),
+        drift.Variable.withString(map['image_id'] ?? ''),
+        drift.Variable.withString(map['source'] ?? 'SERVER'),
+        drift.Variable.withInt(map['is_registered'] ?? 0),
+        drift.Variable.withString(map['status'] ?? 'CREATED'),
         drift.Variable.withInt(map['id']),
       ],
       updates: {db.persons},

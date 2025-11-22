@@ -24,10 +24,10 @@ class Dyad extends Collectivity {
     print("from db" + map.toString());
     return Dyad(
       id: map['id'],
-      userId: map['userId']??"",
+      userId: map['user_id'] ?? "",
       collectivityId: map['collectivityId'],
       status: Status.fromString(map['status']),
-      type:CollectivityType.fromString(map['collectivityType'])
+      type: CollectivityType.fromString(map['collectivity_type'])
     );
   }
 
@@ -50,9 +50,9 @@ class Dyad extends Collectivity {
 
   Map<String, dynamic> toDb() => {
         'id': id,
-        'userId': userId,
+        'user_id': userId,
         'collectivityId': collectivityId,
         'status': status.name,
-        'collectivityType':type.name
+        'collectivity_type': type.name
       };
 }

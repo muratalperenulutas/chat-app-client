@@ -15,21 +15,36 @@ class CollectivityRepository {
   AppDatabase get database => databaseService.getDatabase();
   GeneralChangeNotifier generalChangeNotifier=Get.find<GeneralChangeNotifier>();
 
+  Stream<List<Collectivity>> watchUnsyncedCollectivities() {
+    final db = database;
+    
+    return db.customSelect(
+      'SELECT * FROM ${DbTableNames.collectivity} WHERE status = \'CREATED\'',
+      readsFrom: {db.collectivities},
+    ).watch().map((rows) => 
+      rows.map((row) {
+        final map = row.data;
+        return map["collectivity_type"] == CollectivityType.GROUP.name
+            ? Group.fromDb(map)
+            : Dyad.fromDb(map);
+      }).toList()
+    );
+  }
+
   Future<void> insertGroup(Group group) async {
     final db = database;
     final map = group.toDb();
     await db.customInsert(
       'INSERT OR REPLACE INTO ${DbTableNames.collectivity} '
-      '(id, collectivityId, name, creatorId, imageId, collectivityType, status) '
-      'VALUES (?, ?, ?, ?, ?, ?, ?)',
+      '(collectivityId, name, creator_id, image_id, collectivity_type, status) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
       variables: [
-        drift.Variable.withInt(map['id']),
-        drift.Variable.withString(map['collectivityId']),
-        drift.Variable.withString(map['name']),
-        drift.Variable.withString(map['creatorId']),
-        drift.Variable.withString(map['imageId']),
-        drift.Variable.withString(map['collectivityType']),
-        drift.Variable.withString(map['status']),
+        drift.Variable.withString(map['collectivityId'] ?? ''),
+        drift.Variable.withString(map['name'] ?? ''),
+        drift.Variable.withString(map['creator_id'] ?? ''),
+        drift.Variable.withString(map['image_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_type'] ?? ''),
+        drift.Variable.withString(map['status'] ?? ''),
       ],
       updates: {db.collectivities},
     );
@@ -42,16 +57,15 @@ class CollectivityRepository {
       final map = group.toDb();
       await db.customInsert(
         'INSERT OR REPLACE INTO ${DbTableNames.collectivity} '
-        '(id, collectivityId, name, creatorId, imageId, collectivityType, status) '
-        'VALUES (?, ?, ?, ?, ?, ?, ?)',
+        '(collectivityId, name, creator_id, image_id, collectivity_type, status) '
+        'VALUES (?, ?, ?, ?, ?, ?)',
         variables: [
-          drift.Variable.withInt(map['id']),
-          drift.Variable.withString(map['collectivityId']),
-          drift.Variable.withString(map['name']),
-          drift.Variable.withString(map['creatorId']),
-          drift.Variable.withString(map['imageId']),
-          drift.Variable.withString(map['collectivityType']),
-          drift.Variable.withString(map['status']),
+          drift.Variable.withString(map['collectivityId'] ?? ''),
+          drift.Variable.withString(map['name'] ?? ''),
+          drift.Variable.withString(map['creator_id'] ?? ''),
+          drift.Variable.withString(map['image_id'] ?? ''),
+          drift.Variable.withString(map['collectivity_type'] ?? ''),
+          drift.Variable.withString(map['status'] ?? ''),
         ],
         updates: {db.collectivities},
       );
@@ -64,14 +78,14 @@ class CollectivityRepository {
     final map = group.toDb();
     await db.customUpdate(
       'UPDATE ${DbTableNames.collectivity} SET '
-      'name = ?, creatorId = ?, imageId = ?, collectivityType = ?, status = ? '
+      'name = ?, creator_id = ?, image_id = ?, collectivity_type = ?, status = ? '
       'WHERE collectivityId = ?',
       variables: [
-        drift.Variable.withString(map['name']),
-        drift.Variable.withString(map['creatorId']),
-        drift.Variable.withString(map['imageId']),
-        drift.Variable.withString(map['collectivityType']),
-        drift.Variable.withString(map['status']),
+        drift.Variable.withString(map['name'] ?? ''),
+        drift.Variable.withString(map['creator_id'] ?? ''),
+        drift.Variable.withString(map['image_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_type'] ?? ''),
+        drift.Variable.withString(map['status'] ?? ''),
         drift.Variable.withInt(collectivityId),
       ],
       updates: {db.collectivities},
@@ -84,14 +98,13 @@ class CollectivityRepository {
     final map = dyad.toDb();
     await db.customInsert(
       'INSERT OR REPLACE INTO ${DbTableNames.collectivity} '
-      '(id, collectivityId, userId, collectivityType, status) '
-      'VALUES (?, ?, ?, ?, ?)',
+      '(collectivityId, user_id, collectivity_type, status) '
+      'VALUES (?, ?, ?, ?)',
       variables: [
-        drift.Variable.withInt(map['id']),
-        drift.Variable.withString(map['collectivityId']),
-        drift.Variable.withString(map['userId']),
-        drift.Variable.withString(map['collectivityType']),
-        drift.Variable.withString(map['status']),
+        drift.Variable.withString(map['collectivityId'] ?? ''),
+        drift.Variable.withString(map['user_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_type'] ?? ''),
+        drift.Variable.withString(map['status'] ?? ''),
       ],
       updates: {db.collectivities},
     );
@@ -104,14 +117,13 @@ class CollectivityRepository {
       final map = dyad.toDb();
       await db.customInsert(
         'INSERT OR REPLACE INTO ${DbTableNames.collectivity} '
-        '(id, collectivityId, userId, collectivityType, status) '
-        'VALUES (?, ?, ?, ?, ?)',
+        '(collectivityId, user_id, collectivity_type, status) '
+        'VALUES (?, ?, ?, ?)',
         variables: [
-          drift.Variable.withInt(map['id']),
-          drift.Variable.withString(map['collectivityId']),
-          drift.Variable.withString(map['userId']),
-          drift.Variable.withString(map['collectivityType']),
-          drift.Variable.withString(map['status']),
+          drift.Variable.withString(map['collectivityId'] ?? ''),
+          drift.Variable.withString(map['user_id'] ?? ''),
+          drift.Variable.withString(map['collectivity_type'] ?? ''),
+          drift.Variable.withString(map['status'] ?? ''),
         ],
         updates: {db.collectivities},
       );
@@ -124,12 +136,12 @@ class CollectivityRepository {
     final map = dyad.toDb();
     await db.customUpdate(
       'UPDATE ${DbTableNames.collectivity} SET '
-      'collectivityId = ?, collectivityType = ?, status = ? WHERE userId = ?',
+      'collectivityId = ?, collectivity_type = ?, status = ? WHERE user_id = ?',
       variables: [
-        drift.Variable.withString(map['collectivityId']),
-        drift.Variable.withString(map['collectivityType']),
-        drift.Variable.withString(map['status']),
-        drift.Variable.withString(map['userId']),
+        drift.Variable.withString(map['collectivityId'] ?? ''),
+        drift.Variable.withString(map['collectivity_type'] ?? ''),
+        drift.Variable.withString(map['status'] ?? ''),
+        drift.Variable.withString(map['user_id'] ?? ''),
       ],
       updates: {db.collectivities},
     );
@@ -154,7 +166,7 @@ class CollectivityRepository {
     final results = await query.get();
     return results.map((row) {
       final map = row.data;
-      return map["collectivityType"]==CollectivityType.GROUP.name ?
+      return map["collectivity_type"]==CollectivityType.GROUP.name ?
         Group.fromDb(map) : Dyad.fromDb(map);
     }).toList();
   }
@@ -186,7 +198,7 @@ class CollectivityRepository {
   Future<Dyad?> getDyadByUserId(String userId) async {
     final db = database;
     final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.collectivity} WHERE userId = ?',
+      'SELECT * FROM ${DbTableNames.collectivity} WHERE user_id = ?',
       variables: [drift.Variable.withString(userId)],
       readsFrom: {db.collectivities},
     );
@@ -210,7 +222,7 @@ class CollectivityRepository {
     print("UnsyncedCollectivity ${results.map((r) => r.data).toList()}");
     return results.map((row) {
       final map = row.data;
-      return map["collectivityType"]==CollectivityType.GROUP.name ?
+      return map["collectivity_type"]==CollectivityType.GROUP.name ?
         Group.fromDb(map) : Dyad.fromDb(map);
     }).toList();
   }

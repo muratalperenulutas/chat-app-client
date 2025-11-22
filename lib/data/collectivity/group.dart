@@ -24,9 +24,9 @@ class Group extends Collectivity {
         id: map['id'],
         collectivityId: map['collectivityId'],
         name: map['name'],
-        type:CollectivityType.fromString(map['collectivityType']),
-        creatorId: map['creatorId'],
-        imageId: map['imageId'],
+        type: CollectivityType.fromString(map['collectivity_type']),
+        creatorId: map['creator_id'],
+        imageId: map['image_id'],
         status: Status.fromString(map['status']));
   }
 
@@ -43,9 +43,9 @@ class Group extends Collectivity {
         'id': id,
         'collectivityId': collectivityId,
         'name': name,
-        'creatorId': creatorId,
-        'imageId': imageId,
-        'collectivityType': type.name,
+        'creator_id': creatorId,
+        'image_id': imageId,
+        'collectivity_type': type.name,
         'status': status.name,
       };
 }

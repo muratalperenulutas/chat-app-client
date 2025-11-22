@@ -17,11 +17,10 @@ class ParticipantRepository {
     final map = participant.toDb();
     await db.customInsert(
       'INSERT OR REPLACE INTO ${DbTableNames.participants} '
-      '(id, userId, collectivityId) VALUES (?, ?, ?)',
+      '(user_id, collectivity_id) VALUES (?, ?)',
       variables: [
-        drift.Variable.withInt(map['id']),
-        drift.Variable.withString(map['userId']),
-        drift.Variable.withString(map['collectivityId']),
+        drift.Variable.withString(map['user_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_id'] ?? ''),
       ],
       updates: {db.participants},
     );
@@ -35,11 +34,10 @@ class ParticipantRepository {
       try {
         await db.customInsert(
           'INSERT INTO ${DbTableNames.participants} '
-          '(id, userId, collectivityId) VALUES (?, ?, ?)',
+          '(user_id, collectivity_id) VALUES (?, ?)',
           variables: [
-            drift.Variable.withInt(map['id']),
-            drift.Variable.withString(map['userId']),
-            drift.Variable.withString(map['collectivityId']),
+            drift.Variable.withString(map['user_id'] ?? ''),
+            drift.Variable.withString(map['collectivity_id'] ?? ''),
           ],
           updates: {db.participants},
         );
@@ -55,7 +53,7 @@ class ParticipantRepository {
     printAll();
     final db = database;
     final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.participants} WHERE collectivityId = ?',
+      'SELECT * FROM ${DbTableNames.participants} WHERE collectivity_id = ?',
       variables: [drift.Variable.withString(collectivityId)],
       readsFrom: {db.participants},
     );

@@ -14,22 +14,32 @@ class MessageRepository {
   GeneralChangeNotifier generalChangeNotifier =
       Get.find<GeneralChangeNotifier>();
 
+  Stream<List<Message>> watchUnsyncedCollectivityMessages() {
+    final db = database;
+    
+    return db.customSelect(
+      'SELECT * FROM ${DbTableNames.messages} WHERE status != \'SYNC\' AND collectivity_id IS NOT NULL',
+      readsFrom: {db.messages},
+    ).watch().map((rows) => 
+      rows.map((row) => Message.fromDb(row.data)).toList()
+    );
+  }
+
   Future<void> insertMessage(Message message) async {
     final db = database;
     final map = message.toDb();
     await db.customInsert(
       'INSERT OR REPLACE INTO ${DbTableNames.messages} '
-      '(id, messageId, message, userId, collectivityId, dyadReceiverId, sendTime, status) '
-      'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      '(message_id, message, user_id, collectivity_id, dyad_receiver_id, send_time, status) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?)',
       variables: [
-        drift.Variable.withInt(map['id']),
-        drift.Variable.withString(map['messageId']),
-        drift.Variable.withString(map['message']),
-        drift.Variable.withString(map['userId']),
-        drift.Variable.withString(map['collectivityId']),
-        drift.Variable.withString(map['dyadReceiverId']),
-        drift.Variable.withString(map['sendTime']),
-        drift.Variable.withString(map['status']),
+        drift.Variable.withString(map['message_id'] ?? ''),
+        drift.Variable.withString(map['message'] ?? ''),
+        drift.Variable.withString(map['user_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_id'] ?? ''),
+        drift.Variable.withString(map['dyad_receiver_id'] ?? ''),
+        drift.Variable.withInt(map['send_time'] ?? 0),
+        drift.Variable.withString(map['status'] ?? ''),
       ],
       updates: {db.messages},
     );
@@ -42,17 +52,16 @@ class MessageRepository {
       final map = message.toDb();
       await db.customInsert(
         'INSERT OR REPLACE INTO ${DbTableNames.messages} '
-        '(id, messageId, message, userId, collectivityId, dyadReceiverId, sendTime, status) '
-        'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        '(message_id, message, user_id, collectivity_id, dyad_receiver_id, send_time, status) '
+        'VALUES (?, ?, ?, ?, ?, ?, ?)',
         variables: [
-          drift.Variable.withInt(map['id']),
-          drift.Variable.withString(map['messageId']),
-          drift.Variable.withString(map['message']),
-          drift.Variable.withString(map['userId']),
-          drift.Variable.withString(map['collectivityId']),
-          drift.Variable.withString(map['dyadReceiverId']),
-          drift.Variable.withString(map['sendTime']),
-          drift.Variable.withString(map['status']),
+          drift.Variable.withString(map['message_id'] ?? ''),
+          drift.Variable.withString(map['message'] ?? ''),
+          drift.Variable.withString(map['user_id'] ?? ''),
+          drift.Variable.withString(map['collectivity_id'] ?? ''),
+          drift.Variable.withString(map['dyad_receiver_id'] ?? ''),
+          drift.Variable.withInt(map['send_time'] ?? 0),
+          drift.Variable.withString(map['status'] ?? ''),
         ],
         updates: {db.messages},
       );
@@ -65,16 +74,16 @@ class MessageRepository {
     final map = message.toDb();
     await db.customUpdate(
       'UPDATE ${DbTableNames.messages} SET '
-      'messageId = ?, message = ?, userId = ?, collectivityId = ?, '
-      'dyadReceiverId = ?, sendTime = ?, status = ? WHERE id = ?',
+      'message_id = ?, message = ?, user_id = ?, collectivity_id = ?, '
+      'dyad_receiver_id = ?, send_time = ?, status = ? WHERE id = ?',
       variables: [
-        drift.Variable.withString(map['messageId']),
-        drift.Variable.withString(map['message']),
-        drift.Variable.withString(map['userId']),
-        drift.Variable.withString(map['collectivityId']),
-        drift.Variable.withString(map['dyadReceiverId']),
-        drift.Variable.withString(map['sendTime']),
-        drift.Variable.withString(map['status']),
+        drift.Variable.withString(map['message_id'] ?? ''),
+        drift.Variable.withString(map['message'] ?? ''),
+        drift.Variable.withString(map['user_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_id'] ?? ''),
+        drift.Variable.withString(map['dyad_receiver_id'] ?? ''),
+        drift.Variable.withInt(map['send_time'] ?? 0),
+        drift.Variable.withString(map['status'] ?? ''),
         drift.Variable.withInt(map['id']),
       ],
       updates: {db.messages},
@@ -87,16 +96,16 @@ class MessageRepository {
     final map = message.toDb();
     await db.customUpdate(
       'UPDATE ${DbTableNames.messages} SET '
-      'messageId = ?, message = ?, userId = ?, collectivityId = ?, '
-      'dyadReceiverId = ?, sendTime = ?, status = ? WHERE id = ?',
+      'message_id = ?, message = ?, user_id = ?, collectivity_id = ?, '
+      'dyad_receiver_id = ?, send_time = ?, status = ? WHERE id = ?',
       variables: [
-        drift.Variable.withString(map['messageId']),
-        drift.Variable.withString(map['message']),
-        drift.Variable.withString(map['userId']),
-        drift.Variable.withString(map['collectivityId']),
-        drift.Variable.withString(map['dyadReceiverId']),
-        drift.Variable.withString(map['sendTime']),
-        drift.Variable.withString(map['status']),
+        drift.Variable.withString(map['message_id'] ?? ''),
+        drift.Variable.withString(map['message'] ?? ''),
+        drift.Variable.withString(map['user_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_id'] ?? ''),
+        drift.Variable.withString(map['dyad_receiver_id'] ?? ''),
+        drift.Variable.withInt(map['send_time'] ?? 0),
+        drift.Variable.withString(map['status'] ?? ''),
         drift.Variable.withInt(map['id']),
       ],
       updates: {db.messages},
@@ -106,7 +115,7 @@ class MessageRepository {
   Future<void> batchFixCollectivityIdJob(String collectivityId, String userId) async {
     final db = database;
     await db.customUpdate(
-      'UPDATE ${DbTableNames.messages} SET collectivityId = ?, dyadReceiverId = NULL WHERE dyadReceiverId = ?',
+      'UPDATE ${DbTableNames.messages} SET collectivity_id = ?, dyad_receiver_id = NULL WHERE dyad_receiver_id = ?',
       variables: [
         drift.Variable.withString(collectivityId),
         drift.Variable.withString(userId),
@@ -119,7 +128,7 @@ class MessageRepository {
   Future<List<Message>> getMessagesByCollectivityIdOrDyadReceiverId(String collectivityId, String dyadReceiverId) async {
     final db = database;
     final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.messages} WHERE collectivityId = ? OR dyadReceiverId = ?',
+      'SELECT * FROM ${DbTableNames.messages} WHERE collectivity_id = ? OR dyad_receiver_id = ?',
       variables: [
         drift.Variable.withString(collectivityId),
         drift.Variable.withString(dyadReceiverId),
@@ -145,7 +154,7 @@ class MessageRepository {
   Future<List<Message>> getAllUnsyncedCollectivityMessages() async {
     final db = database;
     final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.messages} WHERE status != \'SYNC\' AND collectivityId IS NOT NULL',
+      'SELECT * FROM ${DbTableNames.messages} WHERE status != \'SYNC\' AND collectivity_id IS NOT NULL',
       readsFrom: {db.messages},
     );
     
