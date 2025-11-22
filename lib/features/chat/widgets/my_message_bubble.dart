@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:chat_app/features/chat/helper/status_icon_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

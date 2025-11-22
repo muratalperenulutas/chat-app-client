@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+// import 'dart:io';
 import 'package:chat_app/config/urls.dart';
 import 'package:chat_app/core/services/websocket/models/websocket_message.dart';
 import 'package:chat_app/data/collectivity/collectivity_service.dart';
@@ -8,9 +9,10 @@ import 'package:chat_app/data/collectivity/dyad.dart';
 import 'package:chat_app/data/participant/participant_service.dart';
 import 'package:chat_app/data/person/person_repository.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../constants/enums/ws_message_response_type.dart';
 import '../../../constants/shared_pref_key.dart';
@@ -31,7 +33,7 @@ class WebSocketClient extends GetxService {
   ParticipantService participantService = Get.find<ParticipantService>();
 
   RxBool isWsConnected = false.obs;
-  IOWebSocketChannel? channel;
+  WebSocketChannel? channel;
 
   bool _isConnecting = false;
 
@@ -49,49 +51,70 @@ class WebSocketClient extends GetxService {
           close();
         }
       }
-    }
-    );
-    ever(isWsConnected, (isConnected){
-      if(isConnected){
-        NotificationService.instance.showLocalNotification(id: 3, title: "Websocket connected", body: "body");
-      }else{
-        NotificationService.instance.showLocalNotification(id: 3, title: "Websocket not connected", body: "body");
+    });
+    ever(isWsConnected, (isConnected) {
+      if (isConnected) {
+        NotificationService.instance.showLocalNotification(
+            id: 3, title: "Websocket connected", body: "body");
+      } else {
+        NotificationService.instance.showLocalNotification(
+            id: 3, title: "Websocket not connected", body: "body");
       }
-
     });
 
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
-          (List<ConnectivityResult> results) {
+      (List<ConnectivityResult> results) {
         if (results.any((result) => result != ConnectivityResult.none) &&
-            !isWsConnected.value&&authController.isLoggedIn.value) {
+            !isWsConnected.value &&
+            authController.isLoggedIn.value) {
           print("Connectivity restored. Attempting to reconnect...");
           _connect();
         }
       },
     );
-
   }
 
   Future<void> _connect() async {
     if (isWsConnected.value || _isConnecting) return;
     _isConnecting = true;
-    //print('Function called from: ${StackTrace.current}');
+    //print('Function called from: ${StackTrace.current}')
+
+    String deviceType = "unknown";
+    if (kIsWeb) {
+      deviceType = "web";
+    } else if (Platform.isAndroid) {
+      deviceType = "android";
+    } else if (Platform.isIOS) {
+      deviceType = "ios";
+    } else if (Platform.isWindows) {
+      deviceType = "windows";
+    } else if (Platform.isMacOS) {
+      deviceType = "macos";
+    } else if (Platform.isLinux) {
+      deviceType = "linux";
+    }
+
     String accessToken = await authController.getAccessToken();
     final prefs = await SharedPreferences.getInstance();
 
-    String fcmToken=prefs.getString(SharedPrefKey.fcmKey)??'';
-    int lastFetchTime=prefs.getInt(SharedPrefKey.lastFetchTimeKey)??100;
-    final headers = {
-      'Authorization': 'Bearer $accessToken',
-      'device-type' : 'PHONE',
-      'fcm-token' : fcmToken,
-      'last-fetch-time': lastFetchTime
-    };
+    String fcmToken = prefs.getString(SharedPrefKey.fcmKey) ?? '';
+    int lastFetchTime = prefs.getInt(SharedPrefKey.lastFetchTimeKey) ?? 100;
 
     try {
-      final webSocket =
-          await WebSocket.connect(Url.websocket, headers: headers);
-      channel = IOWebSocketChannel(webSocket);
+      final uri = Uri.parse(Url.websocket).replace(queryParameters: {
+        'last-fetch-time': lastFetchTime.toString(),
+        "device-type":deviceType
+      });
+
+      var protocols = [
+        'websocket',
+        'access-token$accessToken',
+        'fcm-token$fcmToken'
+      ];
+      channel = WebSocketChannel.connect(uri, protocols: protocols);
+
+      await channel?.ready;
+
       channel?.stream.listen(
         (message) {
           handleMessage(message);
@@ -107,13 +130,13 @@ class WebSocketClient extends GetxService {
           _attemptReconnection();
         },
       );
-      isWsConnected.value=true;
+      isWsConnected.value = true;
       print("ws connected");
     } catch (e) {
       print("WebSocket connection failed: $e");
       _setDisconnected();
       _attemptReconnection();
-    }finally{
+    } finally {
       _isConnecting = false;
     }
   }
@@ -155,7 +178,7 @@ class WebSocketClient extends GetxService {
     final jsonData = jsonDecode(message);
     print(jsonData);
     var data = jsonData["data"];
-    var timestamp=jsonData["timestamp"];
+    var timestamp = jsonData["timestamp"];
     setLastSyncTime(timestamp);
     switch (WsMessageResponseType.fromString(jsonData['type'])) {
       case WsMessageResponseType.USER_FOUND:
@@ -215,21 +238,20 @@ class WebSocketClient extends GetxService {
             .toList();
         collectivityService.saveGroupList(dtos);
         break;
-      default:
     }
   }
 
   Future<void> setLastSyncTime(dynamic timestamp) async {
     print(timestamp);
-    try{
-      int? unix=int.tryParse(timestamp.toString());
-      if(unix==null) {
+    try {
+      int? unix = int.tryParse(timestamp.toString());
+      if (unix == null) {
         print("timestamp error: $timestamp");
         return;
       }
       final prefs = await SharedPreferences.getInstance();
       prefs.setInt(SharedPrefKey.lastFetchTimeKey, unix);
-    }catch(e){
+    } catch (e) {
       print(e);
     }
   }

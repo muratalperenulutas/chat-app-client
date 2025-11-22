@@ -15,6 +15,7 @@ import 'package:chat_app/core/general_change_notifier.dart';
 import 'package:chat_app/features/chat/controllers/message_controller.dart';
 import 'package:chat_app/features/collectivity/controller/collectivity_controller.dart';
 import 'package:chat_app/features/person/controller/person_controller.dart';
+import 'package:chat_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -27,12 +28,28 @@ import 'features/auth/controllers/auth_controller.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp();
-  await NotificationService.instance.initialize();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform
+    );
+  } catch (e) {
+    debugPrint('Firebase initialization error: $e');
+  }
 
-  final databaseService=DatabaseService();
-  await databaseService.onInit();
-  Get.put<DatabaseService>(databaseService);
+  try {
+    await NotificationService.instance.initialize();
+    debugPrint('Notification service initialized successfully');
+  } catch (e) {
+    debugPrint('Notification service initialization error: $e');
+  }
+
+  try {
+    final databaseService = DatabaseService();
+    await databaseService.onInit();
+    Get.put<DatabaseService>(databaseService);
+  } catch (e) {
+    debugPrint('Database initialization error: $e');
+  }
 
   Get.lazyPut(()=>GeneralChangeNotifier());
   Get.put(AuthController());

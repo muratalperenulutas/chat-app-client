@@ -2,15 +2,19 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../constants/shared_pref_key.dart';
+import 'firebase_messaging_config.dart';
 
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  await NotificationService.instance.setupFlutterNotifications();
+  if (!kIsWeb) {
+    await NotificationService.instance.setupFlutterNotifications();
+  }
   await NotificationService.instance.showNotification(message);
 }
 
@@ -24,7 +28,9 @@ class NotificationService {
 
   Future<void> initialize() async {
     // Background message handler
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    if (!kIsWeb) {
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    }
 
     // Request permission
     await _requestNotificationPermissions();
@@ -32,19 +38,32 @@ class NotificationService {
     // Set up foreground & background handlers
     await _setupMessageHandlers();
 
-    // Setup local notification
-    await setupFlutterNotifications();
+    // Setup local notification (only for non-web platforms)
+    if (!kIsWeb) {
+      await setupFlutterNotifications();
+    }
 
     // Print FCM token
     try {
-      final token = await _messaging.getToken();
-      print('FCM Token: $token');
+      String? vapidKey;
+      if (kIsWeb && FirebaseMessagingConfig.vapidKey.isNotEmpty) {
+        vapidKey = FirebaseMessagingConfig.vapidKey;
+        print('Using VAPID key for web FCM');
+      }
+      
+      final token = await _messaging.getToken(
+        vapidKey: vapidKey,
+      );
+      
       if (token != null) {
+        print('FCM Token: $token');
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString(SharedPrefKey.fcmKey, token);
+      } else {
+        print('FCM Token is null');
       }
-    }catch(e){
-      print("Fcm error:$e");
+    } catch (e, stackTrace) {
+      print("FCM error: $e");
     }
   }
 
@@ -60,18 +79,23 @@ class NotificationService {
     );
     print('FCM Permission status: ${fcmSettings.authorizationStatus}');
 
-    final androidImpl = _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    if (!kIsWeb) {
+      final androidImpl = _flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
 
-    final granted = await androidImpl?.requestNotificationsPermission();
-    if (granted != true) {
-      print('Local notification permission not granted.');
+      final granted = await androidImpl?.requestNotificationsPermission();
+      if (granted != true) {
+        print('Local notification permission not granted.');
+      }
+    } else {
+      print('Web platform: Local notifications handled by browser.');
     }
   }
 
   Future<void> setupFlutterNotifications() async {
     if (_isFlutterLocalNotificationsInitialized) return;
+    if (kIsWeb) return;
 
     const channel = AndroidNotificationChannel(
       'high_importance_channel',
@@ -129,6 +153,12 @@ class NotificationService {
   Future<void> showNotification(RemoteMessage message) async {
     final notification = message.notification;
     final data=message.data;
+    
+    if (kIsWeb) {
+      print('Web notification received: ${notification?.title ?? data.toString()}');
+      return;
+    }
+    
     if (notification != null) {
       showLocalNotification(id: notification.hashCode, title: notification.title, body: notification.body,payload: data.toString());
     }else {
@@ -142,7 +172,7 @@ class NotificationService {
     String? title,
     String? body,
     String? payload
-  }) async {
+  }) async {   
     const androidDetails = AndroidNotificationDetails(
       'high_importance_channel',
       'High Importance Notifications',
