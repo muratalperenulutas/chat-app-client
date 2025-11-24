@@ -1,7 +1,7 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/core/router/app_router.dart';
 import 'package:chat_app/features/chat/models/chat_base.dart';
-import 'package:chat_app/features/chat/screens/chat_page.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 myConversationButton(
     BuildContext context, double screenHeight, ChatBase chatBase) {
@@ -9,16 +9,14 @@ myConversationButton(
     height: screenHeight / 12,
     color: Color.fromARGB(255, 254, 255, 255),
     onPressed: () {
-      Get.to(() => ChatPage(
-            chatBase: chatBase,
-          ));
+      AutoRouter.of(context).push(ChatRoute(chatBase: chatBase));
     },
     child: Padding(
       padding: EdgeInsets.fromLTRB(1, 1, 1, 1),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Container(
+          SizedBox(
             width: 65,
             height: 65,
             child: const CircleAvatar(

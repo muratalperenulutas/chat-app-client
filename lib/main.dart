@@ -1,14 +1,21 @@
 import 'package:chat_app/app.dart';
-import 'package:chat_app/core/bindings/initial_binding.dart';
+import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/core/services/notification/notification_service.dart';
 import 'package:chat_app/data/database_service.dart';
 import 'package:chat_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
+
+import 'package:chat_app/core/bindings/initial_binding.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb) {
+    setUrlStrategy(PathUrlStrategy());
+  }
 
   try {
     await Firebase.initializeApp(
@@ -18,6 +25,9 @@ void main() async {
     debugPrint('Firebase initialization error: $e');
   }
 
+  configureDependencies();
+  initInitialBindings();
+
   try {
     await NotificationService.instance.initialize();
     debugPrint('Notification service initialized successfully');
@@ -26,14 +36,11 @@ void main() async {
   }
 
   try {
-    final databaseService = DatabaseService();
-    await databaseService.onInit();
-    Get.put<DatabaseService>(databaseService);
+    final databaseService = getIt<DatabaseService>();
+    await databaseService.init();
   } catch (e) {
     debugPrint('Database initialization error: $e');
   }
 
-  InitialBinding().dependencies();
-
-  runApp(MyApp());
+  runApp(ProviderScope(child: MyApp()));
 }

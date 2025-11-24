@@ -41,7 +41,7 @@ class Message {
         collectivityId: json['collectivityId'].toString(),
       userId: json['userId'],
       sendTime: DateTime.fromMillisecondsSinceEpoch(int.parse(json['sendTime'].toString())*1000),
-      status: Status.SYNC
+      status: Status.sync
     );
   }
 

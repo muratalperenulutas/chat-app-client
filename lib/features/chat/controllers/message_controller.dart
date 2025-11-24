@@ -1,55 +1,61 @@
+import 'package:chat_app/core/di/injection.dart';
+import 'package:chat_app/core/general_change_notifier.dart';
 import 'package:chat_app/data/collectivity/collectivity_service.dart';
-import 'package:chat_app/data/message/message.dart';
 import 'package:chat_app/data/message/message_repository.dart';
 import 'package:chat_app/data/message/message_service.dart';
-import 'package:chat_app/core/general_change_notifier.dart';
-import 'package:chat_app/features/auth/controllers/auth_controller.dart';
-import 'package:get/get.dart';
+import 'package:chat_app/features/chat/controllers/message_state.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class MessageController extends GetxController {
-  RxString collectivityId="".obs;
-  RxString userId="".obs;
-  RxList<Message> messages = <Message>[].obs;
+part 'message_controller.g.dart';
 
-  MessageService messageService = Get.find<MessageService>();
-  MessageRepository messageRepository = Get.find<MessageRepository>();
-  GeneralChangeNotifier generalChangeNotifier =
-      Get.find<GeneralChangeNotifier>();
-  AuthController authController = Get.find<AuthController>();
+@Riverpod(keepAlive: true)
+class MessageController extends _$MessageController {
+  late final MessageRepository messageRepository = getIt<MessageRepository>();
+  late final GeneralChangeNotifier generalChangeNotifier = getIt<GeneralChangeNotifier>();
 
   @override
-  void onInit() {
-    super.onInit();
-    everAll([generalChangeNotifier.isMessagesChanged,collectivityId,userId], (_) {
-      print("message controller");
+  MessageState build() {
+    void listener() {
       _loadData();
-    });
+    }
+    generalChangeNotifier.isMessagesChanged.addListener(listener);
+    ref.onDispose(() => generalChangeNotifier.isMessagesChanged.removeListener(listener));
+    
+    _loadData();
+    
+    return MessageState();
   }
 
   void _loadData() async {
-    messages.value =await messageRepository.
-    getMessagesByCollectivityIdOrDyadReceiverId(collectivityId.value,userId.value);
+    final messages = await messageRepository.getMessagesByCollectivityIdOrDyadReceiverId(
+      state.collectivityId,
+      state.userId
+    );
+    state = state.copyWith(messages: messages);
   }
 
-  Future<void> sendMessage(
-      String message, String? collectivityId,String? userId ) async {
+  Future<void> sendMessage(String message, String? collectivityId, String? userId) async {
+    final messageService = ref.read(messageServiceProvider);
     if (message.isNotEmpty) {
       if (collectivityId != null) {
         messageService.sendMessageByCollectivityId(message, collectivityId);
-      }else if(userId!=null){
-        CollectivityService collectivityService = Get.find<CollectivityService>();
-        collectivityService.createDyadIfNotExist(userId);
+      } else if (userId != null) {
+        final collectivityService = ref.read(collectivityServiceProvider);
+        await collectivityService.createDyadIfNotExist(userId);
         messageService.sendMessageByReceiverId(message, userId);
-      }else{
+      } else {
         throw Error();
       }
     }
   }
 
   void setCollectivityId(String id) {
-    collectivityId.value = id;
+    state = state.copyWith(collectivityId: id, userId: null);
+    _loadData();
   }
+  
   void setUserId(String id) {
-    userId.value = id;
+    state = state.copyWith(userId: id, collectivityId: null);
+    _loadData();
   }
 }

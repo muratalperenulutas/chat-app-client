@@ -1,9 +1,11 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/data/participant/participant.dart';
+import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/data/participant/participant_repository.dart';
 import 'package:chat_app/features/chat/models/chat_base.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
+@RoutePage()
 class CollectivityDetailPage extends StatefulWidget {
   final ChatBase chatBase;
   const CollectivityDetailPage({required this.chatBase,super.key});
@@ -14,8 +16,7 @@ class CollectivityDetailPage extends StatefulWidget {
 
 class _CollectivityDetailPageState extends State<CollectivityDetailPage> {
 
-  ParticipantRepository participantRepository = Get.find<
-      ParticipantRepository>();
+  ParticipantRepository participantRepository = getIt<ParticipantRepository>();
   List<Participant> participnats = [];
 
   @override

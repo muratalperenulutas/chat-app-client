@@ -1,18 +1,21 @@
 import 'package:chat_app/constants/db/table_names.dart';
 import 'package:chat_app/data/database/database.dart';
 import 'package:drift/drift.dart' as drift;
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../core/general_change_notifier.dart';
 import '../database_service.dart';
 import 'message.dart';
 
+@singleton
 class MessageRepository {
-  final DatabaseService databaseService = Get.find<DatabaseService>();
+  final DatabaseService databaseService;
+  final GeneralChangeNotifier generalChangeNotifier;
+
+  MessageRepository(this.databaseService, this.generalChangeNotifier);
 
   AppDatabase get database => databaseService.getDatabase();
-  GeneralChangeNotifier generalChangeNotifier =
-      Get.find<GeneralChangeNotifier>();
 
   Stream<List<Message>> watchUnsyncedCollectivityMessages() {
     final db = database;
@@ -159,7 +162,7 @@ class MessageRepository {
     );
     
     final results = await query.get();
-    print("UnsyncedCollectivityMessages ${results.map((r) => r.data).toList()}");
+    debugPrint("UnsyncedCollectivityMessages ${results.map((r) => r.data).toList()}");
     return results.map((row) => Message.fromDb(row.data)).toList();
   }
 
@@ -171,7 +174,7 @@ class MessageRepository {
     );
     
     final results = await query.get();
-    print(results.map((r) => r.data).toList());
+    debugPrint(results.map((r) => r.data).toList().toString());
   }
 }
 

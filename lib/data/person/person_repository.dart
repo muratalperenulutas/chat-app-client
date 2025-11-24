@@ -1,20 +1,23 @@
 import 'package:chat_app/constants/db/table_names.dart';
 import 'package:chat_app/constants/enums/status.dart';
 import 'package:chat_app/data/person/person.dart';
-import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/core/general_change_notifier.dart';
-import 'package:get/get.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:injectable/injectable.dart';
 import 'package:drift/drift.dart' as drift;
 
 import '../../constants/enums/source_enum.dart';
 import '../database_service.dart';
 import '../database/database.dart';
 
+@singleton
 class PersonRepository {
-  final DatabaseService databaseService=Get.find<DatabaseService>();
-  final AuthController authController=Get.find<AuthController>();
+  final DatabaseService databaseService;
+  final GeneralChangeNotifier generalChangeNotifier;
+
+  PersonRepository(this.databaseService, this.generalChangeNotifier);
+
   AppDatabase get database => databaseService.getDatabase();
-  GeneralChangeNotifier generalChangeNotifier=Get.find<GeneralChangeNotifier>();
 
   Future<void> insertPerson(Person person) async {
     final db = database;
@@ -38,7 +41,7 @@ class PersonRepository {
         updates: {db.persons},
       );
     } catch (e) {
-      print("Error inserting person: $e");
+      debugPrint("Error inserting person: $e");
       rethrow;
     }
     generalChangeNotifier.contactsChanged();
@@ -97,7 +100,7 @@ class PersonRepository {
   Future<void> createPersonIfNotExist(String personId)async{
     Person? person=await findPersonByPersonId(personId);
     if(person==null){
-      Person personModel=Person(status: Status.CREATED,personId: personId);
+      Person personModel=Person(status: Status.created,personId: personId);
       insertPerson(personModel);
     }
   }
@@ -106,7 +109,7 @@ class PersonRepository {
     final db = database;
     final query = db.customSelect(
       'SELECT * FROM ${DbTableNames.persons} WHERE source = ?',
-      variables: [drift.Variable.withString(SourceEnum.LOCAL.name)],
+      variables: [drift.Variable.withString(SourceEnum.local.name)],
       readsFrom: {db.persons},
     );
     
@@ -119,7 +122,7 @@ class PersonRepository {
     final query = db.customSelect(
       'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND is_registered = ?',
       variables: [
-        drift.Variable.withString(SourceEnum.LOCAL.name),
+        drift.Variable.withString(SourceEnum.local.name),
         drift.Variable.withInt(1),
       ],
       readsFrom: {db.persons},
@@ -134,7 +137,7 @@ class PersonRepository {
     final query = db.customSelect(
       'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND is_registered = ?',
       variables: [
-        drift.Variable.withString(SourceEnum.LOCAL.name),
+        drift.Variable.withString(SourceEnum.local.name),
         drift.Variable.withInt(0),
       ],
       readsFrom: {db.persons},
@@ -148,7 +151,7 @@ class PersonRepository {
     final db = database;
     final query = db.customSelect(
       'SELECT * FROM ${DbTableNames.persons} WHERE status != ?',
-      variables: [drift.Variable.withString(Status.SYNC.name)],
+      variables: [drift.Variable.withString(Status.sync.name)],
       readsFrom: {db.persons},
     );
     
@@ -188,6 +191,6 @@ class PersonRepository {
     );
     
     final results = await query.get();
-    print(results.map((r) => r.data).toList());
+    debugPrint(results.map((r) => r.data).toList().toString());
   }
 }

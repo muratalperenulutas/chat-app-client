@@ -1,9 +1,9 @@
 import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/auth/models/register_progress.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void showEmailDialog(BuildContext context) {
+void showEmailDialog(BuildContext context, WidgetRef ref) {
   showGeneralDialog(
     context: context,
     barrierDismissible: false,
@@ -30,7 +30,9 @@ void showEmailDialog(BuildContext context) {
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () => Get.find<AuthController>().setRegisterProgress(RegisterProgress.COMPLETED),
+                  onPressed: () => ref
+                      .read(authControllerProvider.notifier)
+                      .setRegisterProgress(RegisterProgress.completed),
                   child: Text('Ok'),
                 ),
               ],

@@ -1,18 +1,28 @@
 import 'package:chat_app/constants/enums/status.dart';
+import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/data/collectivity/collectivity_repository.dart';
 import 'package:chat_app/data/collectivity/dyad.dart';
 import 'package:chat_app/data/message/message_repository.dart';
+import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/chat/controllers/message_controller.dart';
-import 'package:get/get.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../person/person_repository.dart';
 import 'group.dart';
 
-class CollectivityService extends GetxService {
-  final CollectivityRepository collectivityRepository =
-      Get.find<CollectivityRepository>();
-  final MessageRepository messageRepository=Get.find<MessageRepository>();
-  final MessageController messageController=Get.find<MessageController>();
-  PersonRepository personRepository = Get.find<PersonRepository>();
+part 'collectivity_service.g.dart';
+
+@Riverpod(keepAlive: true)
+CollectivityService collectivityService(Ref ref) {
+  return CollectivityService(ref);
+}
+
+class CollectivityService {
+  final Ref ref;
+  final CollectivityRepository collectivityRepository = getIt<CollectivityRepository>();
+  final MessageRepository messageRepository = getIt<MessageRepository>();
+  final PersonRepository personRepository = getIt<PersonRepository>();
+
+  CollectivityService(this.ref);
 
   Future<void> updateGroup(Group group, int reqId) async {
     await collectivityRepository.updateGroup(group, reqId);
@@ -32,9 +42,10 @@ class CollectivityService extends GetxService {
   }
 
   Future<void> syncDyadList(List<Map<String, dynamic>> dtos) async {
+    final myId = ref.read(authControllerProvider).myId;
     List<Dyad> dyadModels=[];
     for(Map<String,dynamic> dyadj in dtos){
-      Dyad dyad=Dyad.fromJson(dyadj);
+      Dyad dyad=Dyad.fromJson(dyadj, myId);
       dyadModels.add(dyad);
       personRepository.createPersonIfNotExist(dyad.userId);
     }
@@ -48,16 +59,18 @@ class CollectivityService extends GetxService {
     Future<void> fetchDyad(Dyad dyad) async {
     await collectivityRepository.updateDyad(dyad);
     messageRepository.batchFixCollectivityIdJob(dyad.collectivityId??"", dyad.userId);
-    if(messageController.userId.value==dyad.userId){
+    
+    final messageState = ref.read(messageControllerProvider);
+    if(messageState.userId == dyad.userId){
      if(dyad.collectivityId!=null) {
-       messageController.collectivityId.value = dyad.collectivityId!;
+       ref.read(messageControllerProvider.notifier).setCollectivityId(dyad.collectivityId!);
      }
    }
   }
   Future<void> createDyadIfNotExist(String userId)async {
     Dyad? dyad=await collectivityRepository.getDyadByUserId(userId);
     if(dyad==null){
-      Dyad dyadModel=Dyad(userId: userId,status: Status.CREATED);
+      Dyad dyadModel=Dyad(userId: userId,status: Status.created);
       await collectivityRepository.insertDyad(dyadModel);
     }
   }

@@ -1,6 +1,6 @@
 enum SourceEnum {
-  LOCAL,
-  SERVER;
+  local,
+  server;
 
   static SourceEnum fromString(String value) {
     for (SourceEnum source in SourceEnum.values) {

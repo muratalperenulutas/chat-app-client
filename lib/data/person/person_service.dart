@@ -1,27 +1,39 @@
+import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/data/person/person.dart';
 import 'package:chat_app/data/person/person_repository.dart';
-import 'package:get/get.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../constants/enums/source_enum.dart';
 import '../../constants/enums/status.dart';
 
-class PersonService extends GetxService {
-  PersonRepository personRepository=Get.find<PersonRepository>();
+part 'person_service.g.dart';
 
-  Future<void> createContact(String name,String username)async {
-    print("name:$name  username:$username");
-    Person? existingPerson=await personRepository.findPersonByUsername(username);
-    if(existingPerson!=null){
-      print(existingPerson);
+@Riverpod(keepAlive: true)
+PersonService personService(Ref ref) {
+  return PersonService(ref);
+}
+
+class PersonService {
+  final Ref ref;
+  final PersonRepository personRepository = getIt<PersonRepository>();
+
+  PersonService(this.ref);
+
+  Future<void> createContact(String name, String username) async {
+    debugPrint("name:$name  username:$username");
+    Person? existingPerson = await personRepository.findPersonByUsername(username);
+    if (existingPerson != null) {
+      debugPrint(existingPerson.toString());
       existingPerson.setLocalName(name);
-      existingPerson.setSource(SourceEnum.LOCAL);
+      existingPerson.setSource(SourceEnum.local);
       personRepository.updatePerson(existingPerson);
-    }else {
+    } else {
       Person person = Person(
           localName: name,
           username: username,
-          source: SourceEnum.LOCAL,
-      isRegistered: 0);
+          source: SourceEnum.local,
+          isRegistered: 0);
       personRepository.insertPerson(person);
     }
   }
@@ -42,15 +54,15 @@ class PersonService extends GetxService {
             localName: existingPerson.localName,
             username: person.username,
             id: existingPerson.id,
-            status: Status.SYNC);
+            status: Status.sync);
         personRepository.updatePerson(personModel);
       } else {
-        person.source=SourceEnum.SERVER;
-        person.status=Status.SYNC;
+        person.source=SourceEnum.server;
+        person.status=Status.sync;
         personRepository.insertPerson(person);
       }
     } catch (e) {
-      print("Error inserting person: $e");
+      debugPrint("Error inserting person: $e");
     }
   }
 }

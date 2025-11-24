@@ -1,25 +1,23 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/core/router/app_router.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import '../../../data/person/person.dart';
-import '../screens/person_detail_page.dart';
 
-MaterialButton MyContactsButton(
+MaterialButton myContactsButton(
     BuildContext context, double screenHeight, Person person) {
   return MaterialButton(
     height: screenHeight / 12,
     color: Color.fromARGB(255, 254, 255, 255),
     onPressed: () {
-      Get.to(() => PersonDetailPage(
-        person: person,
-      ));
+      AutoRouter.of(context).push(PersonDetailRoute(person: person));
     },
     child: Padding(
       padding: EdgeInsets.fromLTRB(1, 1, 1, 1),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Container(
+          SizedBox(
             width: 65,
             height: 65,
             child: const CircleAvatar(

@@ -1,15 +1,18 @@
 import 'package:chat_app/constants/db/table_names.dart';
-import 'package:get/get.dart';
+import 'package:chat_app/core/di/injection.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:flutter/material.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../core/general_change_notifier.dart';
 import '../database_service.dart';
 import '../database/database.dart';
 import 'participant.dart';
 
+@singleton
 class ParticipantRepository {
-  final DatabaseService databaseService=Get.find<DatabaseService>();
-  GeneralChangeNotifier generalChangeNotifier=Get.find<GeneralChangeNotifier>();
+  final DatabaseService databaseService = getIt<DatabaseService>();
+  final GeneralChangeNotifier generalChangeNotifier = getIt<GeneralChangeNotifier>();
   AppDatabase get database => databaseService.getDatabase();
 
   Future<void> insertParticipant(Participant participant) async {
@@ -43,7 +46,7 @@ class ParticipantRepository {
         );
       } catch (e) {
         // Skip on conflict
-        print("Error inserting participant: $e");
+        debugPrint("Error inserting participant: $e");
       }
     }
     generalChangeNotifier.groupParticipantsChanged();
@@ -70,6 +73,6 @@ class ParticipantRepository {
     );
     
     final results = await query.get();
-    print(results.map((r) => r.data).toList());
+    debugPrint(results.map((r) => r.data).toList().toString());
   }
 }

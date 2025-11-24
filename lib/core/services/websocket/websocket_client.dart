@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-// import 'dart:io';
 import 'package:chat_app/config/urls.dart';
+import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/core/services/websocket/models/websocket_message.dart';
 import 'package:chat_app/data/collectivity/collectivity_service.dart';
 import 'package:chat_app/data/collectivity/dyad.dart';
@@ -10,7 +10,7 @@ import 'package:chat_app/data/participant/participant_service.dart';
 import 'package:chat_app/data/person/person_repository.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -22,17 +22,27 @@ import '../../../data/message/message_service.dart';
 import '../../../data/person/person.dart';
 import '../../../data/person/person_service.dart';
 import '../../../features/auth/controllers/auth_controller.dart';
-import '../notification/notification_service.dart';
 
-class WebSocketClient extends GetxService {
-  AuthController authController = Get.find<AuthController>();
-  PersonService personService = Get.find<PersonService>();
-  MessageService messageService = Get.find<MessageService>();
-  CollectivityService collectivityService = Get.find<CollectivityService>();
-  PersonRepository personRepository = Get.find<PersonRepository>();
-  ParticipantService participantService = Get.find<ParticipantService>();
+class WebSocketClient {
+  final ProviderContainer container;
+  late final ProviderSubscription authSubscription;
+  late final PersonService personService;
+  late final MessageService messageService;
+  late final CollectivityService collectivityService;
+  late final PersonRepository personRepository;
+  late final ParticipantService participantService;
 
-  RxBool isWsConnected = false.obs;
+  WebSocketClient(this.container) {
+    personService = getIt<PersonService>();
+    messageService = getIt<MessageService>();
+    collectivityService = getIt<CollectivityService>();
+    personRepository = getIt<PersonRepository>();
+    participantService = getIt<ParticipantService>();
+
+    _initialize();
+  }
+
+  bool isWsConnected = false;
   WebSocketChannel? channel;
 
   bool _isConnecting = false;
@@ -40,34 +50,26 @@ class WebSocketClient extends GetxService {
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
-  WebSocketClient() {
-    ever(authController.isLoggedIn, (isLoggedIn) {
-      if (isLoggedIn) {
-        print("ws connect");
+  void _initialize() {
+    authSubscription = container.listen(authControllerProvider,
+        (previous, next) {
+      if (next.isLoggedIn) {
+        debugPrint("ws connect");
         _connect();
       } else {
         if (channel != null) {
-          print("ws close");
+          debugPrint("ws close");
           close();
         }
       }
-    });
-    ever(isWsConnected, (isConnected) {
-      if (isConnected) {
-        NotificationService.instance.showLocalNotification(
-            id: 3, title: "Websocket connected", body: "body");
-      } else {
-        NotificationService.instance.showLocalNotification(
-            id: 3, title: "Websocket not connected", body: "body");
-      }
-    });
+    }, fireImmediately: true);
 
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
       (List<ConnectivityResult> results) {
         if (results.any((result) => result != ConnectivityResult.none) &&
-            !isWsConnected.value &&
-            authController.isLoggedIn.value) {
-          print("Connectivity restored. Attempting to reconnect...");
+            !isWsConnected &&
+            container.read(authControllerProvider).isLoggedIn) {
+          debugPrint("Connectivity restored. Attempting to reconnect...");
           _connect();
         }
       },
@@ -75,7 +77,7 @@ class WebSocketClient extends GetxService {
   }
 
   Future<void> _connect() async {
-    if (isWsConnected.value || _isConnecting) return;
+    if (isWsConnected || _isConnecting) return;
     _isConnecting = true;
     //print('Function called from: ${StackTrace.current}')
 
@@ -94,7 +96,8 @@ class WebSocketClient extends GetxService {
       deviceType = "linux";
     }
 
-    String accessToken = await authController.getAccessToken();
+  String accessToken =
+    await container.read(authControllerProvider.notifier).getAccessToken();
     final prefs = await SharedPreferences.getInstance();
 
     String fcmToken = prefs.getString(SharedPrefKey.fcmKey) ?? '';
@@ -120,20 +123,20 @@ class WebSocketClient extends GetxService {
           handleMessage(message);
         },
         onError: (error) {
-          print("WebSocket: Error occurred: $error");
+          debugPrint("WebSocket: Error occurred: $error");
           _setDisconnected();
           _attemptReconnection();
         },
         onDone: () {
-          print("WebSocket: Connection closed.");
+          debugPrint("WebSocket: Connection closed.");
           _setDisconnected();
           _attemptReconnection();
         },
       );
-      isWsConnected.value = true;
-      print("ws connected");
+      isWsConnected = true;
+      debugPrint("ws connected");
     } catch (e) {
-      print("WebSocket connection failed: $e");
+      debugPrint("WebSocket connection failed: $e");
       _setDisconnected();
       _attemptReconnection();
     } finally {
@@ -144,7 +147,7 @@ class WebSocketClient extends GetxService {
   void sendWebsocketMessage(WebsocketMessage message) {
     String jsonMessage = jsonEncode(message.toJson());
     channel?.sink.add(jsonMessage);
-    print("send  " + jsonMessage);
+    debugPrint("send  " + jsonMessage);
   }
 
   void close() {
@@ -152,31 +155,24 @@ class WebSocketClient extends GetxService {
   }
 
   void _attemptReconnection() {
-    if (!isWsConnected.value) {
-      print("Attempting to reconnect...");
+    if (!isWsConnected) {
+      debugPrint("Attempting to reconnect...");
       Future.delayed(Duration(seconds: 10), () {
-        if (isWsConnected.value == false) {
+        if (isWsConnected == false) {
           _connect();
         }
       });
     }
   }
 
-  @override
-  void onClose() {
-    print("on close");
-    _connectivitySubscription.cancel();
-    super.onClose();
-  }
-
   void _setDisconnected() {
-    isWsConnected.value = false;
+    isWsConnected = false;
     channel = null;
   }
 
   void handleMessage(dynamic message) async {
     final jsonData = jsonDecode(message);
-    print(jsonData);
+    debugPrint(jsonData);
     var data = jsonData["data"];
     var timestamp = jsonData["timestamp"];
     setLastSyncTime(timestamp);
@@ -206,12 +202,14 @@ class WebSocketClient extends GetxService {
         await collectivityService.saveGroup(group);
         break;
       case WsMessageResponseType.DYAD_CREATED:
-        Dyad dyad = Dyad.fromJson(data);
+    Dyad dyad =
+      Dyad.fromJson(data, container.read(authControllerProvider).myId);
         dyad.setId(int.parse(jsonData["requestId"].toString()));
         await collectivityService.fetchDyad(dyad);
         break;
       case WsMessageResponseType.NEW_DYAD:
-        Dyad dyad = Dyad.fromJson(data);
+    Dyad dyad =
+      Dyad.fromJson(data, container.read(authControllerProvider).myId);
         await collectivityService.saveDyad(dyad);
         break;
       case WsMessageResponseType.SYNC_DYAD:
@@ -242,17 +240,21 @@ class WebSocketClient extends GetxService {
   }
 
   Future<void> setLastSyncTime(dynamic timestamp) async {
-    print(timestamp);
+    debugPrint(timestamp.toString());
     try {
       int? unix = int.tryParse(timestamp.toString());
       if (unix == null) {
-        print("timestamp error: $timestamp");
+        debugPrint("timestamp error: $timestamp");
         return;
       }
       final prefs = await SharedPreferences.getInstance();
       prefs.setInt(SharedPrefKey.lastFetchTimeKey, unix);
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
+  }
+
+  void dispose() {
+    _connectivitySubscription.cancel();
   }
 }

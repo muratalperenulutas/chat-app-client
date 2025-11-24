@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 import '../../collectivity/widgets/build_chats_body.dart';
@@ -6,6 +7,7 @@ import '../widgets/my_app_bar.dart';
 import '../widgets/my_bottom_navigation_app_bar.dart';
 import '../widgets/my_floating_action_button.dart';
 
+@RoutePage()
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 

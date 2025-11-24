@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'package:chat_app/data/database/database.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
-import 'package:get/get.dart';
+import 'package:injectable/injectable.dart';
 
-class DatabaseService extends GetxService {
+@singleton
+class DatabaseService {
   AppDatabase? _database;
 
-  @override
-  Future<void> onInit() async {
-    super.onInit();
+  Future<void> init() async {
     try {
       _initializeDatabase();
     } catch (e, stackTrace) {

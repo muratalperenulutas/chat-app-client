@@ -1,35 +1,38 @@
-import 'package:chat_app/features/person/screens/create_group_page.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/core/router/app_router.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controller/person_controller.dart';
 
-PersonController personController = Get.find<PersonController>();
+class MySelectContactsAppBar extends ConsumerWidget implements PreferredSizeWidget {
+  const MySelectContactsAppBar({super.key});
 
-PreferredSizeWidget MySelectContactsAppBar() {
-  return PreferredSize(
-    preferredSize: Size.fromHeight(kToolbarHeight),
-    child: Obx(() {
-      if (personController.isSelectingMode()) {
-        return AppBar(
-          backgroundColor: Colors.purple,
-          title: Text(personController.selectedContacts.length.toString()),
-          actions: [
-            MaterialButton(
-              child: Text("New Group"),
-              onPressed: () {
-                Get.to(() => CreateGroupPage(
-                ));
-              },
-            ),
-          ],
-        );
-      } else {
-        return AppBar(
-          backgroundColor: Colors.amber,
-          title: Text("Select Contact"),
-        );
-      }
-    }),
-  );
+  @override
+  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final personState = ref.watch(personControllerProvider);
+
+    if (personState.selectedContacts.isNotEmpty) {
+      return AppBar(
+        backgroundColor: Colors.purple,
+        title: Text(personState.selectedContacts.length.toString()),
+        actions: [
+          MaterialButton(
+            child: Text("New Group"),
+            onPressed: () {
+              AutoRouter.of(context).push(CreateGroupRoute());
+            },
+          ),
+        ],
+      );
+    } else {
+      return AppBar(
+        backgroundColor: Colors.amber,
+        title: Text("Select Contact"),
+      );
+    }
+  }
 }

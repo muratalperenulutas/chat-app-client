@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -48,7 +49,7 @@ class NotificationService {
       String? vapidKey;
       if (kIsWeb && FirebaseMessagingConfig.vapidKey.isNotEmpty) {
         vapidKey = FirebaseMessagingConfig.vapidKey;
-        print('Using VAPID key for web FCM');
+        debugPrint('Using VAPID key for web FCM');
       }
       
       final token = await _messaging.getToken(
@@ -56,14 +57,15 @@ class NotificationService {
       );
       
       if (token != null) {
-        print('FCM Token: $token');
+        debugPrint('FCM Token: $token');
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString(SharedPrefKey.fcmKey, token);
       } else {
-        print('FCM Token is null');
+        debugPrint('FCM Token is null');
       }
     } catch (e, stackTrace) {
-      print("FCM error: $e");
+      debugPrint("FCM error: $e");
+      debugPrint("Stack trace: $stackTrace");
     }
   }
 
@@ -77,7 +79,7 @@ class NotificationService {
       carPlay: false,
       criticalAlert: false,
     );
-    print('FCM Permission status: ${fcmSettings.authorizationStatus}');
+    debugPrint('FCM Permission status: ${fcmSettings.authorizationStatus}');
 
     if (!kIsWeb) {
       final androidImpl = _flutterLocalNotificationsPlugin
@@ -86,10 +88,10 @@ class NotificationService {
 
       final granted = await androidImpl?.requestNotificationsPermission();
       if (granted != true) {
-        print('Local notification permission not granted.');
+        debugPrint('Local notification permission not granted.');
       }
     } else {
-      print('Web platform: Local notifications handled by browser.');
+      debugPrint('Web platform: Local notifications handled by browser.');
     }
   }
 
@@ -122,7 +124,7 @@ class NotificationService {
     await _flutterLocalNotificationsPlugin.initialize(
       initSettings,
       onDidReceiveNotificationResponse: (response) {
-        print('Notification payload: ${response.payload}');
+        debugPrint('Notification payload: ${response.payload}');
       },
     );
 
@@ -155,7 +157,7 @@ class NotificationService {
     final data=message.data;
     
     if (kIsWeb) {
-      print('Web notification received: ${notification?.title ?? data.toString()}');
+      debugPrint('Web notification received: ${notification?.title ?? data.toString()}');
       return;
     }
     

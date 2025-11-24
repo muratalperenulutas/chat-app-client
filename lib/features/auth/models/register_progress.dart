@@ -1,5 +1,5 @@
 enum RegisterProgress{
-  INITIAL,
-  EMAIL,
-  COMPLETED
+  initial,
+  email,
+  completed
 }

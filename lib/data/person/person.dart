@@ -21,9 +21,9 @@ class Person {
     this.localName,
     this.description,
     this.imageId,
-    this.source=SourceEnum.SERVER,
+    this.source=SourceEnum.server,
     this.isRegistered,
-    this.status=Status.CREATED
+    this.status=Status.created
   });
   factory Person.fromDb(Map<String, dynamic> map) {
     return Person(
@@ -44,7 +44,7 @@ class Person {
         personId: json['userId'],
         username: json['username'],
         name: "initial",
-        status: Status.SYNC
+        status: Status.sync
         ////
     );
   }

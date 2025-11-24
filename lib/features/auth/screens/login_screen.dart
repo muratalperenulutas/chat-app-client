@@ -1,16 +1,19 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/core/router/app_router.dart';
+import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/auth/models/login.dart';
-import 'package:chat_app/features/auth/services/auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginPage extends StatefulWidget {
+@RoutePage()
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final identifierController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -74,7 +77,16 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     ElevatedButton(
                         onPressed: () async {
-                          AuthService.login(context, Login(identifier: identifierController.text,password: passwordController.text));
+                          final login = Login(identifier: identifierController.text,password: passwordController.text);
+                          ref.read(authControllerProvider.notifier).login(
+                            login,
+                            onSuccess: () {
+                              context.router.replace(const HomeRoute());
+                            },
+                            onError: (msg) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+                            }
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.indigo,
@@ -103,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(width: 4),
             TextButton(
               onPressed: () {
-                Get.toNamed('/register');
+                context.router.push(const RegisterRoute());
               },
               child: const Text("Register"),
             ),

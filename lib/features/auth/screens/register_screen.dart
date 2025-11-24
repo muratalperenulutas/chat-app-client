@@ -1,45 +1,41 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/core/router/app_router.dart';
 import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/auth/models/register.dart';
 import 'package:chat_app/features/auth/models/register_progress.dart';
-import 'package:chat_app/features/auth/services/auth.dart';
 import 'package:chat_app/features/auth/widgets/email_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RegisterPage extends StatefulWidget {
+@RoutePage()
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends ConsumerState<RegisterPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final usernameController = TextEditingController();
-  final AuthController authController=Get.find<AuthController>();
 
   @override
-  void initState() {
-    super.initState();
-    ever(authController.registerProgress, (RegisterProgress progress){
-      if(progress==RegisterProgress.EMAIL){
-        showEmailDialog(context);
+  Widget build(BuildContext context) {
+    ref.listen(authControllerProvider.select((s) => s.registerProgress), (previous, next) {
+      if (next == RegisterProgress.email) {
+        showEmailDialog(context, ref);
         emailController.clear();
         passwordController.clear();
         confirmPasswordController.clear();
         usernameController.clear();
-      }else if(progress==RegisterProgress.COMPLETED){
-        Get.toNamed("/login");
-        authController.setRegisterProgress(RegisterProgress.INITIAL);
-        authController.registerProgress.close();
+      } else if (next == RegisterProgress.completed) {
+        context.router.replace(const LoginRoute());
+        ref.read(authControllerProvider.notifier).setRegisterProgress(RegisterProgress.initial);
       }
     });
-  }
 
-  @override
-  Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -115,16 +111,24 @@ class _RegisterPageState extends State<RegisterPage> {
                     ElevatedButton(
                         onPressed: () async {
                           if(usernameController.text.isEmpty){
-                            print("username empty");
+                            debugPrint("username empty");
                           }else if(passwordController.text.isEmpty&&confirmPasswordController.text.isEmpty){
-                            print("password empty");
+                            debugPrint("password empty");
                           }else if(passwordController.text==confirmPasswordController.text) {
-                            await AuthService.register(context, Register(
-                                password: passwordController.text,
-                                email: emailController.text,
-                                username: usernameController.text));
+                            ref.read(authControllerProvider.notifier).register(
+                                Register(
+                                    password: passwordController.text,
+                                    email: emailController.text,
+                                    username: usernameController.text),
+                                onSuccess: (msg) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+                                },
+                                onError: (msg) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+                                }
+                            );
                           }else{
-                            print("passwords not match");
+                            debugPrint("passwords not match");
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -154,7 +158,7 @@ class _RegisterPageState extends State<RegisterPage> {
             const SizedBox(width: 4),
             TextButton(
               onPressed: () {
-                Get.toNamed('/login');
+                context.router.replace(const LoginRoute());
               },
               child: const Text("Login"),
             ),

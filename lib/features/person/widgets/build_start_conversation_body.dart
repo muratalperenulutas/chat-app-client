@@ -1,19 +1,23 @@
-import 'package:chat_app/features/person/controller/person_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../controller/person_controller.dart';
 import 'my_start_conversation_button.dart';
 
-Widget buildStartConversationBody(double screenHeight) {
-  PersonController personController = Get.find<PersonController>();
+class BuildStartConversationBody extends ConsumerWidget {
+  final double screenHeight;
 
-  return Obx(() {
-    final contactsOnChatApp = personController.contactsOnChatApp;
-    final contactsNotOnChatApp = personController.contactsNotOnChatApp;
+  const BuildStartConversationBody({super.key, required this.screenHeight});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final personState = ref.watch(personControllerProvider);
+
+    final contactsOnChatApp = personState.contactsOnChatApp;
+    final contactsNotOnChatApp = personState.contactsNotOnChatApp;
 
     if (contactsOnChatApp.isEmpty && contactsNotOnChatApp.isEmpty) {
       return const Center(child: Text("No contacts found"));
-     // return const Center(child: CircularProgressIndicator());
     }
 
     return SingleChildScrollView(
@@ -29,8 +33,8 @@ Widget buildStartConversationBody(double screenHeight) {
               primary: false,
               itemCount: contactsOnChatApp.length,
               itemBuilder: (context, index) {
-                return myStartConversationButton(
-                    screenHeight, contactsOnChatApp[index]);
+                return MyStartConversationButton(
+                    screenHeight: screenHeight, person: contactsOnChatApp[index]);
               },
             ),
             const Divider(),
@@ -46,13 +50,13 @@ Widget buildStartConversationBody(double screenHeight) {
               primary: false,
               itemCount: contactsNotOnChatApp.length,
               itemBuilder: (context, index) {
-                return myStartConversationButton(
-                    screenHeight, contactsNotOnChatApp[index]);
+                return MyStartConversationButton(
+                    screenHeight: screenHeight, person: contactsNotOnChatApp[index]);
               },
             ),
           ],
         ],
       ),
     );
-  });
+  }
 }

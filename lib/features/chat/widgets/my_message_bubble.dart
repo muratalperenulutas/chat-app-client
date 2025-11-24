@@ -1,5 +1,4 @@
 import 'package:chat_app/features/chat/helper/status_icon_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -50,7 +49,7 @@ class MyMessageBubble extends StatelessWidget {
                       DateFormat("HH:mm").format(message.sendTime),
                       style: TextStyle(fontSize: 12),
                     ),
-                    Icon(StatusIconPicker(message.status), size: 14)
+                    Icon(statusIconPicker(message.status), size: 14)
                   ],
                 )))
           ])),

@@ -1,82 +1,177 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:chat_app/constants/shared_pref_key.dart';
-import 'package:chat_app/features/auth/services/auth.dart';
-import 'package:get/get.dart';
+import 'package:chat_app/core/services/api/api.dart';
+import 'package:chat_app/features/auth/controllers/auth_state.dart';
+import 'package:chat_app/features/auth/models/login.dart';
+import 'package:chat_app/features/auth/models/register.dart';
+import 'package:chat_app/features/auth/models/register_progress.dart';
+import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/register_progress.dart';
+part 'auth_controller.g.dart';
 
-class AuthController extends GetxController {
-  final myId = ''.obs;
-  var accessToken = ''.obs;
-  var refreshToken = ''.obs;
-  var isLoggedIn = false.obs;
-  var isLoading = true.obs;
-
-  Rx<RegisterProgress> registerProgress=RegisterProgress.INITIAL.obs;
-
+@Riverpod(keepAlive: true)
+class AuthController extends _$AuthController {
   @override
-  void onInit() {
-    super.onInit();
-     _loadPreferences();
+  AuthState build() {
+    _loadPreferences();
+    return AuthState();
   }
 
   void _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    myId.value = prefs.getString(SharedPrefKey.userIdKey) ?? '';
-    accessToken.value = prefs.getString(SharedPrefKey.accessTokenKey) ?? '';
-    refreshToken.value = prefs.getString(SharedPrefKey.refreshTokenKey) ?? '';
-    isLoggedIn.value = refreshToken.value.isNotEmpty;
-    isLoading.value = false;
+    final myId = prefs.getString(SharedPrefKey.userIdKey) ?? '';
+    final accessToken = prefs.getString(SharedPrefKey.accessTokenKey) ?? '';
+    final refreshToken = prefs.getString(SharedPrefKey.refreshTokenKey) ?? '';
+    final isLoggedIn = refreshToken.isNotEmpty;
+    
+    state = state.copyWith(
+      myId: myId,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      isLoggedIn: isLoggedIn,
+      isLoading: false,
+    );
   }
 
   void setUserId(String value) async {
-    myId.value = value;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(SharedPrefKey.userIdKey, value);
+    state = state.copyWith(myId: value);
   }
 
   void setAccessToken(String value) async {
-    accessToken.value = value;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(SharedPrefKey.accessTokenKey, value);
+    state = state.copyWith(accessToken: value);
   }
 
   void setRefreshToken(String value) async {
-    refreshToken.value = value;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(SharedPrefKey.refreshTokenKey, value);
+    state = state.copyWith(refreshToken: value);
   }
-  void setLoggedIn(){
-    isLoggedIn.value = true;
+
+  void setLoggedIn() {
+    state = state.copyWith(isLoggedIn: true);
   }
 
   void logout() async {
     setRefreshToken('');
     setAccessToken('');
-    isLoggedIn.value = false;
+    state = state.copyWith(isLoggedIn: false);
   }
 
-  void setRegisterProgress(RegisterProgress progress){
-    registerProgress.value=progress;
+  void setRegisterProgress(RegisterProgress progress) {
+    state = state.copyWith(registerProgress: progress);
   }
 
-  Future<String> getAccessToken()  async {
-    Duration remainingTime = JwtDecoder.getRemainingTime(accessToken.value);
-    print("Remained access token time: $remainingTime");
-    if(remainingTime > Duration(minutes: 5)){
-      return accessToken.value;
-    }else if(remainingTime > Duration(minutes: 1)&&remainingTime < Duration(minutes: 5)){
-      AuthService.refresh();
-      return accessToken.value;
+  Future<void> login(Login login, {required Function(String) onError, required Function() onSuccess}) async {
+    debugPrint("Login");
+    try {
+      final response = await Api.postLoginRequest(login);
+      Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      String message = jsonResponse['message'];
+
+      if (response.statusCode == 200) {
+        String accessToken = jsonResponse['accessToken'];
+        String refreshToken = jsonResponse['refreshToken'];
+
+        if (JwtDecoder.isExpired(refreshToken) ||
+            JwtDecoder.isExpired(accessToken)) {
+          debugPrint('Token expired');
+          onError('Token expired');
+        } else {
+          setAccessToken(accessToken);
+          setRefreshToken(refreshToken);
+          setLoggedIn();
+          
+          Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
+          debugPrint('Decoded Token: $decodedToken');
+          String userId = decodedToken["sub"];
+          setUserId(userId);
+          
+          onSuccess();
+        }
+      } else {
+        onError(message);
+      }
+    } on SocketException catch (e2) {
+      debugPrint(e2.toString());
+      onError('No internet connection');
+    } catch (e) {
+      debugPrint('Error: $e');
+      onError('An error occurred');
     }
-    for(int i=1;i<4;i++){
-       if(JwtDecoder.getRemainingTime(accessToken.value) < Duration(minutes: 1)){
-         print("Refreshing access token... Attempt #$i");
-         await AuthService.refresh();
-       }else{
-         return accessToken.value;
-       }
+  }
+
+  Future<void> register(Register register, {required Function(String) onError, required Function(String) onSuccess}) async {
+    debugPrint ("Register");
+    try {
+      final response = await Api.postRegisterRequest(register);
+      Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      String message = jsonResponse['message'];
+      debugPrint(jsonResponse.toString());
+      if (response.statusCode == 201) {
+        setRegisterProgress(RegisterProgress.email);
+        onSuccess(message);
+      } else {
+        onError(message);
+      }
+    } on SocketException catch (e2) {
+      debugPrint(e2.toString());
+      onError('No internet connection');
+    } catch (e) {
+      debugPrint('Error: $e');
+      onError('An error occurred');
+    }
+  }
+
+  Future<void> refresh() async {
+    debugPrint("Refresh");
+    try {
+      final response = await Api.postRefreshRequest(state.refreshToken);
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        debugPrint(jsonResponse['message']);
+        setAccessToken(jsonResponse['accessToken']);
+      } else if (response.statusCode == 401) {
+        Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        String message = jsonResponse['message'];
+        debugPrint(message);
+        logout();
+      } else {
+        debugPrint('Refresh failed: ${response.body}');
+      }
+    } on SocketException catch (e2) {
+      debugPrint('No internet connection');
+      debugPrint(e2.toString());
+    } catch (e) {
+      debugPrint('Error: $e');
+    }
+  }
+
+  Future<String> getAccessToken() async {
+    Duration remainingTime = JwtDecoder.getRemainingTime(state.accessToken);
+    debugPrint("Remained access token time: $remainingTime");
+    if (remainingTime > Duration(minutes: 5)) {
+      return state.accessToken;
+    } else if (remainingTime > Duration(minutes: 1) && remainingTime < Duration(minutes: 5)) {
+      await refresh();
+      return state.accessToken;
+    }
+    for (int i = 1; i < 4; i++) {
+      if (JwtDecoder.getRemainingTime(state.accessToken) < Duration(minutes: 1)) {
+        debugPrint("Refreshing access token... Attempt #$i");
+        await refresh();
+      } else {
+        return state.accessToken;
+      }
     }
     return '';
   }

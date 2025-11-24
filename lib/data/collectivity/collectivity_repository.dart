@@ -4,16 +4,20 @@ import 'package:chat_app/data/collectivity/collectivity_abstract.dart';
 import 'package:chat_app/data/collectivity/dyad.dart';
 import 'package:chat_app/data/database_service.dart';
 import 'package:chat_app/core/general_change_notifier.dart';
-import 'package:get/get.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:injectable/injectable.dart';
 import 'package:drift/drift.dart' as drift;
 import '../database/database.dart';
 import 'group.dart';
 
+@singleton
 class CollectivityRepository {
-  final DatabaseService databaseService=Get.find<DatabaseService>();
+  final DatabaseService databaseService;
+  final GeneralChangeNotifier generalChangeNotifier;
+
+  CollectivityRepository(this.databaseService, this.generalChangeNotifier);
 
   AppDatabase get database => databaseService.getDatabase();
-  GeneralChangeNotifier generalChangeNotifier=Get.find<GeneralChangeNotifier>();
 
   Stream<List<Collectivity>> watchUnsyncedCollectivities() {
     final db = database;
@@ -24,7 +28,7 @@ class CollectivityRepository {
     ).watch().map((rows) => 
       rows.map((row) {
         final map = row.data;
-        return map["collectivity_type"] == CollectivityType.GROUP.name
+        return map["collectivity_type"] == CollectivityType.group.name
             ? Group.fromDb(map)
             : Dyad.fromDb(map);
       }).toList()
@@ -166,7 +170,7 @@ class CollectivityRepository {
     final results = await query.get();
     return results.map((row) {
       final map = row.data;
-      return map["collectivity_type"]==CollectivityType.GROUP.name ?
+      return map["collectivity_type"]==CollectivityType.group.name ?
         Group.fromDb(map) : Dyad.fromDb(map);
     }).toList();
   }
@@ -219,10 +223,10 @@ class CollectivityRepository {
     );
     
     final results = await query.get();
-    print("UnsyncedCollectivity ${results.map((r) => r.data).toList()}");
+    debugPrint("UnsyncedCollectivity ${results.map((r) => r.data).toList()}");
     return results.map((row) {
       final map = row.data;
-      return map["collectivity_type"]==CollectivityType.GROUP.name ?
+      return map["collectivity_type"]==CollectivityType.group.name ?
         Group.fromDb(map) : Dyad.fromDb(map);
     }).toList();
   }
@@ -235,6 +239,6 @@ class CollectivityRepository {
     );
     
     final results = await query.get();
-    print(results.map((r) => r.data).toList());
+    debugPrint(results.map((r) => r.data).toList().toString());
   }
 }

@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/enums/status.dart';
 
-IconData StatusIconPicker(Status status) {
+IconData statusIconPicker(Status status) {
   switch (status) {
-    case Status.CREATED:
+    case Status.created:
       return Icons.access_time_sharp;
-    case Status.PENDING:
+    case Status.pending:
       return Icons.access_time_sharp;
-    case Status.FAILED:
+    case Status.failed:
     // TODO: Handle this case.
-    case Status.SYNC:
+    case Status.sync:
       return Icons.check;
   }
 }

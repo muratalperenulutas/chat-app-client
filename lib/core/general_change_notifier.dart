@@ -1,25 +1,27 @@
-import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
+import 'package:injectable/injectable.dart';
 
-class GeneralChangeNotifier extends GetxService{
-  final RxInt isContactsChanged=0.obs;
-  final RxInt isMessagesChanged=0.obs;
-  final RxInt isCollectivitiesChanged=0.obs;
-  final RxInt isGroupParticipantsChanged=0.obs;
+@singleton
+class GeneralChangeNotifier {
+  final ValueNotifier<int> isContactsChanged = ValueNotifier(0);
+  final ValueNotifier<int> isMessagesChanged = ValueNotifier(0);
+  final ValueNotifier<int> isCollectivitiesChanged = ValueNotifier(0);
+  final ValueNotifier<int> isGroupParticipantsChanged = ValueNotifier(0);
 
   void contactsChanged(){
-    print("contacts changed");
+    debugPrint("contacts changed");
     isContactsChanged.value++;
   }
   void messagesChanged(){
-    print("messages changed");
+    debugPrint("messages changed");
     isMessagesChanged.value++;
   }
   void collectivitiesChanged(){
-    print("collectivities changed");
+    debugPrint("collectivities changed");
     isCollectivitiesChanged.value++;
   }
   void groupParticipantsChanged(){
-    print("group participants changed");
+    debugPrint("group participants changed");
     isGroupParticipantsChanged.value++;
   }
 }

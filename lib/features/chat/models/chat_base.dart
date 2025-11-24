@@ -1,7 +1,8 @@
 import 'package:chat_app/data/collectivity/collectivity_abstract.dart';
 import 'package:chat_app/data/collectivity/dyad.dart';
 import 'package:chat_app/data/person/person_repository.dart';
-import 'package:get/get.dart';
+import 'package:chat_app/core/di/injection.dart';
+import 'package:flutter/material.dart';
 
 import '../../../data/collectivity/group.dart';
 import '../../../data/person/person.dart';
@@ -48,7 +49,7 @@ class ChatBase {
       if (collectivity is Group) {
         chatBaseModels.add(ChatBase.fromGroup(collectivity));
       } else if (collectivity is Dyad) {
-          PersonRepository personRepository=Get.find<PersonRepository>();
+          final personRepository = getIt<PersonRepository>();
           Person? person = await personRepository
               .findPersonByPersonId(collectivity.userId);
           if(person!=null) {
@@ -56,9 +57,9 @@ class ChatBase {
                 ChatBase.fromPersonAndDyad(
                     person, collectivity));
           }
-          print(person==null?"person model null":"");
+          debugPrint(person==null?"person model null":"");
       } else {
-        print("Error: Invalid condition." + collectivity.toString());
+        debugPrint("Error: Invalid condition.$collectivity");
         throw Error();
       }
     }

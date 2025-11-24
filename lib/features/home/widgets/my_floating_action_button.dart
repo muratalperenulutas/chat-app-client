@@ -1,31 +1,25 @@
-import 'package:chat_app/features/person/screens/start_conversation_page.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/core/router/app_router.dart';
 import 'package:flutter/material.dart';
-
-import '../../person/screens/add_contact_page.dart';
 
 FloatingActionButton? myFloatingActionButton(BuildContext context,int index){
   switch (index) {
     case 1:
     return FloatingActionButton(
       onPressed: () {
-        Navigator.push(context,
-            MaterialPageRoute(
-                builder: (context) => StartConversationPage()
-            ));
+        context.router.push(const StartConversationRoute());
       },
-      child: Icon(Icons.message),
       backgroundColor: Colors.green,
+      child: Icon(Icons.message),
     );
     case 2:
     return FloatingActionButton(
       onPressed: () {
-        Navigator.push(context,
-            MaterialPageRoute(
-            builder: (context) => addContactsPage()
-        ));
+        context.router.push(const AddContactsRoute()
+        );
       },
-      child: Icon(Icons.add),
       backgroundColor: Colors.green,
+      child: Icon(Icons.add),
     );
     default:
       return null;

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 enum WsMessageResponseType {
   USER_FOUND,
   MESSAGE_SEND,
@@ -21,7 +23,7 @@ enum WsMessageResponseType {
   static WsMessageResponseType fromString(String value) {
     for (WsMessageResponseType command in WsMessageResponseType.values) {
       if (command.name == value) {
-        print(command.name);
+        debugPrint(command.name);
         return command;
       }
     }

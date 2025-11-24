@@ -1,28 +1,30 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/features/person/controller/person_controller.dart';
 import 'package:chat_app/features/person/widgets/my_select_contacts_app_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/build_start_conversation_body.dart';
 
-class StartConversationPage extends StatefulWidget {
+@RoutePage()
+class StartConversationPage extends ConsumerStatefulWidget {
   const StartConversationPage({super.key});
 
   @override
-  State<StartConversationPage> createState() => _StartConversationPageState();
+  ConsumerState<StartConversationPage> createState() => _StartConversationPageState();
 }
 
-class _StartConversationPageState extends State<StartConversationPage> {
+class _StartConversationPageState extends ConsumerState<StartConversationPage> {
+  late final PersonController _personController;
+
   @override
   void initState() {
     super.initState();
+    _personController = ref.read(personControllerProvider.notifier);
   }
-  PersonController personController=Get.find<PersonController>();
 
   @override
   void dispose() {
-    print("dispose");
-    personController.resetSelectedContacts();
+    Future.microtask(() => _personController.resetSelectedContacts());
     super.dispose();
   }
 
@@ -32,7 +34,7 @@ class _StartConversationPageState extends State<StartConversationPage> {
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: MySelectContactsAppBar(),
-      body: buildStartConversationBody(screenHeight),
+      body: BuildStartConversationBody(screenHeight: screenHeight),
     );
   }
 }

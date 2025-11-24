@@ -1,19 +1,20 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/features/person/controller/person_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class addContactsPage extends StatefulWidget {
-  const addContactsPage({super.key});
+@RoutePage()
+class AddContactsPage extends ConsumerStatefulWidget {
+  const AddContactsPage({super.key});
 
   @override
-  State<addContactsPage> createState() => _addContactsPageState();
+  ConsumerState<AddContactsPage> createState() => _AddContactsPageState();
 }
 
-class _addContactsPageState extends State<addContactsPage> {
+class _AddContactsPageState extends ConsumerState<AddContactsPage> {
   final _surnameController = TextEditingController();
   final _nameController = TextEditingController();
   final _usernameController = TextEditingController();
-  PersonController personController=Get.find<PersonController>();
 
   @override
   Widget build(BuildContext context) {
@@ -24,15 +25,15 @@ class _addContactsPageState extends State<addContactsPage> {
           leading: IconButton(
             icon: const Icon(Icons.close),
             onPressed: () {
-              Get.back();
+              context.router.pop();
             },
           ),
           title: const Center(child: Text("New Contact")),
           actions: [
             IconButton(
                 onPressed: () async {
-                  personController.createContact("${_nameController.text} ${_surnameController.text}", _usernameController.text);
-                  Get.back();
+                  ref.read(personControllerProvider.notifier).createContact("${_nameController.text} ${_surnameController.text}", _usernameController.text);
+                  context.router.pop();
                 },
                 icon: const Icon(Icons.check))
           ],

@@ -1,9 +1,7 @@
 import 'package:chat_app/constants/enums/collectivity_type.dart';
 import 'package:chat_app/constants/enums/status.dart';
 import 'package:chat_app/data/collectivity/collectivity_abstract.dart';
-import 'package:chat_app/features/auth/controllers/auth_controller.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:flutter/rendering.dart';
 
 class Dyad extends Collectivity {
   final String userId;
@@ -13,7 +11,7 @@ class Dyad extends Collectivity {
       required this.userId,
       String? collectivityId,
       required Status status,
-      CollectivityType type= CollectivityType.DYAD})
+      CollectivityType type= CollectivityType.dyad})
       : super(
             collectivityId: collectivityId,
             type:type,
@@ -21,7 +19,7 @@ class Dyad extends Collectivity {
             id: id);
 
   factory Dyad.fromDb(Map<String, dynamic> map) {
-    print("from db" + map.toString());
+    debugPrint("from db$map");
     return Dyad(
       id: map['id'],
       userId: map['user_id'] ?? "",
@@ -31,21 +29,20 @@ class Dyad extends Collectivity {
     );
   }
 
-  factory Dyad.fromJson(Map<String, dynamic> json) {
-    AuthController authController = Get.find<AuthController>();
+  factory Dyad.fromJson(Map<String, dynamic> json, String myId) {
     var userIds = List<String>.from(json['members']);
     String? otherUserId = userIds
-        .firstWhere((id) => id != authController.myId.value, orElse: ()=>"");
+        .firstWhere((id) => id != myId, orElse: ()=>"");
     if(otherUserId==""){
-      print("userIds"+userIds.toString());
-      print("myId:"+authController.myId.value);
-      print("other userId null");
+      debugPrint("userIds"+userIds.toString());
+      debugPrint("myId:"+myId);
+      debugPrint("other userId null");
       throw Error();
     }
     return Dyad(
         collectivityId: json['collectivityId'],
         userId: otherUserId,
-        status: Status.SYNC);
+        status: Status.sync);
   }
 
   Map<String, dynamic> toDb() => {
