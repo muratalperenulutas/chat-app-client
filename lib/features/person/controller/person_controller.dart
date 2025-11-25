@@ -1,5 +1,4 @@
 import 'package:chat_app/core/di/injection.dart';
-import 'package:chat_app/core/general_change_notifier.dart';
 import 'package:chat_app/data/person/person_repository.dart';
 import 'package:chat_app/data/person/person_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -10,15 +9,14 @@ part 'person_controller.g.dart';
 @Riverpod(keepAlive: true)
 class PersonController extends _$PersonController {
   late final PersonRepository personRepository = getIt<PersonRepository>();
-  late final GeneralChangeNotifier generalChangeNotifier = getIt<GeneralChangeNotifier>();
 
   @override
   PersonState build() {
     void listener() {
       _loadData();
     }
-    generalChangeNotifier.isContactsChanged.addListener(listener);
-    ref.onDispose(() => generalChangeNotifier.isContactsChanged.removeListener(listener));
+    //generalChangeNotifier.isContactsChanged.addListener(listener);
+    //ref.onDispose(() => generalChangeNotifier.isContactsChanged.removeListener(listener));
     
     _loadData();
     return PersonState();

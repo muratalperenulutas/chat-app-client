@@ -23,6 +23,9 @@ import '../../../data/person/person.dart';
 import '../../../data/person/person_service.dart';
 import '../../../features/auth/controllers/auth_controller.dart';
 
+enum ConnectionStatus { connected, disconnected, connecting }
+
+
 class WebSocketClient {
   final ProviderContainer container;
   late final ProviderSubscription authSubscription;
@@ -31,21 +34,42 @@ class WebSocketClient {
   late final CollectivityService collectivityService;
   late final PersonRepository personRepository;
   late final ParticipantService participantService;
-
+  Function() onConnected = () {};
+  
+  final StreamController<ConnectionStatus> _connectionStatusController = 
+      StreamController<ConnectionStatus>.broadcast();
+  ConnectionStatus _connectionStatus = ConnectionStatus.disconnected;
+  
+  WebSocketChannel? channel;
+  bool _isConnecting = false;
+  
+  ConnectionStatus get connectionStatus => _connectionStatus;
+  
+  Stream<ConnectionStatus> get connectionStatusStream => _connectionStatusController.stream;
+  
+  bool get isWsConnected => _connectionStatus == ConnectionStatus.connected;
+  
+  void _setConnectionStatus(ConnectionStatus status) {
+    if (_connectionStatus != status) {
+      _connectionStatus = status;
+      _connectionStatusController.add(status);
+    
+      if (status == ConnectionStatus.connected) {
+        onConnected();
+      }
+    }
+  }
+  
   WebSocketClient(this.container) {
     personService = getIt<PersonService>();
     messageService = getIt<MessageService>();
     collectivityService = getIt<CollectivityService>();
     personRepository = getIt<PersonRepository>();
     participantService = getIt<ParticipantService>();
+    onConnected = () {};
 
     _initialize();
   }
-
-  bool isWsConnected = false;
-  WebSocketChannel? channel;
-
-  bool _isConnecting = false;
 
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
@@ -79,6 +103,7 @@ class WebSocketClient {
   Future<void> _connect() async {
     if (isWsConnected || _isConnecting) return;
     _isConnecting = true;
+    _setConnectionStatus(ConnectionStatus.connecting);
     //print('Function called from: ${StackTrace.current}')
 
     String deviceType = "unknown";
@@ -125,20 +150,17 @@ class WebSocketClient {
         onError: (error) {
           debugPrint("WebSocket: Error occurred: $error");
           _setDisconnected();
-          _attemptReconnection();
         },
         onDone: () {
           debugPrint("WebSocket: Connection closed.");
           _setDisconnected();
-          _attemptReconnection();
         },
       );
-      isWsConnected = true;
+      _setConnectionStatus(ConnectionStatus.connected);
       debugPrint("ws connected");
     } catch (e) {
       debugPrint("WebSocket connection failed: $e");
       _setDisconnected();
-      _attemptReconnection();
     } finally {
       _isConnecting = false;
     }
@@ -154,19 +176,8 @@ class WebSocketClient {
     channel?.sink.close();
   }
 
-  void _attemptReconnection() {
-    if (!isWsConnected) {
-      debugPrint("Attempting to reconnect...");
-      Future.delayed(Duration(seconds: 10), () {
-        if (isWsConnected == false) {
-          _connect();
-        }
-      });
-    }
-  }
-
   void _setDisconnected() {
-    isWsConnected = false;
+    _setConnectionStatus(ConnectionStatus.disconnected);
     channel = null;
   }
 
@@ -256,5 +267,7 @@ class WebSocketClient {
 
   void dispose() {
     _connectivitySubscription.cancel();
+    _connectionStatusController.close();
+    close();
   }
 }

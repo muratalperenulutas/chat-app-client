@@ -4,16 +4,14 @@ import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 
-import '../../core/general_change_notifier.dart';
 import '../database_service.dart';
 import 'message.dart';
 
 @singleton
 class MessageRepository {
   final DatabaseService databaseService;
-  final GeneralChangeNotifier generalChangeNotifier;
 
-  MessageRepository(this.databaseService, this.generalChangeNotifier);
+  MessageRepository(this.databaseService);
 
   AppDatabase get database => databaseService.getDatabase();
 
@@ -46,7 +44,6 @@ class MessageRepository {
       ],
       updates: {db.messages},
     );
-    generalChangeNotifier.messagesChanged();
   }
 
   Future<void> insertMessageList(List<Message> messages) async {
@@ -69,7 +66,6 @@ class MessageRepository {
         updates: {db.messages},
       );
     }
-    generalChangeNotifier.messagesChanged();
   }
 
   Future<void> updateMessage(Message message) async {
@@ -91,7 +87,6 @@ class MessageRepository {
       ],
       updates: {db.messages},
     );
-    generalChangeNotifier.messagesChanged();
   }
 
   Future<void> updateMessageWithoutNotifier(Message message) async {
@@ -125,7 +120,6 @@ class MessageRepository {
       ],
       updates: {db.messages},
     );
-    generalChangeNotifier.messagesChanged();
   }
 
   Future<List<Message>> getMessagesByCollectivityIdOrDyadReceiverId(String collectivityId, String dyadReceiverId) async {

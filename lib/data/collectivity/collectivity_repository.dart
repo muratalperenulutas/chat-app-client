@@ -3,7 +3,6 @@ import 'package:chat_app/constants/enums/collectivity_type.dart';
 import 'package:chat_app/data/collectivity/collectivity_abstract.dart';
 import 'package:chat_app/data/collectivity/dyad.dart';
 import 'package:chat_app/data/database_service.dart';
-import 'package:chat_app/core/general_change_notifier.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:injectable/injectable.dart';
 import 'package:drift/drift.dart' as drift;
@@ -13,9 +12,8 @@ import 'group.dart';
 @singleton
 class CollectivityRepository {
   final DatabaseService databaseService;
-  final GeneralChangeNotifier generalChangeNotifier;
 
-  CollectivityRepository(this.databaseService, this.generalChangeNotifier);
+  CollectivityRepository(this.databaseService);
 
   AppDatabase get database => databaseService.getDatabase();
 
@@ -52,7 +50,6 @@ class CollectivityRepository {
       ],
       updates: {db.collectivities},
     );
-    generalChangeNotifier.collectivitiesChanged();
   }
 
   Future<void> insertGroupList(List<Group> groups) async {
@@ -74,7 +71,6 @@ class CollectivityRepository {
         updates: {db.collectivities},
       );
     }
-    generalChangeNotifier.collectivitiesChanged();
   }
 
   Future<void> updateGroup(Group group, int collectivityId) async {
@@ -94,7 +90,6 @@ class CollectivityRepository {
       ],
       updates: {db.collectivities},
     );
-    generalChangeNotifier.collectivitiesChanged();
   }
 
   Future<void> insertDyad(Dyad dyad) async {
@@ -112,7 +107,6 @@ class CollectivityRepository {
       ],
       updates: {db.collectivities},
     );
-    generalChangeNotifier.collectivitiesChanged();
   }
 
   Future<void> insertDyadList(List<Dyad> dyads) async {
@@ -132,7 +126,6 @@ class CollectivityRepository {
         updates: {db.collectivities},
       );
     }
-    generalChangeNotifier.collectivitiesChanged();
   }
 
   Future<void> updateDyad(Dyad dyad) async {
@@ -149,7 +142,6 @@ class CollectivityRepository {
       ],
       updates: {db.collectivities},
     );
-    generalChangeNotifier.collectivitiesChanged();
   }
 
   Future<void> createCollectivityIfNotExist(String collectivityId)async{

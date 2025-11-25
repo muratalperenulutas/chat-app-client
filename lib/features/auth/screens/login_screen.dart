@@ -122,7 +122,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             const SizedBox(width: 4),
             TextButton(
               onPressed: () {
-                context.router.push(const RegisterRoute());
+                context.router.replace(const RegisterRoute());
               },
               child: const Text("Register"),
             ),

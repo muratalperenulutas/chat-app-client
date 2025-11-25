@@ -4,7 +4,6 @@ import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 
-import '../../core/general_change_notifier.dart';
 import '../database_service.dart';
 import '../database/database.dart';
 import 'participant.dart';
@@ -12,7 +11,6 @@ import 'participant.dart';
 @singleton
 class ParticipantRepository {
   final DatabaseService databaseService = getIt<DatabaseService>();
-  final GeneralChangeNotifier generalChangeNotifier = getIt<GeneralChangeNotifier>();
   AppDatabase get database => databaseService.getDatabase();
 
   Future<void> insertParticipant(Participant participant) async {
@@ -27,7 +25,6 @@ class ParticipantRepository {
       ],
       updates: {db.participants},
     );
-    generalChangeNotifier.groupParticipantsChanged();
   }
 
   Future<void> insertParticipantList(List<Participant> participants) async {
@@ -49,7 +46,6 @@ class ParticipantRepository {
         debugPrint("Error inserting participant: $e");
       }
     }
-    generalChangeNotifier.groupParticipantsChanged();
   }
 
   Future<List<Participant>> getAllParticipants(String collectivityId) async {

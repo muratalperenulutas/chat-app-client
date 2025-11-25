@@ -1,5 +1,4 @@
 import 'package:chat_app/core/di/injection.dart';
-import 'package:chat_app/core/general_change_notifier.dart';
 import 'package:chat_app/data/collectivity/collectivity_service.dart';
 import 'package:chat_app/data/message/message_repository.dart';
 import 'package:chat_app/data/message/message_service.dart';
@@ -11,15 +10,15 @@ part 'message_controller.g.dart';
 @Riverpod(keepAlive: true)
 class MessageController extends _$MessageController {
   late final MessageRepository messageRepository = getIt<MessageRepository>();
-  late final GeneralChangeNotifier generalChangeNotifier = getIt<GeneralChangeNotifier>();
 
   @override
   MessageState build() {
     void listener() {
       _loadData();
     }
-    generalChangeNotifier.isMessagesChanged.addListener(listener);
-    ref.onDispose(() => generalChangeNotifier.isMessagesChanged.removeListener(listener));
+    //TO DO: Replace with more specific listener
+    //generalChangeNotifier.isMessagesChanged.addListener(listener);
+    //ref.onDispose(() => generalChangeNotifier.isMessagesChanged.removeListener(listener));
     
     _loadData();
     

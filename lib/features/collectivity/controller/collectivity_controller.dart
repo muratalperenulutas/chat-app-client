@@ -1,5 +1,4 @@
 import 'package:chat_app/core/di/injection.dart';
-import 'package:chat_app/core/general_change_notifier.dart';
 import 'package:chat_app/data/collectivity/collectivity_repository.dart';
 import 'package:chat_app/features/chat/models/chat_base.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -10,19 +9,19 @@ part 'collectivity_controller.g.dart';
 @Riverpod(keepAlive: true)
 class CollectivityController extends _$CollectivityController {
   late final CollectivityRepository collectivityRepository = getIt<CollectivityRepository>();
-  late final GeneralChangeNotifier generalChangeNotifier = getIt<GeneralChangeNotifier>();
 
   @override
   CollectivityState build() {
     void listener() {
       _loadData();
     }
-    generalChangeNotifier.isCollectivitiesChanged.addListener(listener);
-    generalChangeNotifier.isContactsChanged.addListener(listener);
+    //TO DO: Replace with more specific listener
+    //generalChangeNotifier.isCollectivitiesChanged.addListener(listener);
+    //generalChangeNotifier.isContactsChanged.addListener(listener);
     
     ref.onDispose(() {
-      generalChangeNotifier.isCollectivitiesChanged.removeListener(listener);
-      generalChangeNotifier.isContactsChanged.removeListener(listener);
+      //generalChangeNotifier.isCollectivitiesChanged.removeListener(listener);
+      //generalChangeNotifier.isContactsChanged.removeListener(listener);
     });
 
     _loadData();

@@ -42,7 +42,7 @@ final class CollectivityControllerProvider
 }
 
 String _$collectivityControllerHash() =>
-    r'c9421bbbc5fb48f2c67b109bf5eb167158e03090';
+    r'8e6368c7fb8bf30db213c1234c61a85b5c6ab28e';
 
 abstract class _$CollectivityController extends $Notifier<CollectivityState> {
   CollectivityState build();

@@ -1,7 +1,6 @@
 import 'package:chat_app/constants/db/table_names.dart';
 import 'package:chat_app/constants/enums/status.dart';
 import 'package:chat_app/data/person/person.dart';
-import 'package:chat_app/core/general_change_notifier.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:injectable/injectable.dart';
 import 'package:drift/drift.dart' as drift;
@@ -13,11 +12,22 @@ import '../database/database.dart';
 @singleton
 class PersonRepository {
   final DatabaseService databaseService;
-  final GeneralChangeNotifier generalChangeNotifier;
 
-  PersonRepository(this.databaseService, this.generalChangeNotifier);
+  PersonRepository(this.databaseService);
 
   AppDatabase get database => databaseService.getDatabase();
+
+  Stream<List<Person>> watchUnsyncedPersons() {
+    final db = database;
+    
+    return db.customSelect(
+      'SELECT * FROM ${DbTableNames.persons} WHERE status != ?',
+      variables: [drift.Variable.withString(Status.sync.name)],
+      readsFrom: {db.persons},
+    ).watch().map((rows) => 
+      rows.map((row) => Person.fromDb(row.data)).toList()
+    );
+  }
 
   Future<void> insertPerson(Person person) async {
     final db = database;
@@ -44,7 +54,6 @@ class PersonRepository {
       debugPrint("Error inserting person: $e");
       rethrow;
     }
-    generalChangeNotifier.contactsChanged();
   }
 
   Future<Person?> findPersonByUsername(String username) async {
@@ -180,7 +189,6 @@ class PersonRepository {
       ],
       updates: {db.persons},
     );
-    generalChangeNotifier.contactsChanged();
   }
 
   Future<void> printAll() async {
@@ -193,4 +201,5 @@ class PersonRepository {
     final results = await query.get();
     debugPrint(results.map((r) => r.data).toList().toString());
   }
+
 }

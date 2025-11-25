@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/core/di/injection.dart';
-import 'package:chat_app/core/services/ingest/collectivity_ingest.dart';
+import 'package:chat_app/core/services/sync/collectivity.dart';
 import 'package:chat_app/features/person/controller/person_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +14,7 @@ class CreateGroupPage extends ConsumerStatefulWidget {
 }
 
 class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
-  CollectivityIngest collectivityIngest = getIt<CollectivityIngest>();
+  CollectivitySyncService collectivitySyncService = getIt<CollectivitySyncService>();
   final TextEditingController _nameController = TextEditingController();
 
   @override
@@ -33,7 +33,7 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
           IconButton(
               onPressed: () {
                 if (_nameController.text.isNotEmpty) {
-                  collectivityIngest.createGroup(_nameController.text,
+                  collectivitySyncService.createGroup(_nameController.text,
                       personState.selectedContacts.toList());
                   context.router.replacePath('/home');
                 }
