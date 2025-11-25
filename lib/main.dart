@@ -1,6 +1,5 @@
 import 'package:chat_app/app.dart';
 import 'package:chat_app/core/di/injection.dart';
-import 'package:chat_app/core/services/notification/notification_service.dart';
 import 'package:chat_app/data/database_service.dart';
 import 'package:chat_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -27,13 +26,6 @@ void main() async {
 
   configureDependencies();
   initInitialBindings();
-
-  try {
-    await NotificationService.instance.initialize();
-    debugPrint('Notification service initialized successfully');
-  } catch (e) {
-    debugPrint('Notification service initialization error: $e');
-  }
 
   try {
     final databaseService = getIt<DatabaseService>();
