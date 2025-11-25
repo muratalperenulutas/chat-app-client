@@ -60,46 +60,42 @@ class _HomePageState extends State<HomePage>
       const Center(child: Text("Me Page"))
     ];
     return Scaffold(
-        body: Column(
-          children: [
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (isWideScreen)
-                    MyNavigationBar(
-                        screenHeight: screenHeight,
-                        screenWidth: screenWidth,
-                        items: navBarItems,
-                        onTab: _onItemTapped,
-                        currentIndex: _selectedIndex,
-                        position: NavigationBarPosition.left),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        if(!isWideScreen)buildAppBar(screenHeight,isWideScreen, context),
-                        Expanded(
-                          child: TabBarView(
-                              controller: _tabController, children: widgetOptions),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (!isWideScreen)
-              MyNavigationBar(
-                position: NavigationBarPosition.bottom,
-                screenWidth: screenWidth,
+      body: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (isWideScreen)
+            MyNavigationBar(
                 screenHeight: screenHeight,
-                currentIndex: _selectedIndex,
+                screenWidth: screenWidth,
                 items: navBarItems,
                 onTab: _onItemTapped,
-              ),
-          ],
-        ),
-        floatingActionButton: myFloatingActionButton(context, _selectedIndex),
-        );
+                currentIndex: _selectedIndex,
+                position: NavigationBarPosition.left),
+          Expanded(
+            child: Column(
+              children: [
+                if (!isWideScreen)
+                  buildAppBar(screenHeight, isWideScreen, context),
+                Expanded(
+                  child: TabBarView(
+                      controller: _tabController, children: widgetOptions),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: myFloatingActionButton(context, _selectedIndex),
+      bottomNavigationBar: !isWideScreen
+          ? MyNavigationBar(
+              position: NavigationBarPosition.bottom,
+              screenWidth: screenWidth,
+              screenHeight: screenHeight,
+              currentIndex: _selectedIndex,
+              items: navBarItems,
+              onTab: _onItemTapped,
+            )
+          : null,
+    );
   }
 }
