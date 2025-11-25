@@ -3,78 +3,147 @@ import 'package:chat_app/constants/enums/collectivity_type.dart';
 import 'package:chat_app/data/collectivity/collectivity_abstract.dart';
 import 'package:chat_app/data/collectivity/dyad.dart';
 import 'package:chat_app/data/database_service.dart';
-import 'package:chat_app/core/general_change_notifier.dart';
-import 'package:get/get.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:injectable/injectable.dart';
+import 'package:drift/drift.dart' as drift;
+import '../database/database.dart';
 import 'group.dart';
 
+@singleton
 class CollectivityRepository {
-  final DatabaseService databaseService=Get.find<DatabaseService>();
+  final DatabaseService databaseService;
 
-  Future<Database> get database async => databaseService.getDatabase();
-  GeneralChangeNotifier generalChangeNotifier=Get.find<GeneralChangeNotifier>();
+  CollectivityRepository(this.databaseService);
+
+  AppDatabase get database => databaseService.getDatabase();
+
+  Stream<List<Collectivity>> watchUnsyncedCollectivities() {
+    final db = database;
+    
+    return db.customSelect(
+      'SELECT * FROM ${DbTableNames.collectivity} WHERE status = \'CREATED\'',
+      readsFrom: {db.collectivities},
+    ).watch().map((rows) => 
+      rows.map((row) {
+        final map = row.data;
+        return map["collectivity_type"] == CollectivityType.group.name
+            ? Group.fromDb(map)
+            : Dyad.fromDb(map);
+      }).toList()
+    );
+  }
 
   Future<void> insertGroup(Group group) async {
-    final db = await database;
-    await db.insert(DbTableNames.collectivity, group.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
-    generalChangeNotifier.collectivitiesChanged();
+    final db = database;
+    final map = group.toDb();
+    await db.customInsert(
+      'INSERT OR REPLACE INTO ${DbTableNames.collectivity} '
+      '(collectivityId, name, creator_id, image_id, collectivity_type, status) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      variables: [
+        drift.Variable.withString(map['collectivityId'] ?? ''),
+        drift.Variable.withString(map['name'] ?? ''),
+        drift.Variable.withString(map['creator_id'] ?? ''),
+        drift.Variable.withString(map['image_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_type'] ?? ''),
+        drift.Variable.withString(map['status'] ?? ''),
+      ],
+      updates: {db.collectivities},
+    );
   }
-  Future<void> insertGroupList(List<Group> groups) async {
-    final db = await database;
 
-    Batch batch = db.batch();
+  Future<void> insertGroupList(List<Group> groups) async {
+    final db = database;
     for (var group in groups) {
-      batch.insert(
-        DbTableNames.collectivity,
-        group.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
+      final map = group.toDb();
+      await db.customInsert(
+        'INSERT OR REPLACE INTO ${DbTableNames.collectivity} '
+        '(collectivityId, name, creator_id, image_id, collectivity_type, status) '
+        'VALUES (?, ?, ?, ?, ?, ?)',
+        variables: [
+          drift.Variable.withString(map['collectivityId'] ?? ''),
+          drift.Variable.withString(map['name'] ?? ''),
+          drift.Variable.withString(map['creator_id'] ?? ''),
+          drift.Variable.withString(map['image_id'] ?? ''),
+          drift.Variable.withString(map['collectivity_type'] ?? ''),
+          drift.Variable.withString(map['status'] ?? ''),
+        ],
+        updates: {db.collectivities},
       );
     }
-    await batch.commit(noResult: true);
-    generalChangeNotifier.collectivitiesChanged();
   }
 
   Future<void> updateGroup(Group group, int collectivityId) async {
-    final db = await database;
-    await db.update(
-      DbTableNames.collectivity,
-      group.toDb(),
-      where: 'collectivityId = ?',
-      whereArgs: [collectivityId],
+    final db = database;
+    final map = group.toDb();
+    await db.customUpdate(
+      'UPDATE ${DbTableNames.collectivity} SET '
+      'name = ?, creator_id = ?, image_id = ?, collectivity_type = ?, status = ? '
+      'WHERE collectivityId = ?',
+      variables: [
+        drift.Variable.withString(map['name'] ?? ''),
+        drift.Variable.withString(map['creator_id'] ?? ''),
+        drift.Variable.withString(map['image_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_type'] ?? ''),
+        drift.Variable.withString(map['status'] ?? ''),
+        drift.Variable.withInt(collectivityId),
+      ],
+      updates: {db.collectivities},
     );
-    generalChangeNotifier.collectivitiesChanged();
   }
+
   Future<void> insertDyad(Dyad dyad) async {
-    final db = await database;
-    await db.insert(DbTableNames.collectivity, dyad.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
-    generalChangeNotifier.collectivitiesChanged();
-  }
-  Future<void> insertDyadList(List<Dyad> dyads) async {
-    final db = await database;
-      Batch batch = db.batch();
-      for (var dyad in dyads) {
-        batch.insert(
-          DbTableNames.collectivity,
-          dyad.toDb(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-      }
-      await batch.commit(noResult: true);
-    generalChangeNotifier.collectivitiesChanged();
-  }
-  Future<void> updateDyad(Dyad dyad) async {
-    final db = await database;
-    await db.update(
-      DbTableNames.collectivity,
-      dyad.toDb(),
-      where: 'userId = ?',
-      whereArgs: [dyad.userId],
-      conflictAlgorithm: ConflictAlgorithm.replace
+    final db = database;
+    final map = dyad.toDb();
+    await db.customInsert(
+      'INSERT OR REPLACE INTO ${DbTableNames.collectivity} '
+      '(collectivityId, user_id, collectivity_type, status) '
+      'VALUES (?, ?, ?, ?)',
+      variables: [
+        drift.Variable.withString(map['collectivityId'] ?? ''),
+        drift.Variable.withString(map['user_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_type'] ?? ''),
+        drift.Variable.withString(map['status'] ?? ''),
+      ],
+      updates: {db.collectivities},
     );
-    generalChangeNotifier.collectivitiesChanged();
   }
+
+  Future<void> insertDyadList(List<Dyad> dyads) async {
+    final db = database;
+    for (var dyad in dyads) {
+      final map = dyad.toDb();
+      await db.customInsert(
+        'INSERT OR REPLACE INTO ${DbTableNames.collectivity} '
+        '(collectivityId, user_id, collectivity_type, status) '
+        'VALUES (?, ?, ?, ?)',
+        variables: [
+          drift.Variable.withString(map['collectivityId'] ?? ''),
+          drift.Variable.withString(map['user_id'] ?? ''),
+          drift.Variable.withString(map['collectivity_type'] ?? ''),
+          drift.Variable.withString(map['status'] ?? ''),
+        ],
+        updates: {db.collectivities},
+      );
+    }
+  }
+
+  Future<void> updateDyad(Dyad dyad) async {
+    final db = database;
+    final map = dyad.toDb();
+    await db.customUpdate(
+      'UPDATE ${DbTableNames.collectivity} SET '
+      'collectivityId = ?, collectivity_type = ?, status = ? WHERE user_id = ?',
+      variables: [
+        drift.Variable.withString(map['collectivityId'] ?? ''),
+        drift.Variable.withString(map['collectivity_type'] ?? ''),
+        drift.Variable.withString(map['status'] ?? ''),
+        drift.Variable.withString(map['user_id'] ?? ''),
+      ],
+      updates: {db.collectivities},
+    );
+  }
+
   Future<void> createCollectivityIfNotExist(String collectivityId)async{
     int a=await isExistByCollectivityIdId(collectivityId);
     if(a==0){
@@ -84,50 +153,84 @@ class CollectivityRepository {
   }
 
   Future<List<Collectivity>> getCollectivities() async {
-    final db = await database;
-    final list =
-        await db.rawQuery('SELECT * FROM ${DbTableNames.collectivity}');
-    return list.map((map) => map["collectivityType"]==CollectivityType.GROUP.name?
-    Group.fromDb(map):Dyad.fromDb(map)).toList();
+    final db = database;
+    final query = db.customSelect(
+      'SELECT * FROM ${DbTableNames.collectivity}',
+      readsFrom: {db.collectivities},
+    );
+    
+    final results = await query.get();
+    return results.map((row) {
+      final map = row.data;
+      return map["collectivity_type"]==CollectivityType.group.name ?
+        Group.fromDb(map) : Dyad.fromDb(map);
+    }).toList();
   }
+
   Future<int> isExistByCollectivityIdId(String collectivityId) async {
-    final db = await database;
-    final list = await db.rawQuery(
-        'SELECT * FROM ${DbTableNames.collectivity} WHERE collectivityId = ?', [collectivityId]);
-    return list.length;
+    final db = database;
+    final query = db.customSelect(
+      'SELECT * FROM ${DbTableNames.collectivity} WHERE collectivityId = ?',
+      variables: [drift.Variable.withString(collectivityId)],
+      readsFrom: {db.collectivities},
+    );
+    
+    final results = await query.get();
+    return results.length;
   }
 
   Future<Group> getGroupByCollectivityId(int collectivityId) async {
-    final db = await database;
-    final list = await db.rawQuery(
-        'SELECT * FROM ${DbTableNames.collectivity} WHERE collectivityId = ?', [collectivityId]);
-    return list.map((map) => Group.fromDb(map)).toList().first;
-  }
-  Future<Dyad?> getDyadByUserId(String userId) async {
-    final db = await database;
-    final list = await db.rawQuery(
-      'SELECT * FROM ${DbTableNames.collectivity} WHERE userId = ?', [userId],
+    final db = database;
+    final query = db.customSelect(
+      'SELECT * FROM ${DbTableNames.collectivity} WHERE collectivityId = ?',
+      variables: [drift.Variable.withInt(collectivityId)],
+      readsFrom: {db.collectivities},
     );
+    
+    final results = await query.get();
+    return results.map((row) => Group.fromDb(row.data)).toList().first;
+  }
 
-    if (list.isNotEmpty) {
-      return Dyad.fromDb(list.first);
+  Future<Dyad?> getDyadByUserId(String userId) async {
+    final db = database;
+    final query = db.customSelect(
+      'SELECT * FROM ${DbTableNames.collectivity} WHERE user_id = ?',
+      variables: [drift.Variable.withString(userId)],
+      readsFrom: {db.collectivities},
+    );
+    
+    final results = await query.get();
+    if (results.isNotEmpty) {
+      return Dyad.fromDb(results.first.data);
     } else {
       return null;
     }
   }
+
   Future<List<Collectivity>> getUnsyncedCollectivities() async {
-    final db = await database;
-    final list =
-    await db.rawQuery('SELECT * FROM ${DbTableNames.collectivity} WHERE status = \'CREATED\'');
-    print("UnsyncedCollectivity $list");
-    return list.map((map) => map["collectivityType"]==CollectivityType.GROUP?
-    Group.fromDb(map):Dyad.fromDb(map)).toList();
-  }
-  Future<void> printAll() async {
-    final db = await database;
-    final list =
-        await db.rawQuery('SELECT * FROM ${DbTableNames.collectivity}');
-    print(list);
+    final db = database;
+    final query = db.customSelect(
+      'SELECT * FROM ${DbTableNames.collectivity} WHERE status = \'CREATED\'',
+      readsFrom: {db.collectivities},
+    );
+    
+    final results = await query.get();
+    debugPrint("UnsyncedCollectivity ${results.map((r) => r.data).toList()}");
+    return results.map((row) {
+      final map = row.data;
+      return map["collectivity_type"]==CollectivityType.group.name ?
+        Group.fromDb(map) : Dyad.fromDb(map);
+    }).toList();
   }
 
+  Future<void> printAll() async {
+    final db = database;
+    final query = db.customSelect(
+      'SELECT * FROM ${DbTableNames.collectivity}',
+      readsFrom: {db.collectivities},
+    );
+    
+    final results = await query.get();
+    debugPrint(results.map((r) => r.data).toList().toString());
+  }
 }

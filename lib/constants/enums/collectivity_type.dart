@@ -1,6 +1,6 @@
 enum CollectivityType {
-  DYAD,
-  GROUP;
+  dyad,
+  group;
 
   static CollectivityType fromString(String value){
     for(CollectivityType type in CollectivityType.values){

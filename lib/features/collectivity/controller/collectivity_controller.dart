@@ -1,29 +1,39 @@
-import 'package:chat_app/core/general_change_notifier.dart';
-import 'package:chat_app/data/collectivity/collectivity_abstract.dart';
+import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/data/collectivity/collectivity_repository.dart';
-import 'package:chat_app/data/collectivity/collectivity_service.dart';
 import 'package:chat_app/features/chat/models/chat_base.dart';
-import 'package:get/get.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'collectivity_state.dart';
 
-class CollectivityController extends GetxController{
-  RxList<Collectivity> collectivities=<Collectivity>[].obs;
-  RxList<ChatBase> chatBaseModels=<ChatBase>[].obs;
+part 'collectivity_controller.g.dart';
 
-  CollectivityService collectivityService=Get.find<CollectivityService>();
-  CollectivityRepository collectivityRepository=Get.find<CollectivityRepository>();
-  GeneralChangeNotifier generalChangeNotifier=Get.find<GeneralChangeNotifier>();
+@Riverpod(keepAlive: true)
+class CollectivityController extends _$CollectivityController {
+  late final CollectivityRepository collectivityRepository = getIt<CollectivityRepository>();
 
   @override
-  void onInit() {
-    super.onInit();
-    _loadData();
-    everAll([generalChangeNotifier.isCollectivitiesChanged,generalChangeNotifier.isContactsChanged], (_){
+  CollectivityState build() {
+    void listener() {
       _loadData();
+    }
+    //TO DO: Replace with more specific listener
+    //generalChangeNotifier.isCollectivitiesChanged.addListener(listener);
+    //generalChangeNotifier.isContactsChanged.addListener(listener);
+    
+    ref.onDispose(() {
+      //generalChangeNotifier.isCollectivitiesChanged.removeListener(listener);
+      //generalChangeNotifier.isContactsChanged.removeListener(listener);
     });
+
+    _loadData();
+    return CollectivityState();
   }
 
-  void _loadData()async{
-    collectivities.value=await collectivityRepository.getCollectivities();
-    chatBaseModels.value=await ChatBase.fromCollectivities(collectivities);
+  Future<void> _loadData() async {
+    final collectivities = await collectivityRepository.getCollectivities();
+    final chatBaseModels = await ChatBase.fromCollectivities(collectivities);
+    state = state.copyWith(
+      collectivities: collectivities,
+      chatBaseModels: chatBaseModels,
+    );
   }
 }

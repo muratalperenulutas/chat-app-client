@@ -1,72 +1,37 @@
 import 'dart:async';
-import 'package:chat_app/constants/db/table_names.dart';
-import 'package:get/get.dart';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:chat_app/data/database/database.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:injectable/injectable.dart';
 
-class DatabaseService extends GetxService {
-  final int _version = 1;
-  final String _dbName = "ChatApp.db"; //ChatApp?UserId?324.db
-  Database? _database;
+@singleton
+class DatabaseService {
+  AppDatabase? _database;
 
-  @override
-  Future<void> onInit() async {
-    super.onInit();
-    await _initializeDatabase();
+  Future<void> init() async {
+    try {
+      _initializeDatabase();
+    } catch (e, stackTrace) {
+      debugPrint('Database initialization error: $e');
+      debugPrint('Stack trace: $stackTrace');
+    }
   }
 
-  Future<Database> getDatabase() async {
+  AppDatabase getDatabase() {
     if (_database != null) return _database!;
-    return await _initializeDatabase();
+    
+    try {
+      return _initializeDatabase();
+    } catch (e) {
+      debugPrint('Failed to get database: $e');
+      throw Exception('Database unavailable');
+    }
   }
 
-  Future<Database> _initializeDatabase() async {
-    var databasesPath = await getDatabasesPath();
-    String path = join(databasesPath, _dbName);
-    _database = await openDatabase(path, version: _version,
-        onCreate: (Database db, int version) async {
-      await db.execute('PRAGMA foreign_keys = ON');
-      await db.execute(
-          'CREATE TABLE IF NOT EXISTS ${DbTableNames.collectivity} ('
-          'id INTEGER PRIMARY KEY, '
-          'collectivityId TEXT UNIQUE,'
-          'name TEXT, '
-          'creatorId TEXT, '
-          'description TEXT, '
-          'imageId TEXT ,'
-          'collectivityType TEXT,'
-          'userId TEXT,'
-          'status TEXT DEFAULT \'CREATED\')');
-      await db.execute(
-          'CREATE TABLE IF NOT EXISTS ${DbTableNames.participants} ('
-          'id INTEGER PRIMARY KEY, '
-          'userId TEXT NOT NULL, '
-          'collectivityId TEXT, '
-          'FOREIGN KEY(collectivityId) REFERENCES ${DbTableNames.collectivity}(collectivityId) ON DELETE CASCADE)');
-      await db.execute(
-          'CREATE TABLE IF NOT EXISTS ${DbTableNames.persons} ('
-          'id INTEGER PRIMARY KEY, '
-          'personId TEXT UNIQUE, '
-          'name TEXT, '
-          'localName TEXT, '
-          'username TEXT UNIQUE, '
-          'description TEXT, '
-          'imageId TEXT, '
-          'source TEXT DEFAULT \'SERVER\', '
-          'isRegistered INTEGER DEFAULT 0,'
-          'status TEXT DEFAULT \'CREATED\')');
-      await db.execute(
-          'CREATE TABLE IF NOT EXISTS ${DbTableNames.messages} ('
-          'id INTEGER PRIMARY KEY, '
-          'messageId TEXT UNIQUE, '
-          'message TEXT NOT NULL, '
-          'userId TEXT NOT NULL, '
-          'collectivityId TEXT, '
-          'dyadReceiverId TEXT, '
-          'sendTime DATE, '
-          'status TEXT DEFAULT \'CREATED\', '
-          'FOREIGN KEY(collectivityId) REFERENCES ${DbTableNames.collectivity}(collectivityId) ON DELETE CASCADE)');
-    });
+  AppDatabase _initializeDatabase() {
+    if (_database == null) {
+      debugPrint('Initializing Drift database');
+      _database = AppDatabase();
+    }
     return _database!;
   }
 

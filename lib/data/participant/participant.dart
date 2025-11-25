@@ -10,8 +10,8 @@ class Participant {
   factory Participant.fromDb(Map<String, dynamic> map) {
     return Participant(
       id: map['id'],
-      userId: map['userId'],
-      collectivityId: map['collectivityId'],
+      userId: map['user_id'],
+      collectivityId: map['collectivity_id'],
     );
   }
   static List<Participant> fromJsonList(List<Map<String, dynamic>> json) {
@@ -26,7 +26,7 @@ class Participant {
 
   Map<String, dynamic> toDb() => {
         'id': id,
-        'userId': userId,
-        'collectivityId': collectivityId,
+        'user_id': userId,
+        'collectivity_id': collectivityId,
       };
 }

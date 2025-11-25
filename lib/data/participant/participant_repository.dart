@@ -1,52 +1,74 @@
 import 'package:chat_app/constants/db/table_names.dart';
-import 'package:get/get.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:chat_app/core/di/injection.dart';
+import 'package:drift/drift.dart' as drift;
+import 'package:flutter/material.dart';
+import 'package:injectable/injectable.dart';
 
-import '../../core/general_change_notifier.dart';
 import '../database_service.dart';
+import '../database/database.dart';
 import 'participant.dart';
 
+@singleton
 class ParticipantRepository {
-  final DatabaseService databaseService=Get.find<DatabaseService>();
-  GeneralChangeNotifier generalChangeNotifier=Get.find<GeneralChangeNotifier>();
-  Future<Database> get database async => databaseService.getDatabase();
+  final DatabaseService databaseService = getIt<DatabaseService>();
+  AppDatabase get database => databaseService.getDatabase();
 
   Future<void> insertParticipant(Participant participant) async {
-    final db = await database;
-    await db.insert(DbTableNames.participants, participant.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
-    generalChangeNotifier.groupParticipantsChanged();
+    final db = database;
+    final map = participant.toDb();
+    await db.customInsert(
+      'INSERT OR REPLACE INTO ${DbTableNames.participants} '
+      '(user_id, collectivity_id) VALUES (?, ?)',
+      variables: [
+        drift.Variable.withString(map['user_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_id'] ?? ''),
+      ],
+      updates: {db.participants},
+    );
   }
+
   Future<void> insertParticipantList(List<Participant> participants) async {
-    final db = await database;
-
-    Batch batch = db.batch();
+    final db = database;
     for (var participant in participants) {
-      batch.insert(
-        DbTableNames.participants,
-        participant.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.abort,
-      );
+      final map = participant.toDb();
+      try {
+        await db.customInsert(
+          'INSERT INTO ${DbTableNames.participants} '
+          '(user_id, collectivity_id) VALUES (?, ?)',
+          variables: [
+            drift.Variable.withString(map['user_id'] ?? ''),
+            drift.Variable.withString(map['collectivity_id'] ?? ''),
+          ],
+          updates: {db.participants},
+        );
+      } catch (e) {
+        // Skip on conflict
+        debugPrint("Error inserting participant: $e");
+      }
     }
-
-    await batch.commit(noResult: true);
-    generalChangeNotifier.groupParticipantsChanged();
   }
 
   Future<List<Participant>> getAllParticipants(String collectivityId) async {
     printAll();
-    final db = await database;
-    final list = await db.rawQuery(
-      'SELECT * FROM ${DbTableNames.participants} WHERE collectivityId = ?',
-      [collectivityId],
+    final db = database;
+    final query = db.customSelect(
+      'SELECT * FROM ${DbTableNames.participants} WHERE collectivity_id = ?',
+      variables: [drift.Variable.withString(collectivityId)],
+      readsFrom: {db.participants},
     );
-    return list.map((map) => Participant.fromDb(map)).toList();
+    
+    final results = await query.get();
+    return results.map((row) => Participant.fromDb(row.data)).toList();
   }
+
   Future<void> printAll() async {
-    final db = await database;
-    final list = await db.rawQuery(
-      'SELECT * FROM ${DbTableNames.participants} ',
+    final db = database;
+    final query = db.customSelect(
+      'SELECT * FROM ${DbTableNames.participants}',
+      readsFrom: {db.participants},
     );
-    print(list);
+    
+    final results = await query.get();
+    debugPrint(results.map((r) => r.data).toList().toString());
   }
 }

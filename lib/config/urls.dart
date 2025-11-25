@@ -13,8 +13,8 @@ class Url {
 }
 
 class Auth{
-  String Login = '$authAddress/api/v1/auth/login';
-  String Register = '$authAddress/api/v1/auth/register';
-  String Forgot = '$authAddress/api/v1/auth/forgot-password';
-  String Refresh = '$authAddress/api/v1/auth/refresh';
+  String login = '$authAddress/api/v1/auth/login';
+  String register = '$authAddress/api/v1/auth/register';
+  String forgot = '$authAddress/api/v1/auth/forgot-password';
+  String refresh = '$authAddress/api/v1/auth/refresh';
 }

@@ -1,99 +1,174 @@
 import 'package:chat_app/constants/db/table_names.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:chat_app/data/database/database.dart';
+import 'package:drift/drift.dart' as drift;
+import 'package:flutter/material.dart';
+import 'package:injectable/injectable.dart';
 
-import '../../core/general_change_notifier.dart';
 import '../database_service.dart';
 import 'message.dart';
 
+@singleton
 class MessageRepository {
-  final DatabaseService databaseService = Get.find<DatabaseService>();
+  final DatabaseService databaseService;
 
-  Future<Database> get database async => databaseService.getDatabase();
-  GeneralChangeNotifier generalChangeNotifier =
-      Get.find<GeneralChangeNotifier>();
+  MessageRepository(this.databaseService);
+
+  AppDatabase get database => databaseService.getDatabase();
+
+  Stream<List<Message>> watchUnsyncedCollectivityMessages() {
+    final db = database;
+    
+    return db.customSelect(
+      'SELECT * FROM ${DbTableNames.messages} WHERE status != \'SYNC\' AND collectivity_id IS NOT NULL',
+      readsFrom: {db.messages},
+    ).watch().map((rows) => 
+      rows.map((row) => Message.fromDb(row.data)).toList()
+    );
+  }
 
   Future<void> insertMessage(Message message) async {
-    final db = await database;
-    await db.insert(DbTableNames.messages, message.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
-    generalChangeNotifier.messagesChanged();
+    final db = database;
+    final map = message.toDb();
+    await db.customInsert(
+      'INSERT OR REPLACE INTO ${DbTableNames.messages} '
+      '(message_id, message, user_id, collectivity_id, dyad_receiver_id, send_time, status) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?)',
+      variables: [
+        drift.Variable.withString(map['message_id'] ?? ''),
+        drift.Variable.withString(map['message'] ?? ''),
+        drift.Variable.withString(map['user_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_id'] ?? ''),
+        drift.Variable.withString(map['dyad_receiver_id'] ?? ''),
+        drift.Variable.withInt(map['send_time'] ?? 0),
+        drift.Variable.withString(map['status'] ?? ''),
+      ],
+      updates: {db.messages},
+    );
   }
 
   Future<void> insertMessageList(List<Message> messages) async {
-    final db = await database;
-
-    Batch batch = db.batch();
+    final db = database;
     for (var message in messages) {
-      batch.insert(
-        DbTableNames.messages,
-        message.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
+      final map = message.toDb();
+      await db.customInsert(
+        'INSERT OR REPLACE INTO ${DbTableNames.messages} '
+        '(message_id, message, user_id, collectivity_id, dyad_receiver_id, send_time, status) '
+        'VALUES (?, ?, ?, ?, ?, ?, ?)',
+        variables: [
+          drift.Variable.withString(map['message_id'] ?? ''),
+          drift.Variable.withString(map['message'] ?? ''),
+          drift.Variable.withString(map['user_id'] ?? ''),
+          drift.Variable.withString(map['collectivity_id'] ?? ''),
+          drift.Variable.withString(map['dyad_receiver_id'] ?? ''),
+          drift.Variable.withInt(map['send_time'] ?? 0),
+          drift.Variable.withString(map['status'] ?? ''),
+        ],
+        updates: {db.messages},
       );
     }
-    await batch.commit(noResult: true);
-    generalChangeNotifier.messagesChanged();
   }
 
   Future<void> updateMessage(Message message) async {
-    final db = await database;
-    await db.update(
-      DbTableNames.messages,
-      message.toDb(),
-      where: 'id = ?',
-      whereArgs: [message.id],
+    final db = database;
+    final map = message.toDb();
+    await db.customUpdate(
+      'UPDATE ${DbTableNames.messages} SET '
+      'message_id = ?, message = ?, user_id = ?, collectivity_id = ?, '
+      'dyad_receiver_id = ?, send_time = ?, status = ? WHERE id = ?',
+      variables: [
+        drift.Variable.withString(map['message_id'] ?? ''),
+        drift.Variable.withString(map['message'] ?? ''),
+        drift.Variable.withString(map['user_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_id'] ?? ''),
+        drift.Variable.withString(map['dyad_receiver_id'] ?? ''),
+        drift.Variable.withInt(map['send_time'] ?? 0),
+        drift.Variable.withString(map['status'] ?? ''),
+        drift.Variable.withInt(map['id']),
+      ],
+      updates: {db.messages},
     );
-    generalChangeNotifier.messagesChanged();
   }
+
   Future<void> updateMessageWithoutNotifier(Message message) async {
-    final db = await database;
-    await db.update(
-      DbTableNames.messages,
-      message.toDb(),
-      where: 'id = ?',
-      whereArgs: [message.id],
+    final db = database;
+    final map = message.toDb();
+    await db.customUpdate(
+      'UPDATE ${DbTableNames.messages} SET '
+      'message_id = ?, message = ?, user_id = ?, collectivity_id = ?, '
+      'dyad_receiver_id = ?, send_time = ?, status = ? WHERE id = ?',
+      variables: [
+        drift.Variable.withString(map['message_id'] ?? ''),
+        drift.Variable.withString(map['message'] ?? ''),
+        drift.Variable.withString(map['user_id'] ?? ''),
+        drift.Variable.withString(map['collectivity_id'] ?? ''),
+        drift.Variable.withString(map['dyad_receiver_id'] ?? ''),
+        drift.Variable.withInt(map['send_time'] ?? 0),
+        drift.Variable.withString(map['status'] ?? ''),
+        drift.Variable.withInt(map['id']),
+      ],
+      updates: {db.messages},
     );
   }
 
   Future<void> batchFixCollectivityIdJob(String collectivityId, String userId) async {
-    final db = await database;
-    await db.rawUpdate(
-      'UPDATE ${DbTableNames.messages} SET collectivityId = ?, dyadReceiverId = NULL WHERE dyadReceiverId = ?',
-      [collectivityId, userId],
+    final db = database;
+    await db.customUpdate(
+      'UPDATE ${DbTableNames.messages} SET collectivity_id = ?, dyad_receiver_id = NULL WHERE dyad_receiver_id = ?',
+      variables: [
+        drift.Variable.withString(collectivityId),
+        drift.Variable.withString(userId),
+      ],
+      updates: {db.messages},
     );
-    generalChangeNotifier.messagesChanged();
   }
 
   Future<List<Message>> getMessagesByCollectivityIdOrDyadReceiverId(String collectivityId, String dyadReceiverId) async {
-    final db = await database;
-    final list = await db.rawQuery(
-        'SELECT * FROM ${DbTableNames.messages} WHERE collectivityId = ? OR dyadReceiverId = ?',
-        [collectivityId, dyadReceiverId]
+    final db = database;
+    final query = db.customSelect(
+      'SELECT * FROM ${DbTableNames.messages} WHERE collectivity_id = ? OR dyad_receiver_id = ?',
+      variables: [
+        drift.Variable.withString(collectivityId),
+        drift.Variable.withString(dyadReceiverId),
+      ],
+      readsFrom: {db.messages},
     );
-    return list.map((map) => Message.fromDb(map)).toList();
+    
+    final results = await query.get();
+    return results.map((row) => Message.fromDb(row.data)).toList();
   }
 
   Future<List<Message>> getAllUnsyncedMessages() async {
-    final db = await database;
-    final list = await db.rawQuery(
-        'SELECT * FROM ${DbTableNames.messages} WHERE status = "CREATED"');
-    return list.map((map) => Message.fromDb(map)).toList();
-  }
-  Future<List<Message>> getAllUnsyncedCollectivityMessages() async {
-    final db = await database;
-    final list = await db.rawQuery(
-        'SELECT * FROM ${DbTableNames.messages} WHERE status != \'SYNC\' AND collectivityId IS NOT NULL'
+    final db = database;
+    final query = db.customSelect(
+      'SELECT * FROM ${DbTableNames.messages} WHERE status = "CREATED"',
+      readsFrom: {db.messages},
     );
-    print("UnsyncedCollectivityMessages $list");
-    return list.map((map) => Message.fromDb(map)).toList();
+    
+    final results = await query.get();
+    return results.map((row) => Message.fromDb(row.data)).toList();
+  }
+
+  Future<List<Message>> getAllUnsyncedCollectivityMessages() async {
+    final db = database;
+    final query = db.customSelect(
+      'SELECT * FROM ${DbTableNames.messages} WHERE status != \'SYNC\' AND collectivity_id IS NOT NULL',
+      readsFrom: {db.messages},
+    );
+    
+    final results = await query.get();
+    debugPrint("UnsyncedCollectivityMessages ${results.map((r) => r.data).toList()}");
+    return results.map((row) => Message.fromDb(row.data)).toList();
   }
 
   Future<void> printAll() async {
-    final db = await database;
-    final list = await db.rawQuery(
-        'SELECT * FROM ${DbTableNames.messages}');
-    print(list);
+    final db = database;
+    final query = db.customSelect(
+      'SELECT * FROM ${DbTableNames.messages}',
+      readsFrom: {db.messages},
+    );
+    
+    final results = await query.get();
+    debugPrint(results.map((r) => r.data).toList().toString());
   }
-
 }
+

@@ -1,57 +1,59 @@
-import 'package:chat_app/data/person/person.dart';
+import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/data/person/person_repository.dart';
 import 'package:chat_app/data/person/person_service.dart';
-import 'package:chat_app/core/general_change_notifier.dart';
-import 'package:get/get.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'person_state.dart';
 
-class PersonController extends GetxController{
-  RxSet<String> selectedContacts = <String>{}.obs;
-  RxList<Person> contacts=<Person>[].obs;
-  RxList<Person> contactsOnChatApp=<Person>[].obs;
-  RxList<Person> contactsNotOnChatApp=<Person>[].obs;
+part 'person_controller.g.dart';
 
-  PersonRepository personRepository=Get.find<PersonRepository>();
-  PersonService personService=Get.find<PersonService>();
-  GeneralChangeNotifier generalChangeNotifier=Get.find<GeneralChangeNotifier>();
+@Riverpod(keepAlive: true)
+class PersonController extends _$PersonController {
+  late final PersonRepository personRepository = getIt<PersonRepository>();
 
   @override
-  void onInit() {
-    super.onInit();
-    _loadData();
-    ever(generalChangeNotifier.isContactsChanged, (_)async{
+  PersonState build() {
+    void listener() {
       _loadData();
-    });
-  }
-  void _loadData()async{
-    contacts.value=await personRepository.getContacts();
-    contactsOnChatApp.value=await personRepository.getContactsOnChatApp();
-    contactsNotOnChatApp.value=await personRepository.getContactsNotOnChatApp();
+    }
+    //generalChangeNotifier.isContactsChanged.addListener(listener);
+    //ref.onDispose(() => generalChangeNotifier.isContactsChanged.removeListener(listener));
+    
+    _loadData();
+    return PersonState();
   }
 
-  void createContact(String name,String username){
+  Future<void> _loadData() async {
+    final contacts = await personRepository.getContacts();
+    final contactsOnChatApp = await personRepository.getContactsOnChatApp();
+    final contactsNotOnChatApp = await personRepository.getContactsNotOnChatApp();
+    
+    state = state.copyWith(
+      contacts: contacts,
+      contactsOnChatApp: contactsOnChatApp,
+      contactsNotOnChatApp: contactsNotOnChatApp,
+    );
+  }
+
+  void createContact(String name, String username) {
+    final personService = ref.read(personServiceProvider);
     personService.createContact(name, username);
   }
 
-  void addToSelectedContactsSet(String? value){
-    if(value!=null) {
-      selectedContacts.add(value);
+  void addToSelectedContactsSet(String? value) {
+    if (value != null) {
+      final newSet = Set<String>.from(state.selectedContacts)..add(value);
+      state = state.copyWith(selectedContacts: newSet);
     }
   }
 
   void ejectFromSelectedContactsSet(String? value) {
-    if(value!=null) {
-      selectedContacts.remove(value);
+    if (value != null) {
+      final newSet = Set<String>.from(state.selectedContacts)..remove(value);
+      state = state.copyWith(selectedContacts: newSet);
     }
   }
 
-  bool isInSelectedContactsSet(String? value) {
-    return selectedContacts.contains(value);
-  }
-
-  bool isSelectingMode(){
-    return selectedContacts.isNotEmpty;
-  }
-  void resetSelectedContacts(){
-    selectedContacts=<String>{}.obs;
+  void resetSelectedContacts() {
+    state = state.copyWith(selectedContacts: {});
   }
 }

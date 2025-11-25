@@ -1,11 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/core/services/notification/notification_service.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/controllers/auth_controller.dart';
 
-AppBar buildAppBar(double screenHeight, BuildContext context) {
-  AuthController authController = Get.find<AuthController>();
+PreferredSizeWidget buildAppBar(double screenHeight, BuildContext context) {
+  final ref = ProviderScope.containerOf(context);
+  AuthController authController = ref.read(authControllerProvider.notifier);
   return AppBar(
     leading: IconButton(
       onPressed: () {
@@ -20,7 +22,7 @@ AppBar buildAppBar(double screenHeight, BuildContext context) {
       IconButton(
           onPressed: () {
             authController.logout();
-            Get.offAllNamed('/login');
+            context.router.replacePath('/login');
           },
           icon: const Icon(Icons.logout))
     ],

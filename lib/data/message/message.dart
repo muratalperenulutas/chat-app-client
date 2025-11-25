@@ -24,12 +24,12 @@ class Message {
   factory Message.fromDb(Map<String, dynamic> map) {
     return Message(
       id: map['id'],
-      messageId: map['messageId'],
+      messageId: map['message_id'],
       message: map['message'],
-      collectivityId: map['collectivityId'],
-        dyadReceiverId: map['dyadReceiverId'],
-      userId: map['userId'],
-      sendTime: DateTime.parse(map['sendTime']),
+      collectivityId: map['collectivity_id'],
+      dyadReceiverId: map['dyad_receiver_id'],
+      userId: map['user_id'],
+      sendTime: map['send_time'] != null ? DateTime.fromMillisecondsSinceEpoch(map['send_time']) : DateTime.now(),
       status: Status.fromString(map['status'])
     );
   }
@@ -41,7 +41,7 @@ class Message {
         collectivityId: json['collectivityId'].toString(),
       userId: json['userId'],
       sendTime: DateTime.fromMillisecondsSinceEpoch(int.parse(json['sendTime'].toString())*1000),
-      status: Status.SYNC
+      status: Status.sync
     );
   }
 
@@ -54,13 +54,13 @@ class Message {
   Map<String, dynamic> toDb() {
     return {
       'id': id,
-      'messageId': messageId,
+      'message_id': messageId,
       'message': message,
-      'collectivityId': collectivityId,
-      'dyadReceiverId':dyadReceiverId,
-      'userId': userId,
-      'sendTime': sendTime.toIso8601String(),
-      'status':status.name
+      'collectivity_id': collectivityId,
+      'dyad_receiver_id': dyadReceiverId,
+      'user_id': userId,
+      'send_time': sendTime.millisecondsSinceEpoch,
+      'status': status.name
     };
   }
   void setId(int id){

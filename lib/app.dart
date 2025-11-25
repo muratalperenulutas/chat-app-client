@@ -1,38 +1,47 @@
-import 'package:chat_app/features/home/screens/home_screen.dart';
-import 'package:chat_app/features/auth/screens/login_screen.dart';
-import 'package:chat_app/features/auth/screens/register_screen.dart';
+import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'features/auth/controllers/auth_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:chat_app/core/di/injection.dart';
+import 'package:chat_app/core/router/app_router.dart';
 
-class MyApp extends StatelessWidget {
-  MyApp({super.key});
+class MyApp extends ConsumerWidget {
+  const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final AuthController authController = Get.find<AuthController>();
-    return Obx(() {
-      print(
-          "Logged in: ${authController.isLoggedIn.value}, Loading: ${authController.isLoading.value}");
-      if (authController.isLoading.value) {
-        return const MaterialApp(
-          home: Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          ),
-        );
-      } else {
-        return GetMaterialApp(
-          initialRoute: authController.isLoggedIn.value ? '/home' : '/login',
-          getPages: [
-            GetPage(name: '/home', page: () => HomePage()),
-            GetPage(name: '/login', page: () => LoginPage()),
-            GetPage(name: '/register', page: () => RegisterPage()),
-          ],
-          debugShowCheckedModeBanner: false,
-        );
-      }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authControllerProvider);
+    final appRouter = getIt<AppRouter>();
+
+    if (!getIt.isRegistered<ProviderContainer>()) {
+      getIt.registerSingleton<ProviderContainer>(ref.container);
+    }
+
+    ref.listen(authControllerProvider, (previous, next) {
+      if (next.isLoading) return;
+      appRouter.syncAuthRoute(next.isLoggedIn);
     });
+
+    if (!authState.isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        appRouter.syncAuthRoute(authState.isLoggedIn);
+      });
+    }
+
+    if (authState.isLoading) {
+      return const MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
+
+    return MaterialApp.router(
+      routerDelegate: appRouter.delegate(),
+      routeInformationParser: appRouter.defaultRouteParser(),
+      routeInformationProvider: appRouter.routeInfoProvider(),
+      debugShowCheckedModeBanner: false,
+    );
   }
 }

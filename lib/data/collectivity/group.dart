@@ -14,8 +14,8 @@ class Group extends Collectivity {
       this.name,
       this.creatorId,
       this.imageId,
-      Status status = Status.CREATED,
-      CollectivityType type = CollectivityType.GROUP})
+      Status status = Status.created,
+      CollectivityType type = CollectivityType.group})
       : super(
             collectivityId: collectivityId, type: type, status: status, id: id);
 
@@ -24,9 +24,9 @@ class Group extends Collectivity {
         id: map['id'],
         collectivityId: map['collectivityId'],
         name: map['name'],
-        type:CollectivityType.fromString(map['collectivityType']),
-        creatorId: map['creatorId'],
-        imageId: map['imageId'],
+        type: CollectivityType.fromString(map['collectivity_type']),
+        creatorId: map['creator_id'],
+        imageId: map['image_id'],
         status: Status.fromString(map['status']));
   }
 
@@ -36,16 +36,16 @@ class Group extends Collectivity {
         name: json['name'],
         creatorId: json['creatorId'],
         imageId: json['imageId'],
-        status: Status.SYNC);
+        status: Status.sync);
   }
 
   Map<String, dynamic> toDb() => {
         'id': id,
         'collectivityId': collectivityId,
         'name': name,
-        'creatorId': creatorId,
-        'imageId': imageId,
-        'collectivityType': type.name,
+        'creator_id': creatorId,
+        'image_id': imageId,
+        'collectivity_type': type.name,
         'status': status.name,
       };
 }

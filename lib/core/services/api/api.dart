@@ -17,15 +17,15 @@ class Api {
   }
 
   static Future<http.Response> postLoginRequest(Login login) {
-    return postRequest(Url.auth.Login, login.toJson());
+    return postRequest(Url.auth.login, login.toJson());
   }
 
   static Future<http.Response> postRegisterRequest(Register register) {
-    return postRequest(Url.auth.Register, register.toJson());
+    return postRequest(Url.auth.register, register.toJson());
   }
   static Future<http.Response> postRefreshRequest(String refreshToken) {
     return postRequest(
-        Url.auth.Refresh,
+        Url.auth.refresh,
         {
           'refreshToken': refreshToken,
         }

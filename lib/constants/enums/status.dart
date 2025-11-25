@@ -1,8 +1,8 @@
 enum Status {
-  CREATED,
-  PENDING,
-  FAILED,
-  SYNC;
+  created,
+  pending,
+  failed,
+  sync;
 
   static Status fromString(String value){
     for(Status status in Status.values){

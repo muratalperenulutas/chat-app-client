@@ -21,21 +21,21 @@ class Person {
     this.localName,
     this.description,
     this.imageId,
-    this.source=SourceEnum.SERVER,
+    this.source=SourceEnum.server,
     this.isRegistered,
-    this.status=Status.CREATED
+    this.status=Status.created
   });
   factory Person.fromDb(Map<String, dynamic> map) {
     return Person(
       id: map['id'],
-      personId: map['personId'],
+      personId: map['person_id'],
       name: map['name'],
       username: map['username'],
-      localName: map['localName'],
-      description:map['description'],
-      imageId: map['imageId'],
+      localName: map['local_name'],
+      description: map['description'],
+      imageId: map['image_id'],
       source: SourceEnum.fromString(map['source']),
-      isRegistered: map['isRegistered'],
+      isRegistered: map['is_registered'],
       status: Status.fromString(map['status'])
     );
   }
@@ -44,21 +44,21 @@ class Person {
         personId: json['userId'],
         username: json['username'],
         name: "initial",
-        status: Status.SYNC
+        status: Status.sync
         ////
     );
   }
   Map<String,dynamic> toDb() => {
     'id': id,
-    'personId':personId,
+    'person_id': personId,
     'name': name,
-    'username':username,
-    'localName':localName,
-    'description':description,
-    'imageId':imageId,
-    'source':source.name,
-    'isRegistered':isRegistered,
-    'status':status.name
+    'username': username,
+    'local_name': localName,
+    'description': description,
+    'image_id': imageId,
+    'source': source.name,
+    'is_registered': isRegistered,
+    'status': status.name
   };
 
   void setLocalName(String name){

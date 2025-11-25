@@ -1,56 +1,38 @@
 import 'package:chat_app/app.dart';
-import 'package:chat_app/core/services/ingest/contact_ingest.dart';
-import 'package:chat_app/core/services/ingest/collectivity_ingest.dart';
-import 'package:chat_app/core/services/ingest/message_ingest.dart';
-import 'package:chat_app/core/services/notification/notification_service.dart';
-import 'package:chat_app/data/collectivity/collectivity_repository.dart';
-import 'package:chat_app/data/collectivity/collectivity_service.dart';
+import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/data/database_service.dart';
-import 'package:chat_app/data/message/message_repository.dart';
-import 'package:chat_app/data/message/message_service.dart';
-import 'package:chat_app/data/participant/participant_service.dart';
-import 'package:chat_app/data/person/person_repository.dart';
-import 'package:chat_app/data/person/person_service.dart';
-import 'package:chat_app/core/general_change_notifier.dart';
-import 'package:chat_app/features/chat/controllers/message_controller.dart';
-import 'package:chat_app/features/collectivity/controller/collectivity_controller.dart';
-import 'package:chat_app/features/person/controller/person_controller.dart';
+import 'package:chat_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
-import 'core/services/websocket/websocket_client.dart';
-import 'data/participant/participant_repository.dart';
-import 'features/auth/controllers/auth_controller.dart';
-
+import 'package:chat_app/core/bindings/initial_binding.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb) {
+    setUrlStrategy(PathUrlStrategy());
+  }
 
-  await Firebase.initializeApp();
-  await NotificationService.instance.initialize();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform
+    );
+  } catch (e) {
+    debugPrint('Firebase initialization error: $e');
+  }
 
-  final databaseService=DatabaseService();
-  await databaseService.onInit();
-  Get.put<DatabaseService>(databaseService);
+  configureDependencies();
+  initInitialBindings();
 
-  Get.lazyPut(()=>GeneralChangeNotifier());
-  Get.put(AuthController());
-  Get.put(PersonRepository());
-  Get.put(PersonService());
-  Get.put(MessageRepository());
-  Get.put(MessageService());
-  Get.put(CollectivityRepository());
-  Get.put(ParticipantRepository());
-  Get.put(MessageController());
-  Get.put(CollectivityService());
-  Get.put(CollectivityController());
-  Get.put(PersonController());
-  Get.put(ParticipantService());
-  Get.put(WebSocketClient(),permanent: true);
-  Get.put(ContactDataIngest());
-  Get.put(MessageDataIngest());
-  Get.put(CollectivityIngest());
+  try {
+    final databaseService = getIt<DatabaseService>();
+    await databaseService.init();
+  } catch (e) {
+    debugPrint('Database initialization error: $e');
+  }
 
-  runApp(MyApp());
+  runApp(ProviderScope(child: MyApp()));
 }

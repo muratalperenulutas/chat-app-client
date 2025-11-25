@@ -11,7 +11,7 @@ class SendMessage extends JsonSerializable {
   }
 
   void setCollectivityId(String id) {
-    this.collectivityId = id;
+    collectivityId = id;
   }
 
   @override
