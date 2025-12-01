@@ -38,9 +38,39 @@ class MessageRepository {
   Stream<List<Message>> watchUnsyncedCollectivityMessages() {
     final db = database;
     return (db.select(db.messages)
-      ..where((tbl) => tbl.status.isNotValue('SYNC') & tbl.collectivityId.isNotNull()))
+      ..where((tbl) => tbl.status.isNotValue(Status.sync.name) & tbl.collectivityId.isNotNull()))
       .watch()
       .map((rows) => List<MessageData>.from(rows).map(_mapMessageDataToMessage).toList());
+  }
+
+  Stream<List<Message>> watchReadyToSendMessages() {
+    final db = database;
+    
+    final query = db.select(db.messages).join([
+      drift.innerJoin(db.collectivities, db.collectivities.collectivityId.equalsExp(db.messages.collectivityId))
+    ]);
+
+    query.where(
+      (db.messages.status.equals(Status.created.name) | db.messages.status.equals(Status.failed.name)) & 
+      db.collectivities.status.equals(Status.sync.name)
+    );
+    
+    query.orderBy([drift.OrderingTerm.asc(db.messages.createdAt)]);
+
+    return query.watch().map((rows) {
+      return rows.map((row) {
+        return _mapMessageDataToMessage(row.readTable(db.messages));
+      }).toList();
+    });
+  }
+
+  Future<void> checkPendingMessagesTimeout() async {
+    final db = database;
+    final timeoutThreshold = DateTime.now().subtract(const Duration(minutes: 1));
+    
+    await (db.update(db.messages)
+      ..where((tbl) => tbl.status.equals(Status.pending.name) & tbl.createdAt.isSmallerThanValue(timeoutThreshold)))
+      .write(MessagesCompanion(status: drift.Value(Status.failed.name)));
   }
 
   Future<void> insertMessage(Message message) async {
@@ -114,16 +144,34 @@ class MessageRepository {
 
   Future<List<Message>> getAllUnsyncedMessages() async {
     final db = database;
-    final rows = await (db.select(db.messages)..where((tbl) => tbl.status.equals('CREATED'))).get();
+    final rows = await (db.select(db.messages)..where((tbl) => tbl.status.equals(Status.created.name))).get();
     return rows.map(_mapMessageDataToMessage).toList();
   }
 
   Future<List<Message>> getAllUnsyncedCollectivityMessages() async {
     final db = database;
     final rows = await (db.select(db.messages)
-      ..where((tbl) => tbl.status.isNotValue('SYNC') & tbl.collectivityId.isNotNull()))
+      ..where((tbl) => tbl.status.isNotValue(Status.sync.name) & tbl.collectivityId.isNotNull()))
       .get();
     return rows.map(_mapMessageDataToMessage).toList();
+  }
+
+  Future<List<Message>> getReadyToSendMessages() async {
+    final db = database;
+    
+    final query = db.select(db.messages).join([
+      drift.innerJoin(db.collectivities, db.collectivities.collectivityId.equalsExp(db.messages.collectivityId))
+    ]);
+
+    query.where(
+      (db.messages.status.equals(Status.created.name) | db.messages.status.equals(Status.failed.name)) & 
+      db.collectivities.status.equals(Status.sync.name)
+    );
+    
+    query.orderBy([drift.OrderingTerm.asc(db.messages.createdAt)]);
+
+    final rows = await query.get();
+    return rows.map((row) => _mapMessageDataToMessage(row.readTable(db.messages))).toList();
   }
 
   Future<void> printAll() async {

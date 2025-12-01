@@ -22,10 +22,15 @@ class MessageSyncService {
   }
 
   void _setupAutoSync() {
-    _unsyncedMessagesSubscription = messageRepository.watchUnsyncedCollectivityMessages().listen((messages) {
+    _unsyncedMessagesSubscription = messageRepository.watchReadyToSendMessages().listen((messages) {
       if (messages.isNotEmpty) {
         _syncMessages(messages);
       }
+    });
+
+    messageRepository.checkPendingMessagesTimeout();
+    Timer.periodic(const Duration(minutes: 1), (timer) {
+      messageRepository.checkPendingMessagesTimeout();
     });
   }
 
@@ -38,7 +43,7 @@ class MessageSyncService {
   }
 
   void syncMessages() async {
-    List<Message> messages = await messageRepository.getAllUnsyncedCollectivityMessages();
+    List<Message> messages = await messageRepository.getReadyToSendMessages();
     _syncMessages(messages);
   }
 

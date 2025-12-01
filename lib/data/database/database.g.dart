@@ -66,7 +66,15 @@ class $CollectivitiesTable extends Collectivities
       'status', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
-      defaultValue: const Constant('CREATED'));
+      defaultValue: Constant(Status.created.name));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -77,7 +85,8 @@ class $CollectivitiesTable extends Collectivities
         imageId,
         collectivityType,
         userId,
-        status
+        status,
+        createdAt
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -132,6 +141,10 @@ class $CollectivitiesTable extends Collectivities
       context.handle(_statusMeta,
           status.isAcceptableOrUnknown(data['status']!, _statusMeta));
     }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
     return context;
   }
 
@@ -159,6 +172,8 @@ class $CollectivitiesTable extends Collectivities
           .read(DriftSqlType.string, data['${effectivePrefix}user_id']),
       status: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
   }
 
@@ -179,6 +194,7 @@ class CollectivityData extends DataClass
   final String? collectivityType;
   final String? userId;
   final String status;
+  final DateTime createdAt;
   const CollectivityData(
       {required this.id,
       required this.collectivityId,
@@ -188,7 +204,8 @@ class CollectivityData extends DataClass
       this.imageId,
       this.collectivityType,
       this.userId,
-      required this.status});
+      required this.status,
+      required this.createdAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -213,6 +230,7 @@ class CollectivityData extends DataClass
       map['user_id'] = Variable<String>(userId);
     }
     map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
 
@@ -236,6 +254,7 @@ class CollectivityData extends DataClass
       userId:
           userId == null && nullToAbsent ? const Value.absent() : Value(userId),
       status: Value(status),
+      createdAt: Value(createdAt),
     );
   }
 
@@ -252,6 +271,7 @@ class CollectivityData extends DataClass
       collectivityType: serializer.fromJson<String?>(json['collectivityType']),
       userId: serializer.fromJson<String?>(json['userId']),
       status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
   @override
@@ -267,6 +287,7 @@ class CollectivityData extends DataClass
       'collectivityType': serializer.toJson<String?>(collectivityType),
       'userId': serializer.toJson<String?>(userId),
       'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
@@ -279,7 +300,8 @@ class CollectivityData extends DataClass
           Value<String?> imageId = const Value.absent(),
           Value<String?> collectivityType = const Value.absent(),
           Value<String?> userId = const Value.absent(),
-          String? status}) =>
+          String? status,
+          DateTime? createdAt}) =>
       CollectivityData(
         id: id ?? this.id,
         collectivityId: collectivityId ?? this.collectivityId,
@@ -292,6 +314,7 @@ class CollectivityData extends DataClass
             : this.collectivityType,
         userId: userId.present ? userId.value : this.userId,
         status: status ?? this.status,
+        createdAt: createdAt ?? this.createdAt,
       );
   CollectivityData copyWithCompanion(CollectivitiesCompanion data) {
     return CollectivityData(
@@ -309,6 +332,7 @@ class CollectivityData extends DataClass
           : this.collectivityType,
       userId: data.userId.present ? data.userId.value : this.userId,
       status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
@@ -323,14 +347,15 @@ class CollectivityData extends DataClass
           ..write('imageId: $imageId, ')
           ..write('collectivityType: $collectivityType, ')
           ..write('userId: $userId, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, collectivityId, name, creatorId,
-      description, imageId, collectivityType, userId, status);
+      description, imageId, collectivityType, userId, status, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -343,7 +368,8 @@ class CollectivityData extends DataClass
           other.imageId == this.imageId &&
           other.collectivityType == this.collectivityType &&
           other.userId == this.userId &&
-          other.status == this.status);
+          other.status == this.status &&
+          other.createdAt == this.createdAt);
 }
 
 class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
@@ -356,6 +382,7 @@ class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
   final Value<String?> collectivityType;
   final Value<String?> userId;
   final Value<String> status;
+  final Value<DateTime> createdAt;
   const CollectivitiesCompanion({
     this.id = const Value.absent(),
     this.collectivityId = const Value.absent(),
@@ -366,6 +393,7 @@ class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
     this.collectivityType = const Value.absent(),
     this.userId = const Value.absent(),
     this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
   });
   CollectivitiesCompanion.insert({
     this.id = const Value.absent(),
@@ -377,6 +405,7 @@ class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
     this.collectivityType = const Value.absent(),
     this.userId = const Value.absent(),
     this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
   }) : collectivityId = Value(collectivityId);
   static Insertable<CollectivityData> custom({
     Expression<int>? id,
@@ -388,6 +417,7 @@ class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
     Expression<String>? collectivityType,
     Expression<String>? userId,
     Expression<String>? status,
+    Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -399,6 +429,7 @@ class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
       if (collectivityType != null) 'collectivity_type': collectivityType,
       if (userId != null) 'user_id': userId,
       if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
     });
   }
 
@@ -411,7 +442,8 @@ class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
       Value<String?>? imageId,
       Value<String?>? collectivityType,
       Value<String?>? userId,
-      Value<String>? status}) {
+      Value<String>? status,
+      Value<DateTime>? createdAt}) {
     return CollectivitiesCompanion(
       id: id ?? this.id,
       collectivityId: collectivityId ?? this.collectivityId,
@@ -422,6 +454,7 @@ class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
       collectivityType: collectivityType ?? this.collectivityType,
       userId: userId ?? this.userId,
       status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -455,6 +488,9 @@ class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
     return map;
   }
 
@@ -469,7 +505,8 @@ class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
           ..write('imageId: $imageId, ')
           ..write('collectivityType: $collectivityType, ')
           ..write('userId: $userId, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -756,7 +793,7 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, PersonData> {
       'status', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
-      defaultValue: const Constant('CREATED'));
+      defaultValue: Constant(Status.created.name));
   @override
   List<GeneratedColumn> get $columns =>
       [id, personId, name, username, description, imageId, status];
@@ -1142,7 +1179,15 @@ class $MessagesTable extends Messages
       'status', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
-      defaultValue: const Constant('CREATED'));
+      defaultValue: Constant(Status.created.name));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -1152,7 +1197,8 @@ class $MessagesTable extends Messages
         collectivityId,
         dyadReceiverId,
         sendTime,
-        status
+        status,
+        createdAt
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1205,6 +1251,10 @@ class $MessagesTable extends Messages
       context.handle(_statusMeta,
           status.isAcceptableOrUnknown(data['status']!, _statusMeta));
     }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
     return context;
   }
 
@@ -1230,6 +1280,8 @@ class $MessagesTable extends Messages
           .read(DriftSqlType.dateTime, data['${effectivePrefix}send_time']),
       status: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
   }
 
@@ -1248,6 +1300,7 @@ class MessageData extends DataClass implements Insertable<MessageData> {
   final String? dyadReceiverId;
   final DateTime? sendTime;
   final String status;
+  final DateTime createdAt;
   const MessageData(
       {required this.id,
       required this.messageId,
@@ -1256,7 +1309,8 @@ class MessageData extends DataClass implements Insertable<MessageData> {
       this.collectivityId,
       this.dyadReceiverId,
       this.sendTime,
-      required this.status});
+      required this.status,
+      required this.createdAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1274,6 +1328,7 @@ class MessageData extends DataClass implements Insertable<MessageData> {
       map['send_time'] = Variable<DateTime>(sendTime);
     }
     map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
 
@@ -1293,6 +1348,7 @@ class MessageData extends DataClass implements Insertable<MessageData> {
           ? const Value.absent()
           : Value(sendTime),
       status: Value(status),
+      createdAt: Value(createdAt),
     );
   }
 
@@ -1308,6 +1364,7 @@ class MessageData extends DataClass implements Insertable<MessageData> {
       dyadReceiverId: serializer.fromJson<String?>(json['dyadReceiverId']),
       sendTime: serializer.fromJson<DateTime?>(json['sendTime']),
       status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
   @override
@@ -1322,6 +1379,7 @@ class MessageData extends DataClass implements Insertable<MessageData> {
       'dyadReceiverId': serializer.toJson<String?>(dyadReceiverId),
       'sendTime': serializer.toJson<DateTime?>(sendTime),
       'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
@@ -1333,7 +1391,8 @@ class MessageData extends DataClass implements Insertable<MessageData> {
           Value<String?> collectivityId = const Value.absent(),
           Value<String?> dyadReceiverId = const Value.absent(),
           Value<DateTime?> sendTime = const Value.absent(),
-          String? status}) =>
+          String? status,
+          DateTime? createdAt}) =>
       MessageData(
         id: id ?? this.id,
         messageId: messageId ?? this.messageId,
@@ -1345,6 +1404,7 @@ class MessageData extends DataClass implements Insertable<MessageData> {
             dyadReceiverId.present ? dyadReceiverId.value : this.dyadReceiverId,
         sendTime: sendTime.present ? sendTime.value : this.sendTime,
         status: status ?? this.status,
+        createdAt: createdAt ?? this.createdAt,
       );
   MessageData copyWithCompanion(MessagesCompanion data) {
     return MessageData(
@@ -1360,6 +1420,7 @@ class MessageData extends DataClass implements Insertable<MessageData> {
           : this.dyadReceiverId,
       sendTime: data.sendTime.present ? data.sendTime.value : this.sendTime,
       status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
@@ -1373,14 +1434,15 @@ class MessageData extends DataClass implements Insertable<MessageData> {
           ..write('collectivityId: $collectivityId, ')
           ..write('dyadReceiverId: $dyadReceiverId, ')
           ..write('sendTime: $sendTime, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, messageId, message, userId,
-      collectivityId, dyadReceiverId, sendTime, status);
+      collectivityId, dyadReceiverId, sendTime, status, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1392,7 +1454,8 @@ class MessageData extends DataClass implements Insertable<MessageData> {
           other.collectivityId == this.collectivityId &&
           other.dyadReceiverId == this.dyadReceiverId &&
           other.sendTime == this.sendTime &&
-          other.status == this.status);
+          other.status == this.status &&
+          other.createdAt == this.createdAt);
 }
 
 class MessagesCompanion extends UpdateCompanion<MessageData> {
@@ -1404,6 +1467,7 @@ class MessagesCompanion extends UpdateCompanion<MessageData> {
   final Value<String?> dyadReceiverId;
   final Value<DateTime?> sendTime;
   final Value<String> status;
+  final Value<DateTime> createdAt;
   const MessagesCompanion({
     this.id = const Value.absent(),
     this.messageId = const Value.absent(),
@@ -1413,6 +1477,7 @@ class MessagesCompanion extends UpdateCompanion<MessageData> {
     this.dyadReceiverId = const Value.absent(),
     this.sendTime = const Value.absent(),
     this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
   });
   MessagesCompanion.insert({
     this.id = const Value.absent(),
@@ -1423,6 +1488,7 @@ class MessagesCompanion extends UpdateCompanion<MessageData> {
     this.dyadReceiverId = const Value.absent(),
     this.sendTime = const Value.absent(),
     this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
   })  : messageId = Value(messageId),
         message = Value(message),
         userId = Value(userId);
@@ -1435,6 +1501,7 @@ class MessagesCompanion extends UpdateCompanion<MessageData> {
     Expression<String>? dyadReceiverId,
     Expression<DateTime>? sendTime,
     Expression<String>? status,
+    Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1445,6 +1512,7 @@ class MessagesCompanion extends UpdateCompanion<MessageData> {
       if (dyadReceiverId != null) 'dyad_receiver_id': dyadReceiverId,
       if (sendTime != null) 'send_time': sendTime,
       if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
     });
   }
 
@@ -1456,7 +1524,8 @@ class MessagesCompanion extends UpdateCompanion<MessageData> {
       Value<String?>? collectivityId,
       Value<String?>? dyadReceiverId,
       Value<DateTime?>? sendTime,
-      Value<String>? status}) {
+      Value<String>? status,
+      Value<DateTime>? createdAt}) {
     return MessagesCompanion(
       id: id ?? this.id,
       messageId: messageId ?? this.messageId,
@@ -1466,6 +1535,7 @@ class MessagesCompanion extends UpdateCompanion<MessageData> {
       dyadReceiverId: dyadReceiverId ?? this.dyadReceiverId,
       sendTime: sendTime ?? this.sendTime,
       status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -1496,6 +1566,9 @@ class MessagesCompanion extends UpdateCompanion<MessageData> {
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
     return map;
   }
 
@@ -1509,7 +1582,8 @@ class MessagesCompanion extends UpdateCompanion<MessageData> {
           ..write('collectivityId: $collectivityId, ')
           ..write('dyadReceiverId: $dyadReceiverId, ')
           ..write('sendTime: $sendTime, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -1557,7 +1631,7 @@ class $ContactsTable extends Contacts
       'status', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
-      defaultValue: const Constant('CREATED'));
+      defaultValue: Constant(Status.created.name));
   @override
   List<GeneratedColumn> get $columns => [id, name, username, personId, status];
   @override
@@ -1868,6 +1942,7 @@ typedef $$CollectivitiesTableCreateCompanionBuilder = CollectivitiesCompanion
   Value<String?> collectivityType,
   Value<String?> userId,
   Value<String> status,
+  Value<DateTime> createdAt,
 });
 typedef $$CollectivitiesTableUpdateCompanionBuilder = CollectivitiesCompanion
     Function({
@@ -1880,6 +1955,7 @@ typedef $$CollectivitiesTableUpdateCompanionBuilder = CollectivitiesCompanion
   Value<String?> collectivityType,
   Value<String?> userId,
   Value<String> status,
+  Value<DateTime> createdAt,
 });
 
 final class $$CollectivitiesTableReferences extends BaseReferences<
@@ -1957,6 +2033,9 @@ class $$CollectivitiesTableFilterComposer
 
   ColumnFilters<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
 
   Expression<bool> participantsRefs(
       Expression<bool> Function($$ParticipantsTableFilterComposer f) f) {
@@ -2038,6 +2117,9 @@ class $$CollectivitiesTableOrderingComposer
 
   ColumnOrderings<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 }
 
 class $$CollectivitiesTableAnnotationComposer
@@ -2075,6 +2157,9 @@ class $$CollectivitiesTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   Expression<T> participantsRefs<T extends Object>(
       Expression<T> Function($$ParticipantsTableAnnotationComposer a) f) {
@@ -2152,6 +2237,7 @@ class $$CollectivitiesTableTableManager extends RootTableManager<
             Value<String?> collectivityType = const Value.absent(),
             Value<String?> userId = const Value.absent(),
             Value<String> status = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
           }) =>
               CollectivitiesCompanion(
             id: id,
@@ -2163,6 +2249,7 @@ class $$CollectivitiesTableTableManager extends RootTableManager<
             collectivityType: collectivityType,
             userId: userId,
             status: status,
+            createdAt: createdAt,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -2174,6 +2261,7 @@ class $$CollectivitiesTableTableManager extends RootTableManager<
             Value<String?> collectivityType = const Value.absent(),
             Value<String?> userId = const Value.absent(),
             Value<String> status = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
           }) =>
               CollectivitiesCompanion.insert(
             id: id,
@@ -2185,6 +2273,7 @@ class $$CollectivitiesTableTableManager extends RootTableManager<
             collectivityType: collectivityType,
             userId: userId,
             status: status,
+            createdAt: createdAt,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
@@ -2773,6 +2862,7 @@ typedef $$MessagesTableCreateCompanionBuilder = MessagesCompanion Function({
   Value<String?> dyadReceiverId,
   Value<DateTime?> sendTime,
   Value<String> status,
+  Value<DateTime> createdAt,
 });
 typedef $$MessagesTableUpdateCompanionBuilder = MessagesCompanion Function({
   Value<int> id,
@@ -2783,6 +2873,7 @@ typedef $$MessagesTableUpdateCompanionBuilder = MessagesCompanion Function({
   Value<String?> dyadReceiverId,
   Value<DateTime?> sendTime,
   Value<String> status,
+  Value<DateTime> createdAt,
 });
 
 final class $$MessagesTableReferences
@@ -2836,6 +2927,9 @@ class $$MessagesTableFilterComposer
   ColumnFilters<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
   $$CollectivitiesTableFilterComposer get collectivityId {
     final $$CollectivitiesTableFilterComposer composer = $composerBuilder(
         composer: this,
@@ -2888,6 +2982,9 @@ class $$MessagesTableOrderingComposer
   ColumnOrderings<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
   $$CollectivitiesTableOrderingComposer get collectivityId {
     final $$CollectivitiesTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -2938,6 +3035,9 @@ class $$MessagesTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   $$CollectivitiesTableAnnotationComposer get collectivityId {
     final $$CollectivitiesTableAnnotationComposer composer = $composerBuilder(
@@ -2991,6 +3091,7 @@ class $$MessagesTableTableManager extends RootTableManager<
             Value<String?> dyadReceiverId = const Value.absent(),
             Value<DateTime?> sendTime = const Value.absent(),
             Value<String> status = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
           }) =>
               MessagesCompanion(
             id: id,
@@ -3001,6 +3102,7 @@ class $$MessagesTableTableManager extends RootTableManager<
             dyadReceiverId: dyadReceiverId,
             sendTime: sendTime,
             status: status,
+            createdAt: createdAt,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -3011,6 +3113,7 @@ class $$MessagesTableTableManager extends RootTableManager<
             Value<String?> dyadReceiverId = const Value.absent(),
             Value<DateTime?> sendTime = const Value.absent(),
             Value<String> status = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
           }) =>
               MessagesCompanion.insert(
             id: id,
@@ -3021,6 +3124,7 @@ class $$MessagesTableTableManager extends RootTableManager<
             dyadReceiverId: dyadReceiverId,
             sendTime: sendTime,
             status: status,
+            createdAt: createdAt,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) =>

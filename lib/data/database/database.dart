@@ -1,7 +1,9 @@
+import 'package:chat_app/constants/enums/status.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:chat_app/data/connection/connection.dart';
 import 'package:chat_app/data/database/tables.dart';
+import 'package:chat_app/constants/enums/status.dart';
 
 part 'database.g.dart';
 

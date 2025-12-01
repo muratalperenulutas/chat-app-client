@@ -22,6 +22,7 @@ class CollectivitySyncService {
 
   CollectivitySyncService() {
     _setupAutoSync();
+    syncCollectivities();
   }
 
   void _setupAutoSync() {
@@ -29,6 +30,11 @@ class CollectivitySyncService {
       if (collectivities.isNotEmpty) {
         _syncCollectivities(collectivities);
       }
+    });
+    
+    collectivityRepository.checkPendingCollectivitiesTimeout();
+    Timer.periodic(const Duration(minutes: 1), (timer) {
+      collectivityRepository.checkPendingCollectivitiesTimeout();
     });
   }
 

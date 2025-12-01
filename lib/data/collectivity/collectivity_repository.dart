@@ -57,11 +57,20 @@ class CollectivityRepository {
 
   Stream<List<Collectivity>> watchUnsyncedCollectivities() {
     final db = database;
-    return (db.select(db.collectivities)..where((tbl) => tbl.status.equals('CREATED')))
+    return (db.select(db.collectivities)..where((tbl) => tbl.status.equals(Status.created.name)))
         .watch()
         .map((rows) => 
           List<CollectivityData>.from(rows).map(_mapCollectivityDataToCollectivity).toList()
         );
+  }
+
+  Future<void> checkPendingCollectivitiesTimeout() async {
+    final db = database;
+    final timeoutThreshold = DateTime.now().subtract(const Duration(minutes: 1));
+    
+    await (db.update(db.collectivities)
+      ..where((tbl) => tbl.status.equals(Status.pending.name) & tbl.createdAt.isSmallerThanValue(timeoutThreshold)))
+      .write(CollectivitiesCompanion(status: drift.Value(Status.failed.name)));
   }
 
   Future<void> insertGroup(Group group) async {
@@ -190,7 +199,7 @@ class CollectivityRepository {
 
   Future<List<Collectivity>> getUnsyncedCollectivities() async {
     final db = database;
-    final rows = await (db.select(db.collectivities)..where((tbl) => tbl.status.equals('CREATED'))).get();
+    final rows = await (db.select(db.collectivities)..where((tbl) => tbl.status.equals(Status.created.name))).get();
     return rows.map(_mapCollectivityDataToCollectivity).toList();
   }
 

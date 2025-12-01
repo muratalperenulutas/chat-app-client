@@ -20,6 +20,7 @@ class ContactSyncService {
 
   ContactSyncService() {
     _setupAutoSync();
+    findRegisteredPersons();
   }
 
   void _setupAutoSync() {

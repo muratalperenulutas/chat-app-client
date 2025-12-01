@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:chat_app/constants/enums/status.dart';
 
 @DataClassName('CollectivityData')
 class Collectivities extends Table {
@@ -10,7 +11,8 @@ class Collectivities extends Table {
   TextColumn get imageId => text().nullable()();
   TextColumn get collectivityType => text().nullable()();
   TextColumn get userId => text().nullable()();
-  TextColumn get status => text().withDefault(const Constant('CREATED'))();
+  TextColumn get status => text().withDefault(Constant(Status.created.name))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   String get tableName => 'collectivity';
@@ -31,7 +33,7 @@ class Persons extends Table {
   TextColumn get username => text().unique()();
   TextColumn get description => text().nullable()();
   TextColumn get imageId => text().nullable()();
-  TextColumn get status => text().withDefault(const Constant('CREATED'))();
+  TextColumn get status => text().withDefault(Constant(Status.created.name))();
 }
 
 @DataClassName('ContactData')
@@ -40,7 +42,7 @@ class Contacts extends Table {
   TextColumn get name => text()();
   TextColumn get username => text().unique()();
   TextColumn get personId => text().nullable().customConstraint('REFERENCES persons(person_id) ON DELETE SET NULL')();
-  TextColumn get status => text().withDefault(const Constant('CREATED'))();
+  TextColumn get status => text().withDefault(Constant(Status.created.name))();
 }
 
 @DataClassName('MessageData')
@@ -52,6 +54,8 @@ class Messages extends Table {
   TextColumn get collectivityId => text().nullable().customConstraint('REFERENCES collectivity(collectivityId) ON DELETE CASCADE')();
   TextColumn get dyadReceiverId => text().nullable()();
   DateTimeColumn get sendTime => dateTime().nullable()();
-  TextColumn get status => text().withDefault(const Constant('CREATED'))();
+  TextColumn get status => text().withDefault(Constant(Status.created.name))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
+
 
