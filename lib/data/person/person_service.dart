@@ -2,23 +2,14 @@ import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/data/person/person.dart';
 import 'package:chat_app/data/person/person_repository.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../constants/enums/source_enum.dart';
 import '../../constants/enums/status.dart';
 
-part 'person_service.g.dart';
-
-@Riverpod(keepAlive: true)
-PersonService personService(Ref ref) {
-  return PersonService(ref);
-}
-
 class PersonService {
-  final Ref ref;
   final PersonRepository personRepository = getIt<PersonRepository>();
 
-  PersonService(this.ref);
+  PersonService();
 
   Future<void> createContact(String name, String username) async {
     debugPrint("name:$name  username:$username");

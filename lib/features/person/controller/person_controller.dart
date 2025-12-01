@@ -35,7 +35,7 @@ class PersonController extends _$PersonController {
   }
 
   void createContact(String name, String username) {
-    final personService = ref.read(personServiceProvider);
+    final personService = getIt<PersonService>();
     personService.createContact(name, username);
   }
 

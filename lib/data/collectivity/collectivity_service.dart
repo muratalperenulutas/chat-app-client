@@ -5,19 +5,12 @@ import 'package:chat_app/data/collectivity/dyad.dart';
 import 'package:chat_app/data/message/message_repository.dart';
 import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/chat/controllers/message_controller.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../person/person_repository.dart';
 import 'group.dart';
 
-part 'collectivity_service.g.dart';
-
-@Riverpod(keepAlive: true)
-CollectivityService collectivityService(Ref ref) {
-  return CollectivityService(ref);
-}
-
 class CollectivityService {
-  final Ref ref;
+  final ProviderContainer ref;
   final CollectivityRepository collectivityRepository = getIt<CollectivityRepository>();
   final MessageRepository messageRepository = getIt<MessageRepository>();
   final PersonRepository personRepository = getIt<PersonRepository>();

@@ -25,6 +25,10 @@ void main() async {
   }
 
   configureDependencies();
+
+  final container = ProviderContainer();
+  getIt.registerSingleton<ProviderContainer>(container);
+
   initInitialBindings();
 
   try {
@@ -34,5 +38,8 @@ void main() async {
     debugPrint('Database initialization error: $e');
   }
 
-  runApp(ProviderScope(child: MyApp()));
+  runApp(UncontrolledProviderScope(
+    container: container,
+    child: MyApp(),
+  ));
 }

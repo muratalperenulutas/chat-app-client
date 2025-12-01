@@ -2,18 +2,11 @@ import 'package:chat_app/constants/enums/status.dart';
 import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/data/message/message_repository.dart';
 import 'package:chat_app/features/auth/controllers/auth_controller.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'message.dart';
 
-part 'message_service.g.dart';
-
-@Riverpod(keepAlive: true)
-MessageService messageService(Ref ref) {
-  return MessageService(ref);
-}
-
 class MessageService {
-  final Ref ref;
+  final ProviderContainer ref;
   final MessageRepository messageRepository = getIt<MessageRepository>();
 
   MessageService(this.ref);

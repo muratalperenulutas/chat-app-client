@@ -34,12 +34,12 @@ class MessageController extends _$MessageController {
   }
 
   Future<void> sendMessage(String message, String? collectivityId, String? userId) async {
-    final messageService = ref.read(messageServiceProvider);
+    final messageService = getIt<MessageService>();
     if (message.isNotEmpty) {
       if (collectivityId != null) {
         messageService.sendMessageByCollectivityId(message, collectivityId);
       } else if (userId != null) {
-        final collectivityService = ref.read(collectivityServiceProvider);
+        final collectivityService = getIt<CollectivityService>();
         await collectivityService.createDyadIfNotExist(userId);
         messageService.sendMessageByReceiverId(message, userId);
       } else {
