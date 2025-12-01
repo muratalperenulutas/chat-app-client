@@ -1,5 +1,7 @@
 import 'package:chat_app/data/collectivity/collectivity_abstract.dart';
 import 'package:chat_app/data/collectivity/dyad.dart';
+import 'package:chat_app/data/contact/contact.dart';
+import 'package:chat_app/data/contact/contact_repository.dart';
 import 'package:chat_app/data/person/person_repository.dart';
 import 'package:chat_app/core/di/injection.dart';
 import 'package:flutter/material.dart';
@@ -21,16 +23,16 @@ class ChatBase {
       this.imageId,
       this.personId,});
 
-  factory ChatBase.fromPerson(Person person) {
+  factory ChatBase.fromPerson(Person person, {String? nameOverride}) {
     return ChatBase(
-        name: person.localName,
+        name: nameOverride ?? person.username,
         imageId: person.imageId,
         personId: person.personId,);
   }
-  factory ChatBase.fromPersonAndDyad(Person person,Dyad dyad) {
+  factory ChatBase.fromPersonAndDyad(Person person,Dyad dyad, {String? nameOverride}) {
     return ChatBase(
       collectivityId: dyad.collectivityId,
-        name: person.localName??person.username,
+        name: nameOverride ?? person.username,
         imageId: person.imageId,
         personId: person.personId,);
   }
@@ -45,17 +47,23 @@ class ChatBase {
 
    static Future<List<ChatBase>> fromCollectivities(List<Collectivity> collectivities) async {
     List<ChatBase> chatBaseModels=<ChatBase>[];
+    final personRepository = getIt<PersonRepository>();
+    final contactRepository = getIt<ContactRepository>();
+
     for(Collectivity collectivity in collectivities) {
       if (collectivity is Group) {
         chatBaseModels.add(ChatBase.fromGroup(collectivity));
       } else if (collectivity is Dyad) {
-          final personRepository = getIt<PersonRepository>();
           Person? person = await personRepository
               .findPersonByPersonId(collectivity.userId);
           if(person!=null) {
+            Contact? contact;
+            if (person.personId != null) {
+              contact = await contactRepository.findContactByPersonId(person.personId!);
+            }
             chatBaseModels.add(
                 ChatBase.fromPersonAndDyad(
-                    person, collectivity));
+                    person, collectivity, nameOverride: contact?.name));
           }
           debugPrint(person==null?"person model null":"");
       } else {

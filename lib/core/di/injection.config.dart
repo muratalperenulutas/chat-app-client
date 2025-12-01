@@ -13,6 +13,7 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
 import '../../data/collectivity/collectivity_repository.dart' as _i865;
+import '../../data/contact/contact_repository.dart' as _i565;
 import '../../data/database_service.dart' as _i1049;
 import '../../data/message/message_repository.dart' as _i260;
 import '../../data/participant/participant_repository.dart' as _i341;
@@ -34,6 +35,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i341.ParticipantRepository());
     gh.singleton<_i865.CollectivityRepository>(
         () => _i865.CollectivityRepository(gh<_i1049.DatabaseService>()));
+    gh.singleton<_i565.ContactRepository>(
+        () => _i565.ContactRepository(gh<_i1049.DatabaseService>()));
     gh.singleton<_i260.MessageRepository>(
         () => _i260.MessageRepository(gh<_i1049.DatabaseService>()));
     gh.singleton<_i841.PersonRepository>(

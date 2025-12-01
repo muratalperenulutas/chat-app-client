@@ -5,7 +5,7 @@ import 'package:chat_app/data/database/tables.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [Collectivities, Participants, Persons, Messages])
+@DriftDatabase(tables: [Collectivities, Participants, Persons, Messages, Contacts])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(openConnection());
 

@@ -1,7 +1,7 @@
+import 'package:chat_app/constants/enums/status.dart';
 import 'package:chat_app/constants/db/table_names.dart';
 import 'package:chat_app/data/database/database.dart';
 import 'package:drift/drift.dart' as drift;
-import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 
 import '../database_service.dart';
@@ -15,6 +15,19 @@ class MessageRepository {
 
   AppDatabase get database => databaseService.getDatabase();
 
+  Message _mapRowToMessage(drift.QueryRow row) {
+    return Message(
+      id: row.read<int>('id'),
+      messageId: row.read<String?>('message_id'),
+      message: row.read<String>('message'),
+      collectivityId: row.read<String?>('collectivity_id'),
+      dyadReceiverId: row.read<String?>('dyad_receiver_id'),
+      userId: row.read<String>('user_id'),
+      sendTime: DateTime.fromMillisecondsSinceEpoch(row.read<int>('send_time')),
+      status: Status.fromString(row.read<String>('status')),
+    );
+  }
+
   Stream<List<Message>> watchUnsyncedCollectivityMessages() {
     final db = database;
     
@@ -22,25 +35,24 @@ class MessageRepository {
       'SELECT * FROM ${DbTableNames.messages} WHERE status != \'SYNC\' AND collectivity_id IS NOT NULL',
       readsFrom: {db.messages},
     ).watch().map((rows) => 
-      rows.map((row) => Message.fromDb(row.data)).toList()
+      rows.map(_mapRowToMessage).toList()
     );
   }
 
   Future<void> insertMessage(Message message) async {
     final db = database;
-    final map = message.toDb();
     await db.customInsert(
       'INSERT OR REPLACE INTO ${DbTableNames.messages} '
       '(message_id, message, user_id, collectivity_id, dyad_receiver_id, send_time, status) '
       'VALUES (?, ?, ?, ?, ?, ?, ?)',
       variables: [
-        drift.Variable.withString(map['message_id'] ?? ''),
-        drift.Variable.withString(map['message'] ?? ''),
-        drift.Variable.withString(map['user_id'] ?? ''),
-        drift.Variable.withString(map['collectivity_id'] ?? ''),
-        drift.Variable.withString(map['dyad_receiver_id'] ?? ''),
-        drift.Variable.withInt(map['send_time'] ?? 0),
-        drift.Variable.withString(map['status'] ?? ''),
+        drift.Variable.withString(message.messageId ?? ''),
+        drift.Variable.withString(message.message),
+        drift.Variable.withString(message.userId),
+        drift.Variable.withString(message.collectivityId ?? ''),
+        drift.Variable.withString(message.dyadReceiverId ?? ''),
+        drift.Variable.withInt(message.sendTime.millisecondsSinceEpoch),
+        drift.Variable.withString(message.status.name),
       ],
       updates: {db.messages},
     );
@@ -49,19 +61,18 @@ class MessageRepository {
   Future<void> insertMessageList(List<Message> messages) async {
     final db = database;
     for (var message in messages) {
-      final map = message.toDb();
       await db.customInsert(
         'INSERT OR REPLACE INTO ${DbTableNames.messages} '
         '(message_id, message, user_id, collectivity_id, dyad_receiver_id, send_time, status) '
         'VALUES (?, ?, ?, ?, ?, ?, ?)',
         variables: [
-          drift.Variable.withString(map['message_id'] ?? ''),
-          drift.Variable.withString(map['message'] ?? ''),
-          drift.Variable.withString(map['user_id'] ?? ''),
-          drift.Variable.withString(map['collectivity_id'] ?? ''),
-          drift.Variable.withString(map['dyad_receiver_id'] ?? ''),
-          drift.Variable.withInt(map['send_time'] ?? 0),
-          drift.Variable.withString(map['status'] ?? ''),
+          drift.Variable.withString(message.messageId ?? ''),
+          drift.Variable.withString(message.message),
+          drift.Variable.withString(message.userId),
+          drift.Variable.withString(message.collectivityId ?? ''),
+          drift.Variable.withString(message.dyadReceiverId ?? ''),
+          drift.Variable.withInt(message.sendTime.millisecondsSinceEpoch),
+          drift.Variable.withString(message.status.name),
         ],
         updates: {db.messages},
       );
@@ -70,20 +81,19 @@ class MessageRepository {
 
   Future<void> updateMessage(Message message) async {
     final db = database;
-    final map = message.toDb();
     await db.customUpdate(
       'UPDATE ${DbTableNames.messages} SET '
       'message_id = ?, message = ?, user_id = ?, collectivity_id = ?, '
       'dyad_receiver_id = ?, send_time = ?, status = ? WHERE id = ?',
       variables: [
-        drift.Variable.withString(map['message_id'] ?? ''),
-        drift.Variable.withString(map['message'] ?? ''),
-        drift.Variable.withString(map['user_id'] ?? ''),
-        drift.Variable.withString(map['collectivity_id'] ?? ''),
-        drift.Variable.withString(map['dyad_receiver_id'] ?? ''),
-        drift.Variable.withInt(map['send_time'] ?? 0),
-        drift.Variable.withString(map['status'] ?? ''),
-        drift.Variable.withInt(map['id']),
+        drift.Variable.withString(message.messageId ?? ''),
+        drift.Variable.withString(message.message),
+        drift.Variable.withString(message.userId),
+        drift.Variable.withString(message.collectivityId ?? ''),
+        drift.Variable.withString(message.dyadReceiverId ?? ''),
+        drift.Variable.withInt(message.sendTime.millisecondsSinceEpoch),
+        drift.Variable.withString(message.status.name),
+        drift.Variable.withInt(message.id!),
       ],
       updates: {db.messages},
     );
@@ -91,20 +101,19 @@ class MessageRepository {
 
   Future<void> updateMessageWithoutNotifier(Message message) async {
     final db = database;
-    final map = message.toDb();
     await db.customUpdate(
       'UPDATE ${DbTableNames.messages} SET '
       'message_id = ?, message = ?, user_id = ?, collectivity_id = ?, '
       'dyad_receiver_id = ?, send_time = ?, status = ? WHERE id = ?',
       variables: [
-        drift.Variable.withString(map['message_id'] ?? ''),
-        drift.Variable.withString(map['message'] ?? ''),
-        drift.Variable.withString(map['user_id'] ?? ''),
-        drift.Variable.withString(map['collectivity_id'] ?? ''),
-        drift.Variable.withString(map['dyad_receiver_id'] ?? ''),
-        drift.Variable.withInt(map['send_time'] ?? 0),
-        drift.Variable.withString(map['status'] ?? ''),
-        drift.Variable.withInt(map['id']),
+        drift.Variable.withString(message.messageId ?? ''),
+        drift.Variable.withString(message.message),
+        drift.Variable.withString(message.userId),
+        drift.Variable.withString(message.collectivityId ?? ''),
+        drift.Variable.withString(message.dyadReceiverId ?? ''),
+        drift.Variable.withInt(message.sendTime.millisecondsSinceEpoch),
+        drift.Variable.withString(message.status.name),
+        drift.Variable.withInt(message.id!),
       ],
       updates: {db.messages},
     );
@@ -134,7 +143,7 @@ class MessageRepository {
     );
     
     final results = await query.get();
-    return results.map((row) => Message.fromDb(row.data)).toList();
+    return results.map(_mapRowToMessage).toList();
   }
 
   Future<List<Message>> getAllUnsyncedMessages() async {
@@ -145,7 +154,7 @@ class MessageRepository {
     );
     
     final results = await query.get();
-    return results.map((row) => Message.fromDb(row.data)).toList();
+    return results.map(_mapRowToMessage).toList();
   }
 
   Future<List<Message>> getAllUnsyncedCollectivityMessages() async {
@@ -156,11 +165,11 @@ class MessageRepository {
     );
     
     final results = await query.get();
-    debugPrint("UnsyncedCollectivityMessages ${results.map((r) => r.data).toList()}");
-    return results.map((row) => Message.fromDb(row.data)).toList();
+    return results.map(_mapRowToMessage).toList();
   }
 
   Future<void> printAll() async {
+    /*
     final db = database;
     final query = db.customSelect(
       'SELECT * FROM ${DbTableNames.messages}',
@@ -169,6 +178,7 @@ class MessageRepository {
     
     final results = await query.get();
     debugPrint(results.map((r) => r.data).toList().toString());
+    */
   }
 }
 

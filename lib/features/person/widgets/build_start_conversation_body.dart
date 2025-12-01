@@ -1,3 +1,4 @@
+import 'package:chat_app/features/person/models/person_base.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -34,7 +35,7 @@ class BuildStartConversationBody extends ConsumerWidget {
               itemCount: contactsOnChatApp.length,
               itemBuilder: (context, index) {
                 return MyStartConversationButton(
-                    screenHeight: screenHeight, person: contactsOnChatApp[index]);
+                    screenHeight: screenHeight, personBase: PersonBase.fromContact(contactsOnChatApp[index]));
               },
             ),
             const Divider(),
@@ -51,7 +52,7 @@ class BuildStartConversationBody extends ConsumerWidget {
               itemCount: contactsNotOnChatApp.length,
               itemBuilder: (context, index) {
                 return MyStartConversationButton(
-                    screenHeight: screenHeight, person: contactsNotOnChatApp[index]);
+                    screenHeight: screenHeight, personBase: PersonBase.fromContact(contactsNotOnChatApp[index]));
               },
             ),
           ],

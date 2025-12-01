@@ -730,12 +730,6 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, PersonData> {
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _localNameMeta =
-      const VerificationMeta('localName');
-  @override
-  late final GeneratedColumn<String> localName = GeneratedColumn<String>(
-      'local_name', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _usernameMeta =
       const VerificationMeta('username');
   @override
@@ -756,21 +750,6 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, PersonData> {
   late final GeneratedColumn<String> imageId = GeneratedColumn<String>(
       'image_id', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
-  @override
-  late final GeneratedColumn<String> source = GeneratedColumn<String>(
-      'source', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('SERVER'));
-  static const VerificationMeta _isRegisteredMeta =
-      const VerificationMeta('isRegistered');
-  @override
-  late final GeneratedColumn<int> isRegistered = GeneratedColumn<int>(
-      'is_registered', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
@@ -779,18 +758,8 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, PersonData> {
       requiredDuringInsert: false,
       defaultValue: const Constant('CREATED'));
   @override
-  List<GeneratedColumn> get $columns => [
-        id,
-        personId,
-        name,
-        localName,
-        username,
-        description,
-        imageId,
-        source,
-        isRegistered,
-        status
-      ];
+  List<GeneratedColumn> get $columns =>
+      [id, personId, name, username, description, imageId, status];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -814,10 +783,6 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, PersonData> {
       context.handle(
           _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     }
-    if (data.containsKey('local_name')) {
-      context.handle(_localNameMeta,
-          localName.isAcceptableOrUnknown(data['local_name']!, _localNameMeta));
-    }
     if (data.containsKey('username')) {
       context.handle(_usernameMeta,
           username.isAcceptableOrUnknown(data['username']!, _usernameMeta));
@@ -833,16 +798,6 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, PersonData> {
     if (data.containsKey('image_id')) {
       context.handle(_imageIdMeta,
           imageId.isAcceptableOrUnknown(data['image_id']!, _imageIdMeta));
-    }
-    if (data.containsKey('source')) {
-      context.handle(_sourceMeta,
-          source.isAcceptableOrUnknown(data['source']!, _sourceMeta));
-    }
-    if (data.containsKey('is_registered')) {
-      context.handle(
-          _isRegisteredMeta,
-          isRegistered.isAcceptableOrUnknown(
-              data['is_registered']!, _isRegisteredMeta));
     }
     if (data.containsKey('status')) {
       context.handle(_statusMeta,
@@ -863,18 +818,12 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, PersonData> {
           .read(DriftSqlType.string, data['${effectivePrefix}person_id'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name']),
-      localName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}local_name']),
       username: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}username'])!,
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description']),
       imageId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}image_id']),
-      source: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}source'])!,
-      isRegistered: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}is_registered'])!,
       status: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
     );
@@ -890,23 +839,17 @@ class PersonData extends DataClass implements Insertable<PersonData> {
   final int id;
   final String personId;
   final String? name;
-  final String? localName;
   final String username;
   final String? description;
   final String? imageId;
-  final String source;
-  final int isRegistered;
   final String status;
   const PersonData(
       {required this.id,
       required this.personId,
       this.name,
-      this.localName,
       required this.username,
       this.description,
       this.imageId,
-      required this.source,
-      required this.isRegistered,
       required this.status});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -916,9 +859,6 @@ class PersonData extends DataClass implements Insertable<PersonData> {
     if (!nullToAbsent || name != null) {
       map['name'] = Variable<String>(name);
     }
-    if (!nullToAbsent || localName != null) {
-      map['local_name'] = Variable<String>(localName);
-    }
     map['username'] = Variable<String>(username);
     if (!nullToAbsent || description != null) {
       map['description'] = Variable<String>(description);
@@ -926,8 +866,6 @@ class PersonData extends DataClass implements Insertable<PersonData> {
     if (!nullToAbsent || imageId != null) {
       map['image_id'] = Variable<String>(imageId);
     }
-    map['source'] = Variable<String>(source);
-    map['is_registered'] = Variable<int>(isRegistered);
     map['status'] = Variable<String>(status);
     return map;
   }
@@ -937,9 +875,6 @@ class PersonData extends DataClass implements Insertable<PersonData> {
       id: Value(id),
       personId: Value(personId),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
-      localName: localName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(localName),
       username: Value(username),
       description: description == null && nullToAbsent
           ? const Value.absent()
@@ -947,8 +882,6 @@ class PersonData extends DataClass implements Insertable<PersonData> {
       imageId: imageId == null && nullToAbsent
           ? const Value.absent()
           : Value(imageId),
-      source: Value(source),
-      isRegistered: Value(isRegistered),
       status: Value(status),
     );
   }
@@ -960,12 +893,9 @@ class PersonData extends DataClass implements Insertable<PersonData> {
       id: serializer.fromJson<int>(json['id']),
       personId: serializer.fromJson<String>(json['personId']),
       name: serializer.fromJson<String?>(json['name']),
-      localName: serializer.fromJson<String?>(json['localName']),
       username: serializer.fromJson<String>(json['username']),
       description: serializer.fromJson<String?>(json['description']),
       imageId: serializer.fromJson<String?>(json['imageId']),
-      source: serializer.fromJson<String>(json['source']),
-      isRegistered: serializer.fromJson<int>(json['isRegistered']),
       status: serializer.fromJson<String>(json['status']),
     );
   }
@@ -976,12 +906,9 @@ class PersonData extends DataClass implements Insertable<PersonData> {
       'id': serializer.toJson<int>(id),
       'personId': serializer.toJson<String>(personId),
       'name': serializer.toJson<String?>(name),
-      'localName': serializer.toJson<String?>(localName),
       'username': serializer.toJson<String>(username),
       'description': serializer.toJson<String?>(description),
       'imageId': serializer.toJson<String?>(imageId),
-      'source': serializer.toJson<String>(source),
-      'isRegistered': serializer.toJson<int>(isRegistered),
       'status': serializer.toJson<String>(status),
     };
   }
@@ -990,23 +917,17 @@ class PersonData extends DataClass implements Insertable<PersonData> {
           {int? id,
           String? personId,
           Value<String?> name = const Value.absent(),
-          Value<String?> localName = const Value.absent(),
           String? username,
           Value<String?> description = const Value.absent(),
           Value<String?> imageId = const Value.absent(),
-          String? source,
-          int? isRegistered,
           String? status}) =>
       PersonData(
         id: id ?? this.id,
         personId: personId ?? this.personId,
         name: name.present ? name.value : this.name,
-        localName: localName.present ? localName.value : this.localName,
         username: username ?? this.username,
         description: description.present ? description.value : this.description,
         imageId: imageId.present ? imageId.value : this.imageId,
-        source: source ?? this.source,
-        isRegistered: isRegistered ?? this.isRegistered,
         status: status ?? this.status,
       );
   PersonData copyWithCompanion(PersonsCompanion data) {
@@ -1014,15 +935,10 @@ class PersonData extends DataClass implements Insertable<PersonData> {
       id: data.id.present ? data.id.value : this.id,
       personId: data.personId.present ? data.personId.value : this.personId,
       name: data.name.present ? data.name.value : this.name,
-      localName: data.localName.present ? data.localName.value : this.localName,
       username: data.username.present ? data.username.value : this.username,
       description:
           data.description.present ? data.description.value : this.description,
       imageId: data.imageId.present ? data.imageId.value : this.imageId,
-      source: data.source.present ? data.source.value : this.source,
-      isRegistered: data.isRegistered.present
-          ? data.isRegistered.value
-          : this.isRegistered,
       status: data.status.present ? data.status.value : this.status,
     );
   }
@@ -1033,20 +949,17 @@ class PersonData extends DataClass implements Insertable<PersonData> {
           ..write('id: $id, ')
           ..write('personId: $personId, ')
           ..write('name: $name, ')
-          ..write('localName: $localName, ')
           ..write('username: $username, ')
           ..write('description: $description, ')
           ..write('imageId: $imageId, ')
-          ..write('source: $source, ')
-          ..write('isRegistered: $isRegistered, ')
           ..write('status: $status')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, personId, name, localName, username,
-      description, imageId, source, isRegistered, status);
+  int get hashCode =>
+      Object.hash(id, personId, name, username, description, imageId, status);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1054,12 +967,9 @@ class PersonData extends DataClass implements Insertable<PersonData> {
           other.id == this.id &&
           other.personId == this.personId &&
           other.name == this.name &&
-          other.localName == this.localName &&
           other.username == this.username &&
           other.description == this.description &&
           other.imageId == this.imageId &&
-          other.source == this.source &&
-          other.isRegistered == this.isRegistered &&
           other.status == this.status);
 }
 
@@ -1067,35 +977,26 @@ class PersonsCompanion extends UpdateCompanion<PersonData> {
   final Value<int> id;
   final Value<String> personId;
   final Value<String?> name;
-  final Value<String?> localName;
   final Value<String> username;
   final Value<String?> description;
   final Value<String?> imageId;
-  final Value<String> source;
-  final Value<int> isRegistered;
   final Value<String> status;
   const PersonsCompanion({
     this.id = const Value.absent(),
     this.personId = const Value.absent(),
     this.name = const Value.absent(),
-    this.localName = const Value.absent(),
     this.username = const Value.absent(),
     this.description = const Value.absent(),
     this.imageId = const Value.absent(),
-    this.source = const Value.absent(),
-    this.isRegistered = const Value.absent(),
     this.status = const Value.absent(),
   });
   PersonsCompanion.insert({
     this.id = const Value.absent(),
     required String personId,
     this.name = const Value.absent(),
-    this.localName = const Value.absent(),
     required String username,
     this.description = const Value.absent(),
     this.imageId = const Value.absent(),
-    this.source = const Value.absent(),
-    this.isRegistered = const Value.absent(),
     this.status = const Value.absent(),
   })  : personId = Value(personId),
         username = Value(username);
@@ -1103,24 +1004,18 @@ class PersonsCompanion extends UpdateCompanion<PersonData> {
     Expression<int>? id,
     Expression<String>? personId,
     Expression<String>? name,
-    Expression<String>? localName,
     Expression<String>? username,
     Expression<String>? description,
     Expression<String>? imageId,
-    Expression<String>? source,
-    Expression<int>? isRegistered,
     Expression<String>? status,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (personId != null) 'person_id': personId,
       if (name != null) 'name': name,
-      if (localName != null) 'local_name': localName,
       if (username != null) 'username': username,
       if (description != null) 'description': description,
       if (imageId != null) 'image_id': imageId,
-      if (source != null) 'source': source,
-      if (isRegistered != null) 'is_registered': isRegistered,
       if (status != null) 'status': status,
     });
   }
@@ -1129,23 +1024,17 @@ class PersonsCompanion extends UpdateCompanion<PersonData> {
       {Value<int>? id,
       Value<String>? personId,
       Value<String?>? name,
-      Value<String?>? localName,
       Value<String>? username,
       Value<String?>? description,
       Value<String?>? imageId,
-      Value<String>? source,
-      Value<int>? isRegistered,
       Value<String>? status}) {
     return PersonsCompanion(
       id: id ?? this.id,
       personId: personId ?? this.personId,
       name: name ?? this.name,
-      localName: localName ?? this.localName,
       username: username ?? this.username,
       description: description ?? this.description,
       imageId: imageId ?? this.imageId,
-      source: source ?? this.source,
-      isRegistered: isRegistered ?? this.isRegistered,
       status: status ?? this.status,
     );
   }
@@ -1162,9 +1051,6 @@ class PersonsCompanion extends UpdateCompanion<PersonData> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
-    if (localName.present) {
-      map['local_name'] = Variable<String>(localName.value);
-    }
     if (username.present) {
       map['username'] = Variable<String>(username.value);
     }
@@ -1173,12 +1059,6 @@ class PersonsCompanion extends UpdateCompanion<PersonData> {
     }
     if (imageId.present) {
       map['image_id'] = Variable<String>(imageId.value);
-    }
-    if (source.present) {
-      map['source'] = Variable<String>(source.value);
-    }
-    if (isRegistered.present) {
-      map['is_registered'] = Variable<int>(isRegistered.value);
     }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
@@ -1192,12 +1072,9 @@ class PersonsCompanion extends UpdateCompanion<PersonData> {
           ..write('id: $id, ')
           ..write('personId: $personId, ')
           ..write('name: $name, ')
-          ..write('localName: $localName, ')
           ..write('username: $username, ')
           ..write('description: $description, ')
           ..write('imageId: $imageId, ')
-          ..write('source: $source, ')
-          ..write('isRegistered: $isRegistered, ')
           ..write('status: $status')
           ..write(')'))
         .toString();
@@ -1638,6 +1515,306 @@ class MessagesCompanion extends UpdateCompanion<MessageData> {
   }
 }
 
+class $ContactsTable extends Contacts
+    with TableInfo<$ContactsTable, ContactData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContactsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _usernameMeta =
+      const VerificationMeta('username');
+  @override
+  late final GeneratedColumn<String> username = GeneratedColumn<String>(
+      'username', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _personIdMeta =
+      const VerificationMeta('personId');
+  @override
+  late final GeneratedColumn<String> personId = GeneratedColumn<String>(
+      'person_id', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: 'REFERENCES persons(person_id) ON DELETE SET NULL');
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+      'status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('CREATED'));
+  @override
+  List<GeneratedColumn> get $columns => [id, name, username, personId, status];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'contacts';
+  @override
+  VerificationContext validateIntegrity(Insertable<ContactData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('username')) {
+      context.handle(_usernameMeta,
+          username.isAcceptableOrUnknown(data['username']!, _usernameMeta));
+    } else if (isInserting) {
+      context.missing(_usernameMeta);
+    }
+    if (data.containsKey('person_id')) {
+      context.handle(_personIdMeta,
+          personId.isAcceptableOrUnknown(data['person_id']!, _personIdMeta));
+    }
+    if (data.containsKey('status')) {
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ContactData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContactData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      username: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}username'])!,
+      personId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}person_id']),
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+    );
+  }
+
+  @override
+  $ContactsTable createAlias(String alias) {
+    return $ContactsTable(attachedDatabase, alias);
+  }
+}
+
+class ContactData extends DataClass implements Insertable<ContactData> {
+  final int id;
+  final String name;
+  final String username;
+  final String? personId;
+  final String status;
+  const ContactData(
+      {required this.id,
+      required this.name,
+      required this.username,
+      this.personId,
+      required this.status});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['username'] = Variable<String>(username);
+    if (!nullToAbsent || personId != null) {
+      map['person_id'] = Variable<String>(personId);
+    }
+    map['status'] = Variable<String>(status);
+    return map;
+  }
+
+  ContactsCompanion toCompanion(bool nullToAbsent) {
+    return ContactsCompanion(
+      id: Value(id),
+      name: Value(name),
+      username: Value(username),
+      personId: personId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(personId),
+      status: Value(status),
+    );
+  }
+
+  factory ContactData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContactData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      username: serializer.fromJson<String>(json['username']),
+      personId: serializer.fromJson<String?>(json['personId']),
+      status: serializer.fromJson<String>(json['status']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'username': serializer.toJson<String>(username),
+      'personId': serializer.toJson<String?>(personId),
+      'status': serializer.toJson<String>(status),
+    };
+  }
+
+  ContactData copyWith(
+          {int? id,
+          String? name,
+          String? username,
+          Value<String?> personId = const Value.absent(),
+          String? status}) =>
+      ContactData(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        username: username ?? this.username,
+        personId: personId.present ? personId.value : this.personId,
+        status: status ?? this.status,
+      );
+  ContactData copyWithCompanion(ContactsCompanion data) {
+    return ContactData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      username: data.username.present ? data.username.value : this.username,
+      personId: data.personId.present ? data.personId.value : this.personId,
+      status: data.status.present ? data.status.value : this.status,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContactData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('username: $username, ')
+          ..write('personId: $personId, ')
+          ..write('status: $status')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, username, personId, status);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContactData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.username == this.username &&
+          other.personId == this.personId &&
+          other.status == this.status);
+}
+
+class ContactsCompanion extends UpdateCompanion<ContactData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> username;
+  final Value<String?> personId;
+  final Value<String> status;
+  const ContactsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.username = const Value.absent(),
+    this.personId = const Value.absent(),
+    this.status = const Value.absent(),
+  });
+  ContactsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    required String username,
+    this.personId = const Value.absent(),
+    this.status = const Value.absent(),
+  })  : name = Value(name),
+        username = Value(username);
+  static Insertable<ContactData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? username,
+    Expression<String>? personId,
+    Expression<String>? status,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (username != null) 'username': username,
+      if (personId != null) 'person_id': personId,
+      if (status != null) 'status': status,
+    });
+  }
+
+  ContactsCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? name,
+      Value<String>? username,
+      Value<String?>? personId,
+      Value<String>? status}) {
+    return ContactsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      username: username ?? this.username,
+      personId: personId ?? this.personId,
+      status: status ?? this.status,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (username.present) {
+      map['username'] = Variable<String>(username.value);
+    }
+    if (personId.present) {
+      map['person_id'] = Variable<String>(personId.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContactsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('username: $username, ')
+          ..write('personId: $personId, ')
+          ..write('status: $status')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1645,12 +1822,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ParticipantsTable participants = $ParticipantsTable(this);
   late final $PersonsTable persons = $PersonsTable(this);
   late final $MessagesTable messages = $MessagesTable(this);
+  late final $ContactsTable contacts = $ContactsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [collectivities, participants, persons, messages];
+      [collectivities, participants, persons, messages, contacts];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
         [
@@ -1666,6 +1844,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
                 limitUpdateKind: UpdateKind.delete),
             result: [
               TableUpdate('messages', kind: UpdateKind.delete),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('persons',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('contacts', kind: UpdateKind.update),
             ],
           ),
         ],
@@ -2307,26 +2492,41 @@ typedef $$PersonsTableCreateCompanionBuilder = PersonsCompanion Function({
   Value<int> id,
   required String personId,
   Value<String?> name,
-  Value<String?> localName,
   required String username,
   Value<String?> description,
   Value<String?> imageId,
-  Value<String> source,
-  Value<int> isRegistered,
   Value<String> status,
 });
 typedef $$PersonsTableUpdateCompanionBuilder = PersonsCompanion Function({
   Value<int> id,
   Value<String> personId,
   Value<String?> name,
-  Value<String?> localName,
   Value<String> username,
   Value<String?> description,
   Value<String?> imageId,
-  Value<String> source,
-  Value<int> isRegistered,
   Value<String> status,
 });
+
+final class $$PersonsTableReferences
+    extends BaseReferences<_$AppDatabase, $PersonsTable, PersonData> {
+  $$PersonsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$ContactsTable, List<ContactData>>
+      _contactsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+          db.contacts,
+          aliasName:
+              $_aliasNameGenerator(db.persons.personId, db.contacts.personId));
+
+  $$ContactsTableProcessedTableManager get contactsRefs {
+    final manager = $$ContactsTableTableManager($_db, $_db.contacts).filter(
+        (f) =>
+            f.personId.personId.sqlEquals($_itemColumn<String>('person_id')!));
+
+    final cache = $_typedResult.readTableOrNull(_contactsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
 
 class $$PersonsTableFilterComposer
     extends Composer<_$AppDatabase, $PersonsTable> {
@@ -2346,9 +2546,6 @@ class $$PersonsTableFilterComposer
   ColumnFilters<String> get name => $composableBuilder(
       column: $table.name, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get localName => $composableBuilder(
-      column: $table.localName, builder: (column) => ColumnFilters(column));
-
   ColumnFilters<String> get username => $composableBuilder(
       column: $table.username, builder: (column) => ColumnFilters(column));
 
@@ -2358,14 +2555,29 @@ class $$PersonsTableFilterComposer
   ColumnFilters<String> get imageId => $composableBuilder(
       column: $table.imageId, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get source => $composableBuilder(
-      column: $table.source, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get isRegistered => $composableBuilder(
-      column: $table.isRegistered, builder: (column) => ColumnFilters(column));
-
   ColumnFilters<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> contactsRefs(
+      Expression<bool> Function($$ContactsTableFilterComposer f) f) {
+    final $$ContactsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.personId,
+        referencedTable: $db.contacts,
+        getReferencedColumn: (t) => t.personId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ContactsTableFilterComposer(
+              $db: $db,
+              $table: $db.contacts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $$PersonsTableOrderingComposer
@@ -2386,9 +2598,6 @@ class $$PersonsTableOrderingComposer
   ColumnOrderings<String> get name => $composableBuilder(
       column: $table.name, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get localName => $composableBuilder(
-      column: $table.localName, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<String> get username => $composableBuilder(
       column: $table.username, builder: (column) => ColumnOrderings(column));
 
@@ -2397,13 +2606,6 @@ class $$PersonsTableOrderingComposer
 
   ColumnOrderings<String> get imageId => $composableBuilder(
       column: $table.imageId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get source => $composableBuilder(
-      column: $table.source, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get isRegistered => $composableBuilder(
-      column: $table.isRegistered,
-      builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnOrderings(column));
@@ -2427,9 +2629,6 @@ class $$PersonsTableAnnotationComposer
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  GeneratedColumn<String> get localName =>
-      $composableBuilder(column: $table.localName, builder: (column) => column);
-
   GeneratedColumn<String> get username =>
       $composableBuilder(column: $table.username, builder: (column) => column);
 
@@ -2439,14 +2638,29 @@ class $$PersonsTableAnnotationComposer
   GeneratedColumn<String> get imageId =>
       $composableBuilder(column: $table.imageId, builder: (column) => column);
 
-  GeneratedColumn<String> get source =>
-      $composableBuilder(column: $table.source, builder: (column) => column);
-
-  GeneratedColumn<int> get isRegistered => $composableBuilder(
-      column: $table.isRegistered, builder: (column) => column);
-
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  Expression<T> contactsRefs<T extends Object>(
+      Expression<T> Function($$ContactsTableAnnotationComposer a) f) {
+    final $$ContactsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.personId,
+        referencedTable: $db.contacts,
+        getReferencedColumn: (t) => t.personId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ContactsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.contacts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $$PersonsTableTableManager extends RootTableManager<
@@ -2458,9 +2672,9 @@ class $$PersonsTableTableManager extends RootTableManager<
     $$PersonsTableAnnotationComposer,
     $$PersonsTableCreateCompanionBuilder,
     $$PersonsTableUpdateCompanionBuilder,
-    (PersonData, BaseReferences<_$AppDatabase, $PersonsTable, PersonData>),
+    (PersonData, $$PersonsTableReferences),
     PersonData,
-    PrefetchHooks Function()> {
+    PrefetchHooks Function({bool contactsRefs})> {
   $$PersonsTableTableManager(_$AppDatabase db, $PersonsTable table)
       : super(TableManagerState(
           db: db,
@@ -2475,54 +2689,66 @@ class $$PersonsTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             Value<String> personId = const Value.absent(),
             Value<String?> name = const Value.absent(),
-            Value<String?> localName = const Value.absent(),
             Value<String> username = const Value.absent(),
             Value<String?> description = const Value.absent(),
             Value<String?> imageId = const Value.absent(),
-            Value<String> source = const Value.absent(),
-            Value<int> isRegistered = const Value.absent(),
             Value<String> status = const Value.absent(),
           }) =>
               PersonsCompanion(
             id: id,
             personId: personId,
             name: name,
-            localName: localName,
             username: username,
             description: description,
             imageId: imageId,
-            source: source,
-            isRegistered: isRegistered,
             status: status,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String personId,
             Value<String?> name = const Value.absent(),
-            Value<String?> localName = const Value.absent(),
             required String username,
             Value<String?> description = const Value.absent(),
             Value<String?> imageId = const Value.absent(),
-            Value<String> source = const Value.absent(),
-            Value<int> isRegistered = const Value.absent(),
             Value<String> status = const Value.absent(),
           }) =>
               PersonsCompanion.insert(
             id: id,
             personId: personId,
             name: name,
-            localName: localName,
             username: username,
             description: description,
             imageId: imageId,
-            source: source,
-            isRegistered: isRegistered,
             status: status,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) =>
+                  (e.readTable(table), $$PersonsTableReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({contactsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (contactsRefs) db.contacts],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (contactsRefs)
+                    await $_getPrefetchedData<PersonData, $PersonsTable,
+                            ContactData>(
+                        currentTable: table,
+                        referencedTable:
+                            $$PersonsTableReferences._contactsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$PersonsTableReferences(db, table, p0)
+                                .contactsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.personId == item.personId),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
         ));
 }
 
@@ -2535,9 +2761,9 @@ typedef $$PersonsTableProcessedTableManager = ProcessedTableManager<
     $$PersonsTableAnnotationComposer,
     $$PersonsTableCreateCompanionBuilder,
     $$PersonsTableUpdateCompanionBuilder,
-    (PersonData, BaseReferences<_$AppDatabase, $PersonsTable, PersonData>),
+    (PersonData, $$PersonsTableReferences),
     PersonData,
-    PrefetchHooks Function()>;
+    PrefetchHooks Function({bool contactsRefs})>;
 typedef $$MessagesTableCreateCompanionBuilder = MessagesCompanion Function({
   Value<int> id,
   required String messageId,
@@ -2851,6 +3077,271 @@ typedef $$MessagesTableProcessedTableManager = ProcessedTableManager<
     (MessageData, $$MessagesTableReferences),
     MessageData,
     PrefetchHooks Function({bool collectivityId})>;
+typedef $$ContactsTableCreateCompanionBuilder = ContactsCompanion Function({
+  Value<int> id,
+  required String name,
+  required String username,
+  Value<String?> personId,
+  Value<String> status,
+});
+typedef $$ContactsTableUpdateCompanionBuilder = ContactsCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<String> username,
+  Value<String?> personId,
+  Value<String> status,
+});
+
+final class $$ContactsTableReferences
+    extends BaseReferences<_$AppDatabase, $ContactsTable, ContactData> {
+  $$ContactsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $PersonsTable _personIdTable(_$AppDatabase db) =>
+      db.persons.createAlias(
+          $_aliasNameGenerator(db.contacts.personId, db.persons.personId));
+
+  $$PersonsTableProcessedTableManager? get personId {
+    final $_column = $_itemColumn<String>('person_id');
+    if ($_column == null) return null;
+    final manager = $$PersonsTableTableManager($_db, $_db.persons)
+        .filter((f) => f.personId.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_personIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$ContactsTableFilterComposer
+    extends Composer<_$AppDatabase, $ContactsTable> {
+  $$ContactsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get username => $composableBuilder(
+      column: $table.username, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnFilters(column));
+
+  $$PersonsTableFilterComposer get personId {
+    final $$PersonsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.personId,
+        referencedTable: $db.persons,
+        getReferencedColumn: (t) => t.personId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PersonsTableFilterComposer(
+              $db: $db,
+              $table: $db.persons,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ContactsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ContactsTable> {
+  $$ContactsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get username => $composableBuilder(
+      column: $table.username, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+
+  $$PersonsTableOrderingComposer get personId {
+    final $$PersonsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.personId,
+        referencedTable: $db.persons,
+        getReferencedColumn: (t) => t.personId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PersonsTableOrderingComposer(
+              $db: $db,
+              $table: $db.persons,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ContactsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ContactsTable> {
+  $$ContactsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get username =>
+      $composableBuilder(column: $table.username, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  $$PersonsTableAnnotationComposer get personId {
+    final $$PersonsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.personId,
+        referencedTable: $db.persons,
+        getReferencedColumn: (t) => t.personId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PersonsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.persons,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ContactsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ContactsTable,
+    ContactData,
+    $$ContactsTableFilterComposer,
+    $$ContactsTableOrderingComposer,
+    $$ContactsTableAnnotationComposer,
+    $$ContactsTableCreateCompanionBuilder,
+    $$ContactsTableUpdateCompanionBuilder,
+    (ContactData, $$ContactsTableReferences),
+    ContactData,
+    PrefetchHooks Function({bool personId})> {
+  $$ContactsTableTableManager(_$AppDatabase db, $ContactsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContactsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContactsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContactsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> username = const Value.absent(),
+            Value<String?> personId = const Value.absent(),
+            Value<String> status = const Value.absent(),
+          }) =>
+              ContactsCompanion(
+            id: id,
+            name: name,
+            username: username,
+            personId: personId,
+            status: status,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+            required String username,
+            Value<String?> personId = const Value.absent(),
+            Value<String> status = const Value.absent(),
+          }) =>
+              ContactsCompanion.insert(
+            id: id,
+            name: name,
+            username: username,
+            personId: personId,
+            status: status,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$ContactsTableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({personId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (personId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.personId,
+                    referencedTable:
+                        $$ContactsTableReferences._personIdTable(db),
+                    referencedColumn:
+                        $$ContactsTableReferences._personIdTable(db).personId,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$ContactsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $ContactsTable,
+    ContactData,
+    $$ContactsTableFilterComposer,
+    $$ContactsTableOrderingComposer,
+    $$ContactsTableAnnotationComposer,
+    $$ContactsTableCreateCompanionBuilder,
+    $$ContactsTableUpdateCompanionBuilder,
+    (ContactData, $$ContactsTableReferences),
+    ContactData,
+    PrefetchHooks Function({bool personId})>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2863,4 +3354,6 @@ class $AppDatabaseManager {
       $$PersonsTableTableManager(_db, _db.persons);
   $$MessagesTableTableManager get messages =>
       $$MessagesTableTableManager(_db, _db.messages);
+  $$ContactsTableTableManager get contacts =>
+      $$ContactsTableTableManager(_db, _db.contacts);
 }

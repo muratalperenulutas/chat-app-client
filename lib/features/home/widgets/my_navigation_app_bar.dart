@@ -87,7 +87,6 @@ class MyNavigationBar extends StatelessWidget {
     bool isSelected,
     Function() onPress,
   ) {
-    final color = isSelected ? Colors.green : Colors.black;
     return InkWell(
       onTap: onPress,
       borderRadius: BorderRadius.circular(12),

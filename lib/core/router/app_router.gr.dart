@@ -174,11 +174,11 @@ class LoginRoute extends PageRouteInfo<void> {
 class PersonDetailRoute extends PageRouteInfo<PersonDetailRouteArgs> {
   PersonDetailRoute({
     Key? key,
-    required Person person,
+    required PersonBase personBase,
     List<PageRouteInfo>? children,
   }) : super(
           PersonDetailRoute.name,
-          args: PersonDetailRouteArgs(key: key, person: person),
+          args: PersonDetailRouteArgs(key: key, personBase: personBase),
           initialChildren: children,
         );
 
@@ -188,32 +188,32 @@ class PersonDetailRoute extends PageRouteInfo<PersonDetailRouteArgs> {
     name,
     builder: (data) {
       final args = data.argsAs<PersonDetailRouteArgs>();
-      return PersonDetailPage(key: args.key, person: args.person);
+      return PersonDetailPage(key: args.key, personBase: args.personBase);
     },
   );
 }
 
 class PersonDetailRouteArgs {
-  const PersonDetailRouteArgs({this.key, required this.person});
+  const PersonDetailRouteArgs({this.key, required this.personBase});
 
   final Key? key;
 
-  final Person person;
+  final PersonBase personBase;
 
   @override
   String toString() {
-    return 'PersonDetailRouteArgs{key: $key, person: $person}';
+    return 'PersonDetailRouteArgs{key: $key, personBase: $personBase}';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! PersonDetailRouteArgs) return false;
-    return key == other.key && person == other.person;
+    return key == other.key && personBase == other.personBase;
   }
 
   @override
-  int get hashCode => key.hashCode ^ person.hashCode;
+  int get hashCode => key.hashCode ^ personBase.hashCode;
 }
 
 /// generated route for

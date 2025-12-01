@@ -1,13 +1,12 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/features/person/models/person_base.dart';
 import 'package:flutter/material.dart';
-
-import '../../../data/person/person.dart';
 
 @RoutePage()
 class PersonDetailPage extends StatelessWidget {
-  final Person person;
+  final PersonBase personBase;
 
-  const PersonDetailPage({super.key, required this.person});
+  const PersonDetailPage({super.key, required this.personBase});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +47,7 @@ class PersonDetailPage extends StatelessWidget {
                     ),
                     SizedBox(
                       width: screenWidth * 0.65,
-                      child: Text(person.localName ?? ""),
+                      child: Text(personBase.name),
                     ),
                   ],
                 ),
@@ -63,7 +62,7 @@ class PersonDetailPage extends StatelessWidget {
                     SizedBox(
                         width: screenWidth * 0.65,
                         child: Text(
-                          person.username ?? "",
+                          personBase.username,
                         )),
                   ],
                 ),

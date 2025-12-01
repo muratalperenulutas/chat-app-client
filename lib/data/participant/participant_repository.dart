@@ -15,13 +15,12 @@ class ParticipantRepository {
 
   Future<void> insertParticipant(Participant participant) async {
     final db = database;
-    final map = participant.toDb();
     await db.customInsert(
       'INSERT OR REPLACE INTO ${DbTableNames.participants} '
       '(user_id, collectivity_id) VALUES (?, ?)',
       variables: [
-        drift.Variable.withString(map['user_id'] ?? ''),
-        drift.Variable.withString(map['collectivity_id'] ?? ''),
+        drift.Variable.withString(participant.userId ?? ''),
+        drift.Variable.withString(participant.collectivityId ?? ''),
       ],
       updates: {db.participants},
     );
@@ -30,14 +29,13 @@ class ParticipantRepository {
   Future<void> insertParticipantList(List<Participant> participants) async {
     final db = database;
     for (var participant in participants) {
-      final map = participant.toDb();
       try {
         await db.customInsert(
           'INSERT INTO ${DbTableNames.participants} '
           '(user_id, collectivity_id) VALUES (?, ?)',
           variables: [
-            drift.Variable.withString(map['user_id'] ?? ''),
-            drift.Variable.withString(map['collectivity_id'] ?? ''),
+            drift.Variable.withString(participant.userId ?? ''),
+            drift.Variable.withString(participant.collectivityId ?? ''),
           ],
           updates: {db.participants},
         );
@@ -48,8 +46,16 @@ class ParticipantRepository {
     }
   }
 
+  Participant _mapRowToParticipant(drift.QueryRow row) {
+    return Participant(
+      id: row.read<int>('id'),
+      userId: row.read<String?>('user_id'),
+      collectivityId: row.read<String?>('collectivity_id'),
+    );
+  }
+
   Future<List<Participant>> getAllParticipants(String collectivityId) async {
-    printAll();
+    // printAll();
     final db = database;
     final query = db.customSelect(
       'SELECT * FROM ${DbTableNames.participants} WHERE collectivity_id = ?',
@@ -58,10 +64,11 @@ class ParticipantRepository {
     );
     
     final results = await query.get();
-    return results.map((row) => Participant.fromDb(row.data)).toList();
+    return results.map(_mapRowToParticipant).toList();
   }
 
   Future<void> printAll() async {
+    /*
     final db = database;
     final query = db.customSelect(
       'SELECT * FROM ${DbTableNames.participants}',
@@ -70,5 +77,6 @@ class ParticipantRepository {
     
     final results = await query.get();
     debugPrint(results.map((r) => r.data).toList().toString());
+    */
   }
 }

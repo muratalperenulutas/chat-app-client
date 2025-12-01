@@ -12,9 +12,6 @@ class CollectivityController extends _$CollectivityController {
 
   @override
   CollectivityState build() {
-    void listener() {
-      _loadData();
-    }
     //TO DO: Replace with more specific listener
     //generalChangeNotifier.isCollectivitiesChanged.addListener(listener);
     //generalChangeNotifier.isContactsChanged.addListener(listener);

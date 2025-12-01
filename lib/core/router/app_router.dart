@@ -8,7 +8,7 @@ import 'package:chat_app/features/person/screens/add_contact_page.dart';
 import 'package:chat_app/features/person/screens/collectivity_detail_page.dart';
 import 'package:chat_app/features/person/screens/create_group_page.dart';
 import 'package:chat_app/features/person/screens/person_detail_page.dart';
-import 'package:chat_app/data/person/person.dart';
+import 'package:chat_app/features/person/models/person_base.dart';
 import 'package:chat_app/features/person/screens/start_conversation_page.dart';
 import 'package:flutter/material.dart';
 

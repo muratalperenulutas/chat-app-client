@@ -1,16 +1,16 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/core/router/app_router.dart';
+import 'package:chat_app/data/contact/contact.dart';
+import 'package:chat_app/features/person/models/person_base.dart';
 import 'package:flutter/material.dart';
 
-import '../../../data/person/person.dart';
-
 MaterialButton myContactsButton(
-    BuildContext context, double screenHeight, Person person) {
+    BuildContext context, double screenHeight, Contact contact) {
   return MaterialButton(
     height: screenHeight / 12,
     color: Color.fromARGB(255, 254, 255, 255),
     onPressed: () {
-      AutoRouter.of(context).push(PersonDetailRoute(person: person));
+      AutoRouter.of(context).push(PersonDetailRoute(personBase: PersonBase.fromContact(contact)));
     },
     child: Padding(
       padding: EdgeInsets.fromLTRB(1, 1, 1, 1),
@@ -36,13 +36,13 @@ MaterialButton myContactsButton(
           Column(
             children: [
               Text(
-                person.localName ?? "",
+                contact.name,
                 style: TextStyle(
                   fontSize: 16,
                 ),
               ),
               Text(
-                person.description ?? "",
+                contact.username,
                 style: TextStyle(
                     fontSize: 14, color: Color.fromARGB(255, 85, 92, 94)),
               )

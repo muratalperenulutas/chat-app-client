@@ -28,12 +28,18 @@ class Persons extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get personId => text().unique()();
   TextColumn get name => text().nullable()();
-  TextColumn get localName => text().nullable()();
   TextColumn get username => text().unique()();
   TextColumn get description => text().nullable()();
   TextColumn get imageId => text().nullable()();
-  TextColumn get source => text().withDefault(const Constant('SERVER'))();
-  IntColumn get isRegistered => integer().withDefault(const Constant(0))();
+  TextColumn get status => text().withDefault(const Constant('CREATED'))();
+}
+
+@DataClassName('ContactData')
+class Contacts extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get username => text().unique()();
+  TextColumn get personId => text().nullable().customConstraint('REFERENCES persons(person_id) ON DELETE SET NULL')();
   TextColumn get status => text().withDefault(const Constant('CREATED'))();
 }
 

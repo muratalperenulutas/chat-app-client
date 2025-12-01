@@ -13,9 +13,6 @@ class MessageController extends _$MessageController {
 
   @override
   MessageState build() {
-    void listener() {
-      _loadData();
-    }
     //TO DO: Replace with more specific listener
     //generalChangeNotifier.isMessagesChanged.addListener(listener);
     //ref.onDispose(() => generalChangeNotifier.isMessagesChanged.removeListener(listener));
