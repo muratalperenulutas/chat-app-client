@@ -25,7 +25,7 @@ class Message {
     return Message(
       message: json['message'],
       messageId: json['messageId'],
-        collectivityId: json['collectivityId'].toString(),
+        collectivityId: json['collectivityId']?.toString(),
       userId: json['userId'],
       sendTime: DateTime.fromMillisecondsSinceEpoch(int.parse(json['sendTime'].toString())*1000),
       status: Status.sync

@@ -29,12 +29,6 @@ class MessageController extends _$MessageController {
     String uId = state.userId;
 
     if (cId.isNotEmpty || uId.isNotEmpty) {
-      if (cId.isNotEmpty && uId.isEmpty) {
-        uId = 'null'; 
-      } else if (uId.isNotEmpty && cId.isEmpty) {
-        cId = 'null';
-      }
-
       _messageSubscription = messageRepository.watchMessagesByCollectivityIdOrDyadReceiverId(
         cId,
         uId
@@ -66,6 +60,14 @@ class MessageController extends _$MessageController {
   
   void setUserId(String id) {
     state = state.copyWith(userId: id, collectivityId: '');
+    _setupStream();
+  }
+
+  void setChatIds({String? collectivityId, String? userId}) {
+    state = state.copyWith(
+      collectivityId: collectivityId ?? '',
+      userId: userId ?? ''
+    );
     _setupStream();
   }
 }
