@@ -56,8 +56,8 @@ class ContactRepository {
   Stream<List<Contact>> watchUnsyncedContacts() {
     final db = database;
     return db.customSelect(
-      'SELECT * FROM ${DbTableNames.contacts} WHERE status != ?',
-      variables: [drift.Variable.withString(Status.sync.name)],
+      'SELECT * FROM ${DbTableNames.contacts} WHERE status = ?',
+      variables: [drift.Variable.withString(Status.created.name)],
       readsFrom: {db.contacts},
     ).watch().map((rows) {
       // debugPrint("Mapping contacts from DB: ${rows.length}");
@@ -68,8 +68,8 @@ class ContactRepository {
   Future<List<Contact>> getUnsyncedContacts() async {
     final db = database;
     final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.contacts} WHERE status != ?',
-      variables: [drift.Variable.withString(Status.sync.name)],
+      'SELECT * FROM ${DbTableNames.contacts} WHERE status = ?',
+      variables: [drift.Variable.withString(Status.created.name)],
       readsFrom: {db.contacts},
     );
     final results = await query.get();

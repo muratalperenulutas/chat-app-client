@@ -58,12 +58,13 @@ class PersonService {
       
       if (person.username != null) {
         Contact? contact = await contactRepository.findContactByUsername(person.username!);
-        if (contact != null && contact.personId != person.personId) {
+        if (contact != null) {
            Contact updatedContact = Contact(
             id: contact.id,
             name: contact.name,
             username: contact.username,
-            personId: person.personId
+            personId: person.personId,
+            status: Status.sync
           );
           await contactRepository.updateContact(updatedContact);
         }

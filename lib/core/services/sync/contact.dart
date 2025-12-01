@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:chat_app/constants/enums/status.dart';
 import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/core/services/sync/sync.dart';
 import 'package:chat_app/data/contact/contact.dart';
@@ -29,12 +30,21 @@ class ContactSyncService {
     });
   }
 
-  void _syncContacts(List<Contact> contacts) {
+  void _syncContacts(List<Contact> contacts) async {
     for (Contact contact in contacts) {
       FindUser findUser = FindUser(contact.username, contact.personId);
       WebsocketMessage message =
           WebsocketMessage(WsMessageType.FIND_USER, contact.id.toString(), findUser);
       syncService.sendMessage(message);
+
+      Contact updatedContact = Contact(
+        id: contact.id,
+        name: contact.name,
+        username: contact.username,
+        personId: contact.personId,
+        status: Status.pending,
+      );
+      await contactRepository.updateContact(updatedContact);
     }
   }
 
