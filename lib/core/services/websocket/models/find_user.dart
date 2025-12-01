@@ -11,8 +11,8 @@ class FindUser extends JsonSerializable {
   @override
   Map<String, dynamic> toJson() {
     return {
-      'username': username,
-      "userId":userId
+      if (username != null) 'username': username,
+      if (userId != null) 'userId': userId,
     };
   }
 }

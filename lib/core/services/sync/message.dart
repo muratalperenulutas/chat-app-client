@@ -18,6 +18,7 @@ class MessageSyncService {
 
   MessageSyncService() {
     _setupAutoSync();
+    syncMessages();
   }
 
   void _setupAutoSync() {
@@ -32,7 +33,7 @@ class MessageSyncService {
     for (Message message in messages) {
       _sendMessage(message.message, message.collectivityId, message.id);
       message.status = Status.pending;
-      await messageRepository.updateMessageWithoutNotifier(message);
+      await messageRepository.updateMessage(message);
     }
   }
 
@@ -42,6 +43,9 @@ class MessageSyncService {
   }
 
   void _sendMessage(message, collectivityId, requestId) {
+    if (collectivityId == null || collectivityId.isEmpty || collectivityId == '') {
+      return;
+    }
     WebsocketMessage wsMessage = WebsocketMessage(
       WsMessageType.SEND_MESSAGE, 
       requestId.toString(), 

@@ -1,7 +1,5 @@
-import 'package:chat_app/constants/db/table_names.dart';
 import 'package:chat_app/core/di/injection.dart';
 import 'package:drift/drift.dart' as drift;
-import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 
 import '../database_service.dart';
@@ -13,58 +11,44 @@ class ParticipantRepository {
   final DatabaseService databaseService = getIt<DatabaseService>();
   AppDatabase get database => databaseService.getDatabase();
 
+  Participant _mapParticipantDataToParticipant(ParticipantData data) {
+    return Participant(
+      id: data.id,
+      userId: data.userId,
+      collectivityId: data.collectivityId,
+    );
+  }
+
   Future<void> insertParticipant(Participant participant) async {
     final db = database;
-    await db.customInsert(
-      'INSERT OR REPLACE INTO ${DbTableNames.participants} '
-      '(user_id, collectivity_id) VALUES (?, ?)',
-      variables: [
-        drift.Variable.withString(participant.userId ?? ''),
-        drift.Variable.withString(participant.collectivityId ?? ''),
-      ],
-      updates: {db.participants},
+    await db.into(db.participants).insert(
+      ParticipantsCompanion.insert(
+        userId: participant.userId ?? '',
+        collectivityId: drift.Value(participant.collectivityId),
+      ),
+      mode: drift.InsertMode.insertOrReplace,
     );
   }
 
   Future<void> insertParticipantList(List<Participant> participants) async {
     final db = database;
-    for (var participant in participants) {
-      try {
-        await db.customInsert(
-          'INSERT INTO ${DbTableNames.participants} '
-          '(user_id, collectivity_id) VALUES (?, ?)',
-          variables: [
-            drift.Variable.withString(participant.userId ?? ''),
-            drift.Variable.withString(participant.collectivityId ?? ''),
-          ],
-          updates: {db.participants},
-        );
-      } catch (e) {
-        // Skip on conflict
-        debugPrint("Error inserting participant: $e");
-      }
-    }
-  }
-
-  Participant _mapRowToParticipant(drift.QueryRow row) {
-    return Participant(
-      id: row.read<int>('id'),
-      userId: row.read<String?>('user_id'),
-      collectivityId: row.read<String?>('collectivity_id'),
-    );
+    await db.batch((batch) {
+      batch.insertAll(
+        db.participants,
+        participants.map((participant) => ParticipantsCompanion.insert(
+          userId: participant.userId ?? '',
+          collectivityId: drift.Value(participant.collectivityId),
+        )),
+        mode: drift.InsertMode.insertOrReplace, // Or ignore if that was the intent
+      );
+    });
   }
 
   Future<List<Participant>> getAllParticipants(String collectivityId) async {
     // printAll();
     final db = database;
-    final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.participants} WHERE collectivity_id = ?',
-      variables: [drift.Variable.withString(collectivityId)],
-      readsFrom: {db.participants},
-    );
-    
-    final results = await query.get();
-    return results.map(_mapRowToParticipant).toList();
+    final rows = await (db.select(db.participants)..where((tbl) => tbl.collectivityId.equals(collectivityId))).get();
+    return List<ParticipantData>.from(rows).map(_mapParticipantDataToParticipant).toList();
   }
 
   Future<void> printAll() async {

@@ -38,22 +38,25 @@ class AuthController extends _$AuthController {
     );
   }
 
-  void setUserId(String value) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(SharedPrefKey.userIdKey, value);
+  void setUserId(String value) {
     state = state.copyWith(myId: value);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString(SharedPrefKey.userIdKey, value);
+    });
   }
 
-  void setAccessToken(String value) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(SharedPrefKey.accessTokenKey, value);
+  void setAccessToken(String value) {
     state = state.copyWith(accessToken: value);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString(SharedPrefKey.accessTokenKey, value);
+    });
   }
 
-  void setRefreshToken(String value) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(SharedPrefKey.refreshTokenKey, value);
+  void setRefreshToken(String value) {
     state = state.copyWith(refreshToken: value);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString(SharedPrefKey.refreshTokenKey, value);
+    });
   }
 
   void setLoggedIn() {
@@ -157,6 +160,9 @@ class AuthController extends _$AuthController {
   }
 
   Future<String> getAccessToken() async {
+    if (state.accessToken.isEmpty) {
+      return '';
+    }
     Duration remainingTime = JwtDecoder.getRemainingTime(state.accessToken);
     debugPrint("Remained access token time: $remainingTime");
     if (remainingTime > Duration(minutes: 5)) {

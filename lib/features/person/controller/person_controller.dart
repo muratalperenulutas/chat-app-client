@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/data/contact/contact_repository.dart';
 import 'package:chat_app/data/person/person_repository.dart';
@@ -11,32 +13,35 @@ part 'person_controller.g.dart';
 class PersonController extends _$PersonController {
   late final PersonRepository personRepository = getIt<PersonRepository>();
   late final ContactRepository contactRepository = getIt<ContactRepository>();
+  StreamSubscription? _contactsSubscription;
 
   @override
   PersonState build() {
-    //generalChangeNotifier.isContactsChanged.addListener(listener);
-    //ref.onDispose(() => generalChangeNotifier.isContactsChanged.removeListener(listener));
-    
-    _loadData();
+    _setupListeners();
+    ref.onDispose(() {
+      _contactsSubscription?.cancel();
+    });
     return PersonState();
   }
 
-  Future<void> _loadData() async {
-    final contacts = await contactRepository.getContacts();
-    final contactsOnChatApp = await contactRepository.getContactsOnChatApp();
-    final contactsNotOnChatApp = await contactRepository.getContactsNotOnChatApp();
-    
-    state = state.copyWith(
-      contacts: contacts,
-      contactsOnChatApp: contactsOnChatApp,
-      contactsNotOnChatApp: contactsNotOnChatApp,
-    );
+  void _setupListeners() {
+    _contactsSubscription = contactRepository.watchContacts().listen((contacts) {
+      final contactsOnChatApp = contacts.where((c) => c.personId != null).toList();
+      final contactsNotOnChatApp = contacts.where((c) => c.personId == null).toList();
+      
+      state = state.copyWith(
+        contacts: contacts,
+        contactsOnChatApp: contactsOnChatApp,
+        contactsNotOnChatApp: contactsNotOnChatApp,
+      );
+    });
   }
 
   void createContact(String name, String username) {
     final personService = getIt<PersonService>();
     personService.createContact(name, username);
   }
+
 
   void addToSelectedContactsSet(String? value) {
     if (value != null) {

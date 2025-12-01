@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/data/collectivity/collectivity_service.dart';
 import 'package:chat_app/data/message/message_repository.dart';
@@ -10,24 +12,36 @@ part 'message_controller.g.dart';
 @Riverpod(keepAlive: true)
 class MessageController extends _$MessageController {
   late final MessageRepository messageRepository = getIt<MessageRepository>();
+  StreamSubscription? _messageSubscription;
 
   @override
   MessageState build() {
-    //TO DO: Replace with more specific listener
-    //generalChangeNotifier.isMessagesChanged.addListener(listener);
-    //ref.onDispose(() => generalChangeNotifier.isMessagesChanged.removeListener(listener));
-    
-    _loadData();
-    
+    ref.onDispose(() {
+      _messageSubscription?.cancel();
+    });
     return MessageState();
   }
 
-  void _loadData() async {
-    final messages = await messageRepository.getMessagesByCollectivityIdOrDyadReceiverId(
-      state.collectivityId,
-      state.userId
-    );
-    state = state.copyWith(messages: messages);
+  void _setupStream() {
+    _messageSubscription?.cancel();
+    
+    String cId = state.collectivityId;
+    String uId = state.userId;
+
+    if (cId.isNotEmpty || uId.isNotEmpty) {
+      if (cId.isNotEmpty && uId.isEmpty) {
+        uId = 'null'; 
+      } else if (uId.isNotEmpty && cId.isEmpty) {
+        cId = 'null';
+      }
+
+      _messageSubscription = messageRepository.watchMessagesByCollectivityIdOrDyadReceiverId(
+        cId,
+        uId
+      ).listen((messages) {
+        state = state.copyWith(messages: messages);
+      });
+    }
   }
 
   Future<void> sendMessage(String message, String? collectivityId, String? userId) async {
@@ -46,12 +60,12 @@ class MessageController extends _$MessageController {
   }
 
   void setCollectivityId(String id) {
-    state = state.copyWith(collectivityId: id, userId: null);
-    _loadData();
+    state = state.copyWith(collectivityId: id, userId: '');
+    _setupStream();
   }
   
   void setUserId(String id) {
-    state = state.copyWith(userId: id, collectivityId: null);
-    _loadData();
+    state = state.copyWith(userId: id, collectivityId: '');
+    _setupStream();
   }
 }
