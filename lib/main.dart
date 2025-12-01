@@ -31,13 +31,6 @@ void main() async {
 
   initInitialBindings();
 
-  try {
-    final databaseService = getIt<DatabaseService>();
-    await databaseService.init();
-  } catch (e) {
-    debugPrint('Database initialization error: $e');
-  }
-
   runApp(UncontrolledProviderScope(
     container: container,
     child: MyApp(),

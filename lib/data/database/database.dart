@@ -9,7 +9,7 @@ part 'database.g.dart';
 
 @DriftDatabase(tables: [Collectivities, Participants, Persons, Messages, Contacts])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(openConnection());
+  AppDatabase({String dbName = 'ChatApp'}) : super(openConnection(dbName: dbName));
 
   @override
   int get schemaVersion => 1;

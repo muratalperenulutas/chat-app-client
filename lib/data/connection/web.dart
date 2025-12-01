@@ -3,10 +3,10 @@ import 'package:drift/wasm.dart';
 import 'package:flutter/foundation.dart';
 
 /// Opens a web-based database connection using WASM
-QueryExecutor openConnection() {
+QueryExecutor openConnection({String dbName = 'ChatApp'}) {
   return DatabaseConnection.delayed(Future(() async {
     final result = await WasmDatabase.open(
-      databaseName: 'ChatApp',
+      databaseName: dbName,
       sqlite3Uri: Uri.parse('sqlite3.wasm'),
       driftWorkerUri: Uri.parse('drift_worker.dart.js'),
     );
