@@ -5,6 +5,7 @@ import 'package:chat_app/data/collectivity/collectivity_service.dart';
 import 'package:chat_app/data/message/message_repository.dart';
 import 'package:chat_app/data/message/message_service.dart';
 import 'package:chat_app/features/chat/controllers/message_state.dart';
+import 'package:flutter/rendering.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'message_controller.g.dart';
@@ -27,6 +28,7 @@ class MessageController extends _$MessageController {
     
     String cId = state.collectivityId;
     String uId = state.userId;
+    debugPrint('Setting up message stream for collectivityId: $cId, userId: $uId');
 
     if (cId.isNotEmpty || uId.isNotEmpty) {
       _messageSubscription = messageRepository.watchMessagesByCollectivityIdOrDyadReceiverId(

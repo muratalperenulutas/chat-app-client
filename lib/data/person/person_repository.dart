@@ -41,7 +41,7 @@ class PersonRepository {
         PersonsCompanion.insert(
           personId: person.personId ?? '',
           name: drift.Value(person.name),
-          username: person.username ?? '',
+          username: drift.Value(person.username),
           description: drift.Value(person.description),
           imageId: drift.Value(person.imageId),
           status: drift.Value(person.status.name),
@@ -93,7 +93,7 @@ class PersonRepository {
       PersonsCompanion(
         personId: drift.Value(person.personId ?? ''),
         name: drift.Value(person.name),
-        username: drift.Value(person.username ?? ''),
+        username: drift.Value(person.username),
         description: drift.Value(person.description),
         imageId: drift.Value(person.imageId),
         status: drift.Value(person.status.name),

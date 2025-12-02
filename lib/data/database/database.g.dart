@@ -771,9 +771,9 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, PersonData> {
       const VerificationMeta('username');
   @override
   late final GeneratedColumn<String> username = GeneratedColumn<String>(
-      'username', aliasedName, false,
+      'username', aliasedName, true,
       type: DriftSqlType.string,
-      requiredDuringInsert: true,
+      requiredDuringInsert: false,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
   static const VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
@@ -823,8 +823,6 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, PersonData> {
     if (data.containsKey('username')) {
       context.handle(_usernameMeta,
           username.isAcceptableOrUnknown(data['username']!, _usernameMeta));
-    } else if (isInserting) {
-      context.missing(_usernameMeta);
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -856,7 +854,7 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, PersonData> {
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name']),
       username: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}username'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}username']),
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description']),
       imageId: attachedDatabase.typeMapping
@@ -876,7 +874,7 @@ class PersonData extends DataClass implements Insertable<PersonData> {
   final int id;
   final String personId;
   final String? name;
-  final String username;
+  final String? username;
   final String? description;
   final String? imageId;
   final String status;
@@ -884,7 +882,7 @@ class PersonData extends DataClass implements Insertable<PersonData> {
       {required this.id,
       required this.personId,
       this.name,
-      required this.username,
+      this.username,
       this.description,
       this.imageId,
       required this.status});
@@ -896,7 +894,9 @@ class PersonData extends DataClass implements Insertable<PersonData> {
     if (!nullToAbsent || name != null) {
       map['name'] = Variable<String>(name);
     }
-    map['username'] = Variable<String>(username);
+    if (!nullToAbsent || username != null) {
+      map['username'] = Variable<String>(username);
+    }
     if (!nullToAbsent || description != null) {
       map['description'] = Variable<String>(description);
     }
@@ -912,7 +912,9 @@ class PersonData extends DataClass implements Insertable<PersonData> {
       id: Value(id),
       personId: Value(personId),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
-      username: Value(username),
+      username: username == null && nullToAbsent
+          ? const Value.absent()
+          : Value(username),
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value(description),
@@ -930,7 +932,7 @@ class PersonData extends DataClass implements Insertable<PersonData> {
       id: serializer.fromJson<int>(json['id']),
       personId: serializer.fromJson<String>(json['personId']),
       name: serializer.fromJson<String?>(json['name']),
-      username: serializer.fromJson<String>(json['username']),
+      username: serializer.fromJson<String?>(json['username']),
       description: serializer.fromJson<String?>(json['description']),
       imageId: serializer.fromJson<String?>(json['imageId']),
       status: serializer.fromJson<String>(json['status']),
@@ -943,7 +945,7 @@ class PersonData extends DataClass implements Insertable<PersonData> {
       'id': serializer.toJson<int>(id),
       'personId': serializer.toJson<String>(personId),
       'name': serializer.toJson<String?>(name),
-      'username': serializer.toJson<String>(username),
+      'username': serializer.toJson<String?>(username),
       'description': serializer.toJson<String?>(description),
       'imageId': serializer.toJson<String?>(imageId),
       'status': serializer.toJson<String>(status),
@@ -954,7 +956,7 @@ class PersonData extends DataClass implements Insertable<PersonData> {
           {int? id,
           String? personId,
           Value<String?> name = const Value.absent(),
-          String? username,
+          Value<String?> username = const Value.absent(),
           Value<String?> description = const Value.absent(),
           Value<String?> imageId = const Value.absent(),
           String? status}) =>
@@ -962,7 +964,7 @@ class PersonData extends DataClass implements Insertable<PersonData> {
         id: id ?? this.id,
         personId: personId ?? this.personId,
         name: name.present ? name.value : this.name,
-        username: username ?? this.username,
+        username: username.present ? username.value : this.username,
         description: description.present ? description.value : this.description,
         imageId: imageId.present ? imageId.value : this.imageId,
         status: status ?? this.status,
@@ -1014,7 +1016,7 @@ class PersonsCompanion extends UpdateCompanion<PersonData> {
   final Value<int> id;
   final Value<String> personId;
   final Value<String?> name;
-  final Value<String> username;
+  final Value<String?> username;
   final Value<String?> description;
   final Value<String?> imageId;
   final Value<String> status;
@@ -1031,12 +1033,11 @@ class PersonsCompanion extends UpdateCompanion<PersonData> {
     this.id = const Value.absent(),
     required String personId,
     this.name = const Value.absent(),
-    required String username,
+    this.username = const Value.absent(),
     this.description = const Value.absent(),
     this.imageId = const Value.absent(),
     this.status = const Value.absent(),
-  })  : personId = Value(personId),
-        username = Value(username);
+  }) : personId = Value(personId);
   static Insertable<PersonData> custom({
     Expression<int>? id,
     Expression<String>? personId,
@@ -1061,7 +1062,7 @@ class PersonsCompanion extends UpdateCompanion<PersonData> {
       {Value<int>? id,
       Value<String>? personId,
       Value<String?>? name,
-      Value<String>? username,
+      Value<String?>? username,
       Value<String?>? description,
       Value<String?>? imageId,
       Value<String>? status}) {
@@ -2581,7 +2582,7 @@ typedef $$PersonsTableCreateCompanionBuilder = PersonsCompanion Function({
   Value<int> id,
   required String personId,
   Value<String?> name,
-  required String username,
+  Value<String?> username,
   Value<String?> description,
   Value<String?> imageId,
   Value<String> status,
@@ -2590,7 +2591,7 @@ typedef $$PersonsTableUpdateCompanionBuilder = PersonsCompanion Function({
   Value<int> id,
   Value<String> personId,
   Value<String?> name,
-  Value<String> username,
+  Value<String?> username,
   Value<String?> description,
   Value<String?> imageId,
   Value<String> status,
@@ -2778,7 +2779,7 @@ class $$PersonsTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             Value<String> personId = const Value.absent(),
             Value<String?> name = const Value.absent(),
-            Value<String> username = const Value.absent(),
+            Value<String?> username = const Value.absent(),
             Value<String?> description = const Value.absent(),
             Value<String?> imageId = const Value.absent(),
             Value<String> status = const Value.absent(),
@@ -2796,7 +2797,7 @@ class $$PersonsTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             required String personId,
             Value<String?> name = const Value.absent(),
-            required String username,
+            Value<String?> username = const Value.absent(),
             Value<String?> description = const Value.absent(),
             Value<String?> imageId = const Value.absent(),
             Value<String> status = const Value.absent(),

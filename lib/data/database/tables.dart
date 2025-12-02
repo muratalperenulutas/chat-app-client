@@ -30,7 +30,7 @@ class Persons extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get personId => text().unique()();
   TextColumn get name => text().nullable()();
-  TextColumn get username => text().unique()();
+  TextColumn get username => text().nullable().unique()();
   TextColumn get description => text().nullable()();
   TextColumn get imageId => text().nullable()();
   TextColumn get status => text().withDefault(Constant(Status.created.name))();

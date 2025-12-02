@@ -34,7 +34,7 @@ class _LoadingPageState extends State<LoadingPage> {
       debugPrint('Notification service initialization error: $e');
     }
 
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(microseconds: 20));
 
     if (mounted) {
       context.router.replace(const HomeRoute());
