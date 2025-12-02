@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/core/router/app_router.dart';
-import 'package:chat_app/core/services/notification/notification_service.dart';
 import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/auth/models/login.dart';
 import 'package:flutter/material.dart';
@@ -95,13 +94,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ref.read(authControllerProvider.notifier).login(
                 login,
                 onSuccess: () {
-                  context.router.replace(const HomeRoute());
-                  try {
-                    NotificationService.instance.initialize();
-                    debugPrint('Notification service initialized successfully');
-                  } catch (e) {
-                    debugPrint('Notification service initialization error: $e');
-                  }
+                  context.router.replace(const LoadingRoute());
                 },
                 onError: (msg) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));

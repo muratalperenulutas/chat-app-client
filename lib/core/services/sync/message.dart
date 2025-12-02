@@ -16,7 +16,10 @@ class MessageSyncService {
   
   StreamSubscription<List<Message>>? _unsyncedMessagesSubscription;
 
-  MessageSyncService() {
+  MessageSyncService();
+
+  void init() {
+    dispose();
     _setupAutoSync();
     syncMessages();
   }

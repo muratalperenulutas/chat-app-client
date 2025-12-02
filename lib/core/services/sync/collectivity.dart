@@ -20,7 +20,10 @@ class CollectivitySyncService {
   
   StreamSubscription<List<Collectivity>>? _unsyncedCollectivitiesSubscription;
 
-  CollectivitySyncService() {
+  CollectivitySyncService();
+
+  void init() {
+    dispose();
     _setupAutoSync();
     syncCollectivities();
   }

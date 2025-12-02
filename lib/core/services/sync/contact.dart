@@ -18,7 +18,10 @@ class ContactSyncService {
   
   StreamSubscription<List<Contact>>? _unsyncedContactsSubscription;
 
-  ContactSyncService() {
+  ContactSyncService();
+
+  void init() {
+    dispose();
     _setupAutoSync();
     findRegisteredPersons();
   }
