@@ -14,10 +14,9 @@ class Group extends Collectivity {
       this.name,
       this.creatorId,
       this.imageId,
-      Status status = Status.created,
-      CollectivityType type = CollectivityType.group})
+      Status status = Status.created})
       : super(
-            collectivityId: collectivityId, type: type, status: status, id: id);
+            collectivityId: collectivityId, type: CollectivityType.group, status: status, id: id);
 
   factory Group.fromJson(Map<String, dynamic> json) {
     return Group(

@@ -5,17 +5,37 @@ import 'package:chat_app/constants/enums/status.dart';
 class Collectivities extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get collectivityId => text().unique().named('collectivityId')();
+
+  @override
+  String get tableName => 'collectivity';
+}
+
+@DataClassName('GroupData')
+class Groups extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get collectivityId => text().nullable().customConstraint('REFERENCES collectivity(collectivityId) ON DELETE CASCADE')();
   TextColumn get name => text().nullable()();
   TextColumn get creatorId => text().nullable()();
   TextColumn get description => text().nullable()();
   TextColumn get imageId => text().nullable()();
-  TextColumn get collectivityType => text().nullable()();
+  TextColumn get status => text().withDefault(Constant(Status.created.name))();
+
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  String get tableName => 'group';
+}
+
+@DataClassName('DyadData')
+class Dyad extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get collectivityId => text().nullable().customConstraint('REFERENCES collectivity(collectivityId) ON DELETE CASCADE')();
   TextColumn get userId => text().nullable()();
   TextColumn get status => text().withDefault(Constant(Status.created.name))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
-  String get tableName => 'collectivity';
+  String get tableName => 'dyad';
 }
 
 @DataClassName('ParticipantData')
@@ -41,7 +61,6 @@ class Contacts extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
   TextColumn get username => text().unique()();
-  TextColumn get personId => text().nullable().customConstraint('REFERENCES persons(person_id) ON DELETE SET NULL')();
   TextColumn get status => text().withDefault(Constant(Status.created.name))();
 }
 

@@ -45,7 +45,6 @@ class ParticipantRepository {
   }
 
   Future<List<Participant>> getAllParticipants(String collectivityId) async {
-    // printAll();
     final db = database;
     final rows = await (db.select(db.participants)..where((tbl) => tbl.collectivityId.equals(collectivityId))).get();
     return List<ParticipantData>.from(rows).map(_mapParticipantDataToParticipant).toList();

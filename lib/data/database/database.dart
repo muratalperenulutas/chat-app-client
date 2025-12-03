@@ -3,11 +3,10 @@ import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:chat_app/data/connection/connection.dart';
 import 'package:chat_app/data/database/tables.dart';
-import 'package:chat_app/constants/enums/status.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [Collectivities, Participants, Persons, Messages, Contacts])
+@DriftDatabase(tables: [Collectivities, Groups, Dyad, Participants, Persons, Messages, Contacts])
 class AppDatabase extends _$AppDatabase {
   AppDatabase({String dbName = 'ChatApp'}) : super(openConnection(dbName: dbName));
 

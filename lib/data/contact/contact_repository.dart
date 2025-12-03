@@ -19,7 +19,6 @@ class ContactRepository {
       ContactsCompanion.insert(
         name: contact.name,
         username: contact.username,
-        personId: drift.Value(contact.personId),
         status: drift.Value(contact.status.name),
       ),
       mode: drift.InsertMode.insertOrReplace,
@@ -32,7 +31,6 @@ class ContactRepository {
       ContactsCompanion(
         name: drift.Value(contact.name),
         username: drift.Value(contact.username),
-        personId: drift.Value(contact.personId),
         status: drift.Value(contact.status.name),
       ),
     );
@@ -43,17 +41,28 @@ class ContactRepository {
       id: data.id,
       name: data.name,
       username: data.username,
-      personId: data.personId,
       status: Status.fromString(data.status),
     );
   }
 
   Stream<List<Contact>> watchContacts() {
     final db = database;
-    return db.select(db.contacts).watch().map((rows) => 
-      List<ContactData>.from(rows).map(_mapContactDataToContact).toList()
+    final query = db.select(db.contacts).join(
+      [drift.leftOuterJoin(db.persons, db.persons.username.equalsExp(db.contacts.username))]
     );
+    return query.watch().map((rows) => rows.map((row) {
+      final contactData = row.readTable(db.contacts);
+      final personData = row.readTableOrNull(db.persons);
+      return Contact(
+        id: contactData.id,
+        name: contactData.name,
+        username: contactData.username,
+        status: Status.fromString(contactData.status),
+        personId: personData?.personId,
+      );
+    }).toList());
   }
+
 
   Stream<List<Contact>> watchUnsyncedContacts() {
     final db = database;
@@ -63,32 +72,8 @@ class ContactRepository {
           List<ContactData>.from(rows).map(_mapContactDataToContact).toList()
         );
   }
-
-  Future<List<Contact>> getUnsyncedContacts() async {
-    final db = database;
-    final rows = await (db.select(db.contacts)..where((tbl) => tbl.status.equals(Status.created.name))).get();
-    return rows.map(_mapContactDataToContact).toList();
-  }
-
-  Future<List<Contact>> getContacts() async {
-    final db = database;
-    final rows = await db.select(db.contacts).get();
-    return rows.map(_mapContactDataToContact).toList();
-  }
-
-  Future<List<Contact>> getContactsOnChatApp() async {
-    final db = database;
-    final rows = await (db.select(db.contacts)..where((tbl) => tbl.personId.isNotNull())).get();
-    return rows.map(_mapContactDataToContact).toList();
-  }
-
-  Future<List<Contact>> getContactsNotOnChatApp() async {
-    final db = database;
-    final rows = await (db.select(db.contacts)..where((tbl) => tbl.personId.isNull())).get();
-    return rows.map(_mapContactDataToContact).toList();
-  }
   
-  Future<Contact?> findContactByUsername(String username) async {
+  Future<Contact?> findByUsername(String username) async {
     final db = database;
     final row = await (db.select(db.contacts)..where((tbl) => tbl.username.equals(username))).getSingleOrNull();
     return row != null ? _mapContactDataToContact(row) : null;
@@ -96,7 +81,15 @@ class ContactRepository {
 
   Future<Contact?> findContactByPersonId(String personId) async {
     final db = database;
-    final row = await (db.select(db.contacts)..where((tbl) => tbl.personId.equals(personId))).getSingleOrNull();
-    return row != null ? _mapContactDataToContact(row) : null;
+    final query = db.select(db.contacts).join(
+      [drift.leftOuterJoin(db.persons, db.persons.username.equalsExp(db.contacts.username))]
+    );
+    query.where(db.persons.personId.equals(personId));
+    final rows = await query.get();
+    if (rows.isNotEmpty) {
+      final contactData = rows.first.readTable(db.contacts);
+      return _mapContactDataToContact(contactData);
+    }
+    return null;
   }
 }

@@ -16,22 +16,19 @@ class PersonService {
   Future<void> createContact(String name, String username) async {
     debugPrint("name:$name  username:$username");
     
-    Contact? existingContact = await contactRepository.findContactByUsername(username);
-    Person? existingPerson = await personRepository.findPersonByUsername(username);
+    Contact? existingContact = await contactRepository.findByUsername(username);
     
     if (existingContact != null) {
       Contact updatedContact = Contact(
         id: existingContact.id,
         name: name,
         username: username,
-        personId: existingPerson?.personId ?? existingContact.personId
       );
       await contactRepository.updateContact(updatedContact);
     } else {
       Contact newContact = Contact(
         name: name,
         username: username,
-        personId: existingPerson?.personId
       );
       await contactRepository.insertContact(newContact);
     }
@@ -57,13 +54,12 @@ class PersonService {
       }
       
       if (person.username != null) {
-        Contact? contact = await contactRepository.findContactByUsername(person.username!);
+        Contact? contact = await contactRepository.findByUsername(person.username!);
         if (contact != null) {
            Contact updatedContact = Contact(
             id: contact.id,
             name: contact.name,
             username: contact.username,
-            personId: person.personId,
             status: Status.sync
           );
           await contactRepository.updateContact(updatedContact);

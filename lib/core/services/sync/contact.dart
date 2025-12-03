@@ -23,7 +23,6 @@ class ContactSyncService {
   void init() {
     dispose();
     _setupAutoSync();
-    findRegisteredPersons();
   }
 
   void _setupAutoSync() {
@@ -36,7 +35,7 @@ class ContactSyncService {
 
   void _syncContacts(List<Contact> contacts) async {
     for (Contact contact in contacts) {
-      FindUser findUser = FindUser(contact.username, contact.personId);
+      FindUser findUser = FindUser(contact.username,null);
       WebsocketMessage message =
           WebsocketMessage(WsMessageType.FIND_USER, contact.id.toString(), findUser);
       syncService.sendMessage(message);
@@ -45,16 +44,10 @@ class ContactSyncService {
         id: contact.id,
         name: contact.name,
         username: contact.username,
-        personId: contact.personId,
         status: Status.pending,
       );
       await contactRepository.updateContact(updatedContact);
     }
-  }
-
-  void findRegisteredPersons() async {
-    List<Contact> contacts = await contactRepository.getUnsyncedContacts();
-    _syncContacts(contacts);
   }
   
   void dispose() {

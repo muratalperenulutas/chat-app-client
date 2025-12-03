@@ -21,7 +21,6 @@ class MessageSyncService {
   void init() {
     dispose();
     _setupAutoSync();
-    syncMessages();
   }
 
   void _setupAutoSync() {
@@ -43,11 +42,6 @@ class MessageSyncService {
       message.status = Status.pending;
       await messageRepository.updateMessage(message);
     }
-  }
-
-  void syncMessages() async {
-    List<Message> messages = await messageRepository.getReadyToSendMessages();
-    _syncMessages(messages);
   }
 
   void _sendMessage(message, collectivityId, requestId) {

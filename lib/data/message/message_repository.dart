@@ -47,12 +47,13 @@ class MessageRepository {
     final db = database;
     
     final query = db.select(db.messages).join([
-      drift.innerJoin(db.collectivities, db.collectivities.collectivityId.equalsExp(db.messages.collectivityId))
+      drift.leftOuterJoin(db.groups, db.groups.collectivityId.equalsExp(db.messages.collectivityId)),
+      drift.leftOuterJoin(db.dyad, db.dyad.collectivityId.equalsExp(db.messages.collectivityId)),
     ]);
 
     query.where(
       (db.messages.status.equals(Status.created.name) | db.messages.status.equals(Status.failed.name)) & 
-      db.collectivities.status.equals(Status.sync.name)
+      (db.groups.status.equals(Status.sync.name) | db.dyad.status.equals(Status.sync.name))
     );
     
     query.orderBy([drift.OrderingTerm.asc(db.messages.createdAt)]);
@@ -132,46 +133,6 @@ class MessageRepository {
         dyadReceiverId: const drift.Value(null),
       ),
     );
-  }
-
-  Future<List<Message>> getMessagesByCollectivityIdOrDyadReceiverId(String collectivityId, String dyadReceiverId) async {
-    final db = database;
-    final rows = await (db.select(db.messages)
-      ..where((tbl) => tbl.collectivityId.equals(collectivityId) | tbl.dyadReceiverId.equals(dyadReceiverId)))
-      .get();
-    return rows.map(_mapMessageDataToMessage).toList();
-  }
-
-  Future<List<Message>> getAllUnsyncedMessages() async {
-    final db = database;
-    final rows = await (db.select(db.messages)..where((tbl) => tbl.status.equals(Status.created.name))).get();
-    return rows.map(_mapMessageDataToMessage).toList();
-  }
-
-  Future<List<Message>> getAllUnsyncedCollectivityMessages() async {
-    final db = database;
-    final rows = await (db.select(db.messages)
-      ..where((tbl) => tbl.status.isNotValue(Status.sync.name) & tbl.collectivityId.isNotNull()))
-      .get();
-    return rows.map(_mapMessageDataToMessage).toList();
-  }
-
-  Future<List<Message>> getReadyToSendMessages() async {
-    final db = database;
-    
-    final query = db.select(db.messages).join([
-      drift.innerJoin(db.collectivities, db.collectivities.collectivityId.equalsExp(db.messages.collectivityId))
-    ]);
-
-    query.where(
-      (db.messages.status.equals(Status.created.name) | db.messages.status.equals(Status.failed.name)) & 
-      db.collectivities.status.equals(Status.sync.name)
-    );
-    
-    query.orderBy([drift.OrderingTerm.asc(db.messages.createdAt)]);
-
-    final rows = await query.get();
-    return rows.map((row) => _mapMessageDataToMessage(row.readTable(db.messages))).toList();
   }
 
   Future<void> printAll() async {

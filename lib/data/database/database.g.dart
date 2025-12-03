@@ -26,6 +26,195 @@ class $CollectivitiesTable extends Collectivities
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  @override
+  List<GeneratedColumn> get $columns => [id, collectivityId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'collectivity';
+  @override
+  VerificationContext validateIntegrity(Insertable<CollectivityData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('collectivityId')) {
+      context.handle(
+          _collectivityIdMeta,
+          collectivityId.isAcceptableOrUnknown(
+              data['collectivityId']!, _collectivityIdMeta));
+    } else if (isInserting) {
+      context.missing(_collectivityIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CollectivityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CollectivityData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      collectivityId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}collectivityId'])!,
+    );
+  }
+
+  @override
+  $CollectivitiesTable createAlias(String alias) {
+    return $CollectivitiesTable(attachedDatabase, alias);
+  }
+}
+
+class CollectivityData extends DataClass
+    implements Insertable<CollectivityData> {
+  final int id;
+  final String collectivityId;
+  const CollectivityData({required this.id, required this.collectivityId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['collectivityId'] = Variable<String>(collectivityId);
+    return map;
+  }
+
+  CollectivitiesCompanion toCompanion(bool nullToAbsent) {
+    return CollectivitiesCompanion(
+      id: Value(id),
+      collectivityId: Value(collectivityId),
+    );
+  }
+
+  factory CollectivityData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CollectivityData(
+      id: serializer.fromJson<int>(json['id']),
+      collectivityId: serializer.fromJson<String>(json['collectivityId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'collectivityId': serializer.toJson<String>(collectivityId),
+    };
+  }
+
+  CollectivityData copyWith({int? id, String? collectivityId}) =>
+      CollectivityData(
+        id: id ?? this.id,
+        collectivityId: collectivityId ?? this.collectivityId,
+      );
+  CollectivityData copyWithCompanion(CollectivitiesCompanion data) {
+    return CollectivityData(
+      id: data.id.present ? data.id.value : this.id,
+      collectivityId: data.collectivityId.present
+          ? data.collectivityId.value
+          : this.collectivityId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CollectivityData(')
+          ..write('id: $id, ')
+          ..write('collectivityId: $collectivityId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, collectivityId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CollectivityData &&
+          other.id == this.id &&
+          other.collectivityId == this.collectivityId);
+}
+
+class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
+  final Value<int> id;
+  final Value<String> collectivityId;
+  const CollectivitiesCompanion({
+    this.id = const Value.absent(),
+    this.collectivityId = const Value.absent(),
+  });
+  CollectivitiesCompanion.insert({
+    this.id = const Value.absent(),
+    required String collectivityId,
+  }) : collectivityId = Value(collectivityId);
+  static Insertable<CollectivityData> custom({
+    Expression<int>? id,
+    Expression<String>? collectivityId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (collectivityId != null) 'collectivityId': collectivityId,
+    });
+  }
+
+  CollectivitiesCompanion copyWith(
+      {Value<int>? id, Value<String>? collectivityId}) {
+    return CollectivitiesCompanion(
+      id: id ?? this.id,
+      collectivityId: collectivityId ?? this.collectivityId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (collectivityId.present) {
+      map['collectivityId'] = Variable<String>(collectivityId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CollectivitiesCompanion(')
+          ..write('id: $id, ')
+          ..write('collectivityId: $collectivityId')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $GroupsTable extends Groups with TableInfo<$GroupsTable, GroupData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GroupsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _collectivityIdMeta =
+      const VerificationMeta('collectivityId');
+  @override
+  late final GeneratedColumn<String> collectivityId = GeneratedColumn<String>(
+      'collectivity_id', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints:
+          'REFERENCES collectivity(collectivityId) ON DELETE CASCADE');
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -48,17 +237,6 @@ class $CollectivitiesTable extends Collectivities
   @override
   late final GeneratedColumn<String> imageId = GeneratedColumn<String>(
       'image_id', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _collectivityTypeMeta =
-      const VerificationMeta('collectivityType');
-  @override
-  late final GeneratedColumn<String> collectivityType = GeneratedColumn<String>(
-      'collectivity_type', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
-  @override
-  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-      'user_id', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
@@ -83,8 +261,6 @@ class $CollectivitiesTable extends Collectivities
         creatorId,
         description,
         imageId,
-        collectivityType,
-        userId,
         status,
         createdAt
       ];
@@ -92,22 +268,20 @@ class $CollectivitiesTable extends Collectivities
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'collectivity';
+  static const String $name = 'group';
   @override
-  VerificationContext validateIntegrity(Insertable<CollectivityData> instance,
+  VerificationContext validateIntegrity(Insertable<GroupData> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('collectivityId')) {
+    if (data.containsKey('collectivity_id')) {
       context.handle(
           _collectivityIdMeta,
           collectivityId.isAcceptableOrUnknown(
-              data['collectivityId']!, _collectivityIdMeta));
-    } else if (isInserting) {
-      context.missing(_collectivityIdMeta);
+              data['collectivity_id']!, _collectivityIdMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -127,11 +301,390 @@ class $CollectivitiesTable extends Collectivities
       context.handle(_imageIdMeta,
           imageId.isAcceptableOrUnknown(data['image_id']!, _imageIdMeta));
     }
-    if (data.containsKey('collectivity_type')) {
+    if (data.containsKey('status')) {
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  GroupData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GroupData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      collectivityId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}collectivity_id']),
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name']),
+      creatorId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}creator_id']),
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description']),
+      imageId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}image_id']),
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $GroupsTable createAlias(String alias) {
+    return $GroupsTable(attachedDatabase, alias);
+  }
+}
+
+class GroupData extends DataClass implements Insertable<GroupData> {
+  final int id;
+  final String? collectivityId;
+  final String? name;
+  final String? creatorId;
+  final String? description;
+  final String? imageId;
+  final String status;
+  final DateTime createdAt;
+  const GroupData(
+      {required this.id,
+      this.collectivityId,
+      this.name,
+      this.creatorId,
+      this.description,
+      this.imageId,
+      required this.status,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || collectivityId != null) {
+      map['collectivity_id'] = Variable<String>(collectivityId);
+    }
+    if (!nullToAbsent || name != null) {
+      map['name'] = Variable<String>(name);
+    }
+    if (!nullToAbsent || creatorId != null) {
+      map['creator_id'] = Variable<String>(creatorId);
+    }
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    if (!nullToAbsent || imageId != null) {
+      map['image_id'] = Variable<String>(imageId);
+    }
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  GroupsCompanion toCompanion(bool nullToAbsent) {
+    return GroupsCompanion(
+      id: Value(id),
+      collectivityId: collectivityId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(collectivityId),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      creatorId: creatorId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(creatorId),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      imageId: imageId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imageId),
+      status: Value(status),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory GroupData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GroupData(
+      id: serializer.fromJson<int>(json['id']),
+      collectivityId: serializer.fromJson<String?>(json['collectivityId']),
+      name: serializer.fromJson<String?>(json['name']),
+      creatorId: serializer.fromJson<String?>(json['creatorId']),
+      description: serializer.fromJson<String?>(json['description']),
+      imageId: serializer.fromJson<String?>(json['imageId']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'collectivityId': serializer.toJson<String?>(collectivityId),
+      'name': serializer.toJson<String?>(name),
+      'creatorId': serializer.toJson<String?>(creatorId),
+      'description': serializer.toJson<String?>(description),
+      'imageId': serializer.toJson<String?>(imageId),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  GroupData copyWith(
+          {int? id,
+          Value<String?> collectivityId = const Value.absent(),
+          Value<String?> name = const Value.absent(),
+          Value<String?> creatorId = const Value.absent(),
+          Value<String?> description = const Value.absent(),
+          Value<String?> imageId = const Value.absent(),
+          String? status,
+          DateTime? createdAt}) =>
+      GroupData(
+        id: id ?? this.id,
+        collectivityId:
+            collectivityId.present ? collectivityId.value : this.collectivityId,
+        name: name.present ? name.value : this.name,
+        creatorId: creatorId.present ? creatorId.value : this.creatorId,
+        description: description.present ? description.value : this.description,
+        imageId: imageId.present ? imageId.value : this.imageId,
+        status: status ?? this.status,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  GroupData copyWithCompanion(GroupsCompanion data) {
+    return GroupData(
+      id: data.id.present ? data.id.value : this.id,
+      collectivityId: data.collectivityId.present
+          ? data.collectivityId.value
+          : this.collectivityId,
+      name: data.name.present ? data.name.value : this.name,
+      creatorId: data.creatorId.present ? data.creatorId.value : this.creatorId,
+      description:
+          data.description.present ? data.description.value : this.description,
+      imageId: data.imageId.present ? data.imageId.value : this.imageId,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GroupData(')
+          ..write('id: $id, ')
+          ..write('collectivityId: $collectivityId, ')
+          ..write('name: $name, ')
+          ..write('creatorId: $creatorId, ')
+          ..write('description: $description, ')
+          ..write('imageId: $imageId, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, collectivityId, name, creatorId,
+      description, imageId, status, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GroupData &&
+          other.id == this.id &&
+          other.collectivityId == this.collectivityId &&
+          other.name == this.name &&
+          other.creatorId == this.creatorId &&
+          other.description == this.description &&
+          other.imageId == this.imageId &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt);
+}
+
+class GroupsCompanion extends UpdateCompanion<GroupData> {
+  final Value<int> id;
+  final Value<String?> collectivityId;
+  final Value<String?> name;
+  final Value<String?> creatorId;
+  final Value<String?> description;
+  final Value<String?> imageId;
+  final Value<String> status;
+  final Value<DateTime> createdAt;
+  const GroupsCompanion({
+    this.id = const Value.absent(),
+    this.collectivityId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.creatorId = const Value.absent(),
+    this.description = const Value.absent(),
+    this.imageId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  GroupsCompanion.insert({
+    this.id = const Value.absent(),
+    this.collectivityId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.creatorId = const Value.absent(),
+    this.description = const Value.absent(),
+    this.imageId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  static Insertable<GroupData> custom({
+    Expression<int>? id,
+    Expression<String>? collectivityId,
+    Expression<String>? name,
+    Expression<String>? creatorId,
+    Expression<String>? description,
+    Expression<String>? imageId,
+    Expression<String>? status,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (collectivityId != null) 'collectivity_id': collectivityId,
+      if (name != null) 'name': name,
+      if (creatorId != null) 'creator_id': creatorId,
+      if (description != null) 'description': description,
+      if (imageId != null) 'image_id': imageId,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  GroupsCompanion copyWith(
+      {Value<int>? id,
+      Value<String?>? collectivityId,
+      Value<String?>? name,
+      Value<String?>? creatorId,
+      Value<String?>? description,
+      Value<String?>? imageId,
+      Value<String>? status,
+      Value<DateTime>? createdAt}) {
+    return GroupsCompanion(
+      id: id ?? this.id,
+      collectivityId: collectivityId ?? this.collectivityId,
+      name: name ?? this.name,
+      creatorId: creatorId ?? this.creatorId,
+      description: description ?? this.description,
+      imageId: imageId ?? this.imageId,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (collectivityId.present) {
+      map['collectivity_id'] = Variable<String>(collectivityId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (creatorId.present) {
+      map['creator_id'] = Variable<String>(creatorId.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (imageId.present) {
+      map['image_id'] = Variable<String>(imageId.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GroupsCompanion(')
+          ..write('id: $id, ')
+          ..write('collectivityId: $collectivityId, ')
+          ..write('name: $name, ')
+          ..write('creatorId: $creatorId, ')
+          ..write('description: $description, ')
+          ..write('imageId: $imageId, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DyadTable extends Dyad with TableInfo<$DyadTable, DyadData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DyadTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _collectivityIdMeta =
+      const VerificationMeta('collectivityId');
+  @override
+  late final GeneratedColumn<String> collectivityId = GeneratedColumn<String>(
+      'collectivity_id', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints:
+          'REFERENCES collectivity(collectivityId) ON DELETE CASCADE');
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+      'user_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+      'status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: Constant(Status.created.name));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, collectivityId, userId, status, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'dyad';
+  @override
+  VerificationContext validateIntegrity(Insertable<DyadData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('collectivity_id')) {
       context.handle(
-          _collectivityTypeMeta,
-          collectivityType.isAcceptableOrUnknown(
-              data['collectivity_type']!, _collectivityTypeMeta));
+          _collectivityIdMeta,
+          collectivityId.isAcceptableOrUnknown(
+              data['collectivity_id']!, _collectivityIdMeta));
     }
     if (data.containsKey('user_id')) {
       context.handle(_userIdMeta,
@@ -151,23 +704,13 @@ class $CollectivitiesTable extends Collectivities
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  CollectivityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  DyadData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CollectivityData(
+    return DyadData(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       collectivityId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}collectivityId'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name']),
-      creatorId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}creator_id']),
-      description: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}description']),
-      imageId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}image_id']),
-      collectivityType: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}collectivity_type']),
+          .read(DriftSqlType.string, data['${effectivePrefix}collectivity_id']),
       userId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}user_id']),
       status: attachedDatabase.typeMapping
@@ -178,31 +721,20 @@ class $CollectivitiesTable extends Collectivities
   }
 
   @override
-  $CollectivitiesTable createAlias(String alias) {
-    return $CollectivitiesTable(attachedDatabase, alias);
+  $DyadTable createAlias(String alias) {
+    return $DyadTable(attachedDatabase, alias);
   }
 }
 
-class CollectivityData extends DataClass
-    implements Insertable<CollectivityData> {
+class DyadData extends DataClass implements Insertable<DyadData> {
   final int id;
-  final String collectivityId;
-  final String? name;
-  final String? creatorId;
-  final String? description;
-  final String? imageId;
-  final String? collectivityType;
+  final String? collectivityId;
   final String? userId;
   final String status;
   final DateTime createdAt;
-  const CollectivityData(
+  const DyadData(
       {required this.id,
-      required this.collectivityId,
-      this.name,
-      this.creatorId,
-      this.description,
-      this.imageId,
-      this.collectivityType,
+      this.collectivityId,
       this.userId,
       required this.status,
       required this.createdAt});
@@ -210,21 +742,8 @@ class CollectivityData extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['collectivityId'] = Variable<String>(collectivityId);
-    if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name);
-    }
-    if (!nullToAbsent || creatorId != null) {
-      map['creator_id'] = Variable<String>(creatorId);
-    }
-    if (!nullToAbsent || description != null) {
-      map['description'] = Variable<String>(description);
-    }
-    if (!nullToAbsent || imageId != null) {
-      map['image_id'] = Variable<String>(imageId);
-    }
-    if (!nullToAbsent || collectivityType != null) {
-      map['collectivity_type'] = Variable<String>(collectivityType);
+    if (!nullToAbsent || collectivityId != null) {
+      map['collectivity_id'] = Variable<String>(collectivityId);
     }
     if (!nullToAbsent || userId != null) {
       map['user_id'] = Variable<String>(userId);
@@ -234,23 +753,12 @@ class CollectivityData extends DataClass
     return map;
   }
 
-  CollectivitiesCompanion toCompanion(bool nullToAbsent) {
-    return CollectivitiesCompanion(
+  DyadCompanion toCompanion(bool nullToAbsent) {
+    return DyadCompanion(
       id: Value(id),
-      collectivityId: Value(collectivityId),
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
-      creatorId: creatorId == null && nullToAbsent
+      collectivityId: collectivityId == null && nullToAbsent
           ? const Value.absent()
-          : Value(creatorId),
-      description: description == null && nullToAbsent
-          ? const Value.absent()
-          : Value(description),
-      imageId: imageId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(imageId),
-      collectivityType: collectivityType == null && nullToAbsent
-          ? const Value.absent()
-          : Value(collectivityType),
+          : Value(collectivityId),
       userId:
           userId == null && nullToAbsent ? const Value.absent() : Value(userId),
       status: Value(status),
@@ -258,17 +766,12 @@ class CollectivityData extends DataClass
     );
   }
 
-  factory CollectivityData.fromJson(Map<String, dynamic> json,
+  factory DyadData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return CollectivityData(
+    return DyadData(
       id: serializer.fromJson<int>(json['id']),
-      collectivityId: serializer.fromJson<String>(json['collectivityId']),
-      name: serializer.fromJson<String?>(json['name']),
-      creatorId: serializer.fromJson<String?>(json['creatorId']),
-      description: serializer.fromJson<String?>(json['description']),
-      imageId: serializer.fromJson<String?>(json['imageId']),
-      collectivityType: serializer.fromJson<String?>(json['collectivityType']),
+      collectivityId: serializer.fromJson<String?>(json['collectivityId']),
       userId: serializer.fromJson<String?>(json['userId']),
       status: serializer.fromJson<String>(json['status']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -279,57 +782,33 @@ class CollectivityData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'collectivityId': serializer.toJson<String>(collectivityId),
-      'name': serializer.toJson<String?>(name),
-      'creatorId': serializer.toJson<String?>(creatorId),
-      'description': serializer.toJson<String?>(description),
-      'imageId': serializer.toJson<String?>(imageId),
-      'collectivityType': serializer.toJson<String?>(collectivityType),
+      'collectivityId': serializer.toJson<String?>(collectivityId),
       'userId': serializer.toJson<String?>(userId),
       'status': serializer.toJson<String>(status),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
-  CollectivityData copyWith(
+  DyadData copyWith(
           {int? id,
-          String? collectivityId,
-          Value<String?> name = const Value.absent(),
-          Value<String?> creatorId = const Value.absent(),
-          Value<String?> description = const Value.absent(),
-          Value<String?> imageId = const Value.absent(),
-          Value<String?> collectivityType = const Value.absent(),
+          Value<String?> collectivityId = const Value.absent(),
           Value<String?> userId = const Value.absent(),
           String? status,
           DateTime? createdAt}) =>
-      CollectivityData(
+      DyadData(
         id: id ?? this.id,
-        collectivityId: collectivityId ?? this.collectivityId,
-        name: name.present ? name.value : this.name,
-        creatorId: creatorId.present ? creatorId.value : this.creatorId,
-        description: description.present ? description.value : this.description,
-        imageId: imageId.present ? imageId.value : this.imageId,
-        collectivityType: collectivityType.present
-            ? collectivityType.value
-            : this.collectivityType,
+        collectivityId:
+            collectivityId.present ? collectivityId.value : this.collectivityId,
         userId: userId.present ? userId.value : this.userId,
         status: status ?? this.status,
         createdAt: createdAt ?? this.createdAt,
       );
-  CollectivityData copyWithCompanion(CollectivitiesCompanion data) {
-    return CollectivityData(
+  DyadData copyWithCompanion(DyadCompanion data) {
+    return DyadData(
       id: data.id.present ? data.id.value : this.id,
       collectivityId: data.collectivityId.present
           ? data.collectivityId.value
           : this.collectivityId,
-      name: data.name.present ? data.name.value : this.name,
-      creatorId: data.creatorId.present ? data.creatorId.value : this.creatorId,
-      description:
-          data.description.present ? data.description.value : this.description,
-      imageId: data.imageId.present ? data.imageId.value : this.imageId,
-      collectivityType: data.collectivityType.present
-          ? data.collectivityType.value
-          : this.collectivityType,
       userId: data.userId.present ? data.userId.value : this.userId,
       status: data.status.present ? data.status.value : this.status,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -338,14 +817,9 @@ class CollectivityData extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('CollectivityData(')
+    return (StringBuffer('DyadData(')
           ..write('id: $id, ')
           ..write('collectivityId: $collectivityId, ')
-          ..write('name: $name, ')
-          ..write('creatorId: $creatorId, ')
-          ..write('description: $description, ')
-          ..write('imageId: $imageId, ')
-          ..write('collectivityType: $collectivityType, ')
           ..write('userId: $userId, ')
           ..write('status: $status, ')
           ..write('createdAt: $createdAt')
@@ -354,104 +828,64 @@ class CollectivityData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(id, collectivityId, name, creatorId,
-      description, imageId, collectivityType, userId, status, createdAt);
+  int get hashCode =>
+      Object.hash(id, collectivityId, userId, status, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is CollectivityData &&
+      (other is DyadData &&
           other.id == this.id &&
           other.collectivityId == this.collectivityId &&
-          other.name == this.name &&
-          other.creatorId == this.creatorId &&
-          other.description == this.description &&
-          other.imageId == this.imageId &&
-          other.collectivityType == this.collectivityType &&
           other.userId == this.userId &&
           other.status == this.status &&
           other.createdAt == this.createdAt);
 }
 
-class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
+class DyadCompanion extends UpdateCompanion<DyadData> {
   final Value<int> id;
-  final Value<String> collectivityId;
-  final Value<String?> name;
-  final Value<String?> creatorId;
-  final Value<String?> description;
-  final Value<String?> imageId;
-  final Value<String?> collectivityType;
+  final Value<String?> collectivityId;
   final Value<String?> userId;
   final Value<String> status;
   final Value<DateTime> createdAt;
-  const CollectivitiesCompanion({
+  const DyadCompanion({
     this.id = const Value.absent(),
     this.collectivityId = const Value.absent(),
-    this.name = const Value.absent(),
-    this.creatorId = const Value.absent(),
-    this.description = const Value.absent(),
-    this.imageId = const Value.absent(),
-    this.collectivityType = const Value.absent(),
     this.userId = const Value.absent(),
     this.status = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
-  CollectivitiesCompanion.insert({
+  DyadCompanion.insert({
     this.id = const Value.absent(),
-    required String collectivityId,
-    this.name = const Value.absent(),
-    this.creatorId = const Value.absent(),
-    this.description = const Value.absent(),
-    this.imageId = const Value.absent(),
-    this.collectivityType = const Value.absent(),
+    this.collectivityId = const Value.absent(),
     this.userId = const Value.absent(),
     this.status = const Value.absent(),
     this.createdAt = const Value.absent(),
-  }) : collectivityId = Value(collectivityId);
-  static Insertable<CollectivityData> custom({
+  });
+  static Insertable<DyadData> custom({
     Expression<int>? id,
     Expression<String>? collectivityId,
-    Expression<String>? name,
-    Expression<String>? creatorId,
-    Expression<String>? description,
-    Expression<String>? imageId,
-    Expression<String>? collectivityType,
     Expression<String>? userId,
     Expression<String>? status,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (collectivityId != null) 'collectivityId': collectivityId,
-      if (name != null) 'name': name,
-      if (creatorId != null) 'creator_id': creatorId,
-      if (description != null) 'description': description,
-      if (imageId != null) 'image_id': imageId,
-      if (collectivityType != null) 'collectivity_type': collectivityType,
+      if (collectivityId != null) 'collectivity_id': collectivityId,
       if (userId != null) 'user_id': userId,
       if (status != null) 'status': status,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
 
-  CollectivitiesCompanion copyWith(
+  DyadCompanion copyWith(
       {Value<int>? id,
-      Value<String>? collectivityId,
-      Value<String?>? name,
-      Value<String?>? creatorId,
-      Value<String?>? description,
-      Value<String?>? imageId,
-      Value<String?>? collectivityType,
+      Value<String?>? collectivityId,
       Value<String?>? userId,
       Value<String>? status,
       Value<DateTime>? createdAt}) {
-    return CollectivitiesCompanion(
+    return DyadCompanion(
       id: id ?? this.id,
       collectivityId: collectivityId ?? this.collectivityId,
-      name: name ?? this.name,
-      creatorId: creatorId ?? this.creatorId,
-      description: description ?? this.description,
-      imageId: imageId ?? this.imageId,
-      collectivityType: collectivityType ?? this.collectivityType,
       userId: userId ?? this.userId,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
@@ -465,22 +899,7 @@ class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
       map['id'] = Variable<int>(id.value);
     }
     if (collectivityId.present) {
-      map['collectivityId'] = Variable<String>(collectivityId.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (creatorId.present) {
-      map['creator_id'] = Variable<String>(creatorId.value);
-    }
-    if (description.present) {
-      map['description'] = Variable<String>(description.value);
-    }
-    if (imageId.present) {
-      map['image_id'] = Variable<String>(imageId.value);
-    }
-    if (collectivityType.present) {
-      map['collectivity_type'] = Variable<String>(collectivityType.value);
+      map['collectivity_id'] = Variable<String>(collectivityId.value);
     }
     if (userId.present) {
       map['user_id'] = Variable<String>(userId.value);
@@ -496,14 +915,9 @@ class CollectivitiesCompanion extends UpdateCompanion<CollectivityData> {
 
   @override
   String toString() {
-    return (StringBuffer('CollectivitiesCompanion(')
+    return (StringBuffer('DyadCompanion(')
           ..write('id: $id, ')
           ..write('collectivityId: $collectivityId, ')
-          ..write('name: $name, ')
-          ..write('creatorId: $creatorId, ')
-          ..write('description: $description, ')
-          ..write('imageId: $imageId, ')
-          ..write('collectivityType: $collectivityType, ')
           ..write('userId: $userId, ')
           ..write('status: $status, ')
           ..write('createdAt: $createdAt')
@@ -1618,14 +2032,6 @@ class $ContactsTable extends Contacts
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  static const VerificationMeta _personIdMeta =
-      const VerificationMeta('personId');
-  @override
-  late final GeneratedColumn<String> personId = GeneratedColumn<String>(
-      'person_id', aliasedName, true,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      $customConstraints: 'REFERENCES persons(person_id) ON DELETE SET NULL');
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
@@ -1634,7 +2040,7 @@ class $ContactsTable extends Contacts
       requiredDuringInsert: false,
       defaultValue: Constant(Status.created.name));
   @override
-  List<GeneratedColumn> get $columns => [id, name, username, personId, status];
+  List<GeneratedColumn> get $columns => [id, name, username, status];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1660,10 +2066,6 @@ class $ContactsTable extends Contacts
     } else if (isInserting) {
       context.missing(_usernameMeta);
     }
-    if (data.containsKey('person_id')) {
-      context.handle(_personIdMeta,
-          personId.isAcceptableOrUnknown(data['person_id']!, _personIdMeta));
-    }
     if (data.containsKey('status')) {
       context.handle(_statusMeta,
           status.isAcceptableOrUnknown(data['status']!, _statusMeta));
@@ -1683,8 +2085,6 @@ class $ContactsTable extends Contacts
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       username: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}username'])!,
-      personId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}person_id']),
       status: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
     );
@@ -1700,13 +2100,11 @@ class ContactData extends DataClass implements Insertable<ContactData> {
   final int id;
   final String name;
   final String username;
-  final String? personId;
   final String status;
   const ContactData(
       {required this.id,
       required this.name,
       required this.username,
-      this.personId,
       required this.status});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1714,9 +2112,6 @@ class ContactData extends DataClass implements Insertable<ContactData> {
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     map['username'] = Variable<String>(username);
-    if (!nullToAbsent || personId != null) {
-      map['person_id'] = Variable<String>(personId);
-    }
     map['status'] = Variable<String>(status);
     return map;
   }
@@ -1726,9 +2121,6 @@ class ContactData extends DataClass implements Insertable<ContactData> {
       id: Value(id),
       name: Value(name),
       username: Value(username),
-      personId: personId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(personId),
       status: Value(status),
     );
   }
@@ -1740,7 +2132,6 @@ class ContactData extends DataClass implements Insertable<ContactData> {
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       username: serializer.fromJson<String>(json['username']),
-      personId: serializer.fromJson<String?>(json['personId']),
       status: serializer.fromJson<String>(json['status']),
     );
   }
@@ -1751,22 +2142,16 @@ class ContactData extends DataClass implements Insertable<ContactData> {
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'username': serializer.toJson<String>(username),
-      'personId': serializer.toJson<String?>(personId),
       'status': serializer.toJson<String>(status),
     };
   }
 
   ContactData copyWith(
-          {int? id,
-          String? name,
-          String? username,
-          Value<String?> personId = const Value.absent(),
-          String? status}) =>
+          {int? id, String? name, String? username, String? status}) =>
       ContactData(
         id: id ?? this.id,
         name: name ?? this.name,
         username: username ?? this.username,
-        personId: personId.present ? personId.value : this.personId,
         status: status ?? this.status,
       );
   ContactData copyWithCompanion(ContactsCompanion data) {
@@ -1774,7 +2159,6 @@ class ContactData extends DataClass implements Insertable<ContactData> {
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       username: data.username.present ? data.username.value : this.username,
-      personId: data.personId.present ? data.personId.value : this.personId,
       status: data.status.present ? data.status.value : this.status,
     );
   }
@@ -1785,14 +2169,13 @@ class ContactData extends DataClass implements Insertable<ContactData> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('username: $username, ')
-          ..write('personId: $personId, ')
           ..write('status: $status')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, username, personId, status);
+  int get hashCode => Object.hash(id, name, username, status);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1800,7 +2183,6 @@ class ContactData extends DataClass implements Insertable<ContactData> {
           other.id == this.id &&
           other.name == this.name &&
           other.username == this.username &&
-          other.personId == this.personId &&
           other.status == this.status);
 }
 
@@ -1808,20 +2190,17 @@ class ContactsCompanion extends UpdateCompanion<ContactData> {
   final Value<int> id;
   final Value<String> name;
   final Value<String> username;
-  final Value<String?> personId;
   final Value<String> status;
   const ContactsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.username = const Value.absent(),
-    this.personId = const Value.absent(),
     this.status = const Value.absent(),
   });
   ContactsCompanion.insert({
     this.id = const Value.absent(),
     required String name,
     required String username,
-    this.personId = const Value.absent(),
     this.status = const Value.absent(),
   })  : name = Value(name),
         username = Value(username);
@@ -1829,14 +2208,12 @@ class ContactsCompanion extends UpdateCompanion<ContactData> {
     Expression<int>? id,
     Expression<String>? name,
     Expression<String>? username,
-    Expression<String>? personId,
     Expression<String>? status,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (username != null) 'username': username,
-      if (personId != null) 'person_id': personId,
       if (status != null) 'status': status,
     });
   }
@@ -1845,13 +2222,11 @@ class ContactsCompanion extends UpdateCompanion<ContactData> {
       {Value<int>? id,
       Value<String>? name,
       Value<String>? username,
-      Value<String?>? personId,
       Value<String>? status}) {
     return ContactsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       username: username ?? this.username,
-      personId: personId ?? this.personId,
       status: status ?? this.status,
     );
   }
@@ -1868,9 +2243,6 @@ class ContactsCompanion extends UpdateCompanion<ContactData> {
     if (username.present) {
       map['username'] = Variable<String>(username.value);
     }
-    if (personId.present) {
-      map['person_id'] = Variable<String>(personId.value);
-    }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
@@ -1883,7 +2255,6 @@ class ContactsCompanion extends UpdateCompanion<ContactData> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('username: $username, ')
-          ..write('personId: $personId, ')
           ..write('status: $status')
           ..write(')'))
         .toString();
@@ -1894,6 +2265,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $CollectivitiesTable collectivities = $CollectivitiesTable(this);
+  late final $GroupsTable groups = $GroupsTable(this);
+  late final $DyadTable dyad = $DyadTable(this);
   late final $ParticipantsTable participants = $ParticipantsTable(this);
   late final $PersonsTable persons = $PersonsTable(this);
   late final $MessagesTable messages = $MessagesTable(this);
@@ -1903,10 +2276,24 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [collectivities, participants, persons, messages, contacts];
+      [collectivities, groups, dyad, participants, persons, messages, contacts];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
         [
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('collectivity',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('group', kind: UpdateKind.delete),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('collectivity',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('dyad', kind: UpdateKind.delete),
+            ],
+          ),
           WritePropagation(
             on: TableUpdateQuery.onTableName('collectivity',
                 limitUpdateKind: UpdateKind.delete),
@@ -1921,13 +2308,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
               TableUpdate('messages', kind: UpdateKind.delete),
             ],
           ),
-          WritePropagation(
-            on: TableUpdateQuery.onTableName('persons',
-                limitUpdateKind: UpdateKind.delete),
-            result: [
-              TableUpdate('contacts', kind: UpdateKind.update),
-            ],
-          ),
         ],
       );
 }
@@ -1936,33 +2316,49 @@ typedef $$CollectivitiesTableCreateCompanionBuilder = CollectivitiesCompanion
     Function({
   Value<int> id,
   required String collectivityId,
-  Value<String?> name,
-  Value<String?> creatorId,
-  Value<String?> description,
-  Value<String?> imageId,
-  Value<String?> collectivityType,
-  Value<String?> userId,
-  Value<String> status,
-  Value<DateTime> createdAt,
 });
 typedef $$CollectivitiesTableUpdateCompanionBuilder = CollectivitiesCompanion
     Function({
   Value<int> id,
   Value<String> collectivityId,
-  Value<String?> name,
-  Value<String?> creatorId,
-  Value<String?> description,
-  Value<String?> imageId,
-  Value<String?> collectivityType,
-  Value<String?> userId,
-  Value<String> status,
-  Value<DateTime> createdAt,
 });
 
 final class $$CollectivitiesTableReferences extends BaseReferences<
     _$AppDatabase, $CollectivitiesTable, CollectivityData> {
   $$CollectivitiesTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$GroupsTable, List<GroupData>> _groupsRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.groups,
+          aliasName: $_aliasNameGenerator(
+              db.collectivities.collectivityId, db.groups.collectivityId));
+
+  $$GroupsTableProcessedTableManager get groupsRefs {
+    final manager = $$GroupsTableTableManager($_db, $_db.groups).filter((f) => f
+        .collectivityId.collectivityId
+        .sqlEquals($_itemColumn<String>('collectivityId')!));
+
+    final cache = $_typedResult.readTableOrNull(_groupsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$DyadTable, List<DyadData>> _dyadRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.dyad,
+          aliasName: $_aliasNameGenerator(
+              db.collectivities.collectivityId, db.dyad.collectivityId));
+
+  $$DyadTableProcessedTableManager get dyadRefs {
+    final manager = $$DyadTableTableManager($_db, $_db.dyad).filter((f) => f
+        .collectivityId.collectivityId
+        .sqlEquals($_itemColumn<String>('collectivityId')!));
+
+    final cache = $_typedResult.readTableOrNull(_dyadRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 
   static MultiTypedResultKey<$ParticipantsTable, List<ParticipantData>>
       _participantsRefsTable(_$AppDatabase db) =>
@@ -2013,30 +2409,47 @@ class $$CollectivitiesTableFilterComposer
       column: $table.collectivityId,
       builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnFilters(column));
+  Expression<bool> groupsRefs(
+      Expression<bool> Function($$GroupsTableFilterComposer f) f) {
+    final $$GroupsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.collectivityId,
+        referencedTable: $db.groups,
+        getReferencedColumn: (t) => t.collectivityId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$GroupsTableFilterComposer(
+              $db: $db,
+              $table: $db.groups,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 
-  ColumnFilters<String> get creatorId => $composableBuilder(
-      column: $table.creatorId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get description => $composableBuilder(
-      column: $table.description, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get imageId => $composableBuilder(
-      column: $table.imageId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get collectivityType => $composableBuilder(
-      column: $table.collectivityType,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get userId => $composableBuilder(
-      column: $table.userId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get status => $composableBuilder(
-      column: $table.status, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+  Expression<bool> dyadRefs(
+      Expression<bool> Function($$DyadTableFilterComposer f) f) {
+    final $$DyadTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.collectivityId,
+        referencedTable: $db.dyad,
+        getReferencedColumn: (t) => t.collectivityId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$DyadTableFilterComposer(
+              $db: $db,
+              $table: $db.dyad,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 
   Expression<bool> participantsRefs(
       Expression<bool> Function($$ParticipantsTableFilterComposer f) f) {
@@ -2096,31 +2509,6 @@ class $$CollectivitiesTableOrderingComposer
   ColumnOrderings<String> get collectivityId => $composableBuilder(
       column: $table.collectivityId,
       builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get creatorId => $composableBuilder(
-      column: $table.creatorId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get description => $composableBuilder(
-      column: $table.description, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get imageId => $composableBuilder(
-      column: $table.imageId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get collectivityType => $composableBuilder(
-      column: $table.collectivityType,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get userId => $composableBuilder(
-      column: $table.userId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get status => $composableBuilder(
-      column: $table.status, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 }
 
 class $$CollectivitiesTableAnnotationComposer
@@ -2138,29 +2526,47 @@ class $$CollectivitiesTableAnnotationComposer
   GeneratedColumn<String> get collectivityId => $composableBuilder(
       column: $table.collectivityId, builder: (column) => column);
 
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
+  Expression<T> groupsRefs<T extends Object>(
+      Expression<T> Function($$GroupsTableAnnotationComposer a) f) {
+    final $$GroupsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.collectivityId,
+        referencedTable: $db.groups,
+        getReferencedColumn: (t) => t.collectivityId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$GroupsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.groups,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 
-  GeneratedColumn<String> get creatorId =>
-      $composableBuilder(column: $table.creatorId, builder: (column) => column);
-
-  GeneratedColumn<String> get description => $composableBuilder(
-      column: $table.description, builder: (column) => column);
-
-  GeneratedColumn<String> get imageId =>
-      $composableBuilder(column: $table.imageId, builder: (column) => column);
-
-  GeneratedColumn<String> get collectivityType => $composableBuilder(
-      column: $table.collectivityType, builder: (column) => column);
-
-  GeneratedColumn<String> get userId =>
-      $composableBuilder(column: $table.userId, builder: (column) => column);
-
-  GeneratedColumn<String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+  Expression<T> dyadRefs<T extends Object>(
+      Expression<T> Function($$DyadTableAnnotationComposer a) f) {
+    final $$DyadTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.collectivityId,
+        referencedTable: $db.dyad,
+        getReferencedColumn: (t) => t.collectivityId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$DyadTableAnnotationComposer(
+              $db: $db,
+              $table: $db.dyad,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 
   Expression<T> participantsRefs<T extends Object>(
       Expression<T> Function($$ParticipantsTableAnnotationComposer a) f) {
@@ -2216,7 +2622,11 @@ class $$CollectivitiesTableTableManager extends RootTableManager<
     $$CollectivitiesTableUpdateCompanionBuilder,
     (CollectivityData, $$CollectivitiesTableReferences),
     CollectivityData,
-    PrefetchHooks Function({bool participantsRefs, bool messagesRefs})> {
+    PrefetchHooks Function(
+        {bool groupsRefs,
+        bool dyadRefs,
+        bool participantsRefs,
+        bool messagesRefs})> {
   $$CollectivitiesTableTableManager(
       _$AppDatabase db, $CollectivitiesTable table)
       : super(TableManagerState(
@@ -2231,50 +2641,18 @@ class $$CollectivitiesTableTableManager extends RootTableManager<
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> collectivityId = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-            Value<String?> creatorId = const Value.absent(),
-            Value<String?> description = const Value.absent(),
-            Value<String?> imageId = const Value.absent(),
-            Value<String?> collectivityType = const Value.absent(),
-            Value<String?> userId = const Value.absent(),
-            Value<String> status = const Value.absent(),
-            Value<DateTime> createdAt = const Value.absent(),
           }) =>
               CollectivitiesCompanion(
             id: id,
             collectivityId: collectivityId,
-            name: name,
-            creatorId: creatorId,
-            description: description,
-            imageId: imageId,
-            collectivityType: collectivityType,
-            userId: userId,
-            status: status,
-            createdAt: createdAt,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String collectivityId,
-            Value<String?> name = const Value.absent(),
-            Value<String?> creatorId = const Value.absent(),
-            Value<String?> description = const Value.absent(),
-            Value<String?> imageId = const Value.absent(),
-            Value<String?> collectivityType = const Value.absent(),
-            Value<String?> userId = const Value.absent(),
-            Value<String> status = const Value.absent(),
-            Value<DateTime> createdAt = const Value.absent(),
           }) =>
               CollectivitiesCompanion.insert(
             id: id,
             collectivityId: collectivityId,
-            name: name,
-            creatorId: creatorId,
-            description: description,
-            imageId: imageId,
-            collectivityType: collectivityType,
-            userId: userId,
-            status: status,
-            createdAt: createdAt,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
@@ -2283,16 +2661,47 @@ class $$CollectivitiesTableTableManager extends RootTableManager<
                   ))
               .toList(),
           prefetchHooksCallback: (
-              {participantsRefs = false, messagesRefs = false}) {
+              {groupsRefs = false,
+              dyadRefs = false,
+              participantsRefs = false,
+              messagesRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
+                if (groupsRefs) db.groups,
+                if (dyadRefs) db.dyad,
                 if (participantsRefs) db.participants,
                 if (messagesRefs) db.messages
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
+                  if (groupsRefs)
+                    await $_getPrefetchedData<CollectivityData,
+                            $CollectivitiesTable, GroupData>(
+                        currentTable: table,
+                        referencedTable: $$CollectivitiesTableReferences
+                            ._groupsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CollectivitiesTableReferences(db, table, p0)
+                                .groupsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems.where(
+                                (e) => e.collectivityId == item.collectivityId),
+                        typedResults: items),
+                  if (dyadRefs)
+                    await $_getPrefetchedData<CollectivityData,
+                            $CollectivitiesTable, DyadData>(
+                        currentTable: table,
+                        referencedTable:
+                            $$CollectivitiesTableReferences._dyadRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CollectivitiesTableReferences(db, table, p0)
+                                .dyadRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems.where(
+                                (e) => e.collectivityId == item.collectivityId),
+                        typedResults: items),
                   if (participantsRefs)
                     await $_getPrefetchedData<CollectivityData,
                             $CollectivitiesTable, ParticipantData>(
@@ -2337,7 +2746,586 @@ typedef $$CollectivitiesTableProcessedTableManager = ProcessedTableManager<
     $$CollectivitiesTableUpdateCompanionBuilder,
     (CollectivityData, $$CollectivitiesTableReferences),
     CollectivityData,
-    PrefetchHooks Function({bool participantsRefs, bool messagesRefs})>;
+    PrefetchHooks Function(
+        {bool groupsRefs,
+        bool dyadRefs,
+        bool participantsRefs,
+        bool messagesRefs})>;
+typedef $$GroupsTableCreateCompanionBuilder = GroupsCompanion Function({
+  Value<int> id,
+  Value<String?> collectivityId,
+  Value<String?> name,
+  Value<String?> creatorId,
+  Value<String?> description,
+  Value<String?> imageId,
+  Value<String> status,
+  Value<DateTime> createdAt,
+});
+typedef $$GroupsTableUpdateCompanionBuilder = GroupsCompanion Function({
+  Value<int> id,
+  Value<String?> collectivityId,
+  Value<String?> name,
+  Value<String?> creatorId,
+  Value<String?> description,
+  Value<String?> imageId,
+  Value<String> status,
+  Value<DateTime> createdAt,
+});
+
+final class $$GroupsTableReferences
+    extends BaseReferences<_$AppDatabase, $GroupsTable, GroupData> {
+  $$GroupsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $CollectivitiesTable _collectivityIdTable(_$AppDatabase db) =>
+      db.collectivities.createAlias($_aliasNameGenerator(
+          db.groups.collectivityId, db.collectivities.collectivityId));
+
+  $$CollectivitiesTableProcessedTableManager? get collectivityId {
+    final $_column = $_itemColumn<String>('collectivity_id');
+    if ($_column == null) return null;
+    final manager = $$CollectivitiesTableTableManager($_db, $_db.collectivities)
+        .filter((f) => f.collectivityId.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_collectivityIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$GroupsTableFilterComposer
+    extends Composer<_$AppDatabase, $GroupsTable> {
+  $$GroupsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get creatorId => $composableBuilder(
+      column: $table.creatorId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get imageId => $composableBuilder(
+      column: $table.imageId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$CollectivitiesTableFilterComposer get collectivityId {
+    final $$CollectivitiesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.collectivityId,
+        referencedTable: $db.collectivities,
+        getReferencedColumn: (t) => t.collectivityId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CollectivitiesTableFilterComposer(
+              $db: $db,
+              $table: $db.collectivities,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$GroupsTableOrderingComposer
+    extends Composer<_$AppDatabase, $GroupsTable> {
+  $$GroupsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get creatorId => $composableBuilder(
+      column: $table.creatorId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get imageId => $composableBuilder(
+      column: $table.imageId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  $$CollectivitiesTableOrderingComposer get collectivityId {
+    final $$CollectivitiesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.collectivityId,
+        referencedTable: $db.collectivities,
+        getReferencedColumn: (t) => t.collectivityId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CollectivitiesTableOrderingComposer(
+              $db: $db,
+              $table: $db.collectivities,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$GroupsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GroupsTable> {
+  $$GroupsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get creatorId =>
+      $composableBuilder(column: $table.creatorId, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+
+  GeneratedColumn<String> get imageId =>
+      $composableBuilder(column: $table.imageId, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$CollectivitiesTableAnnotationComposer get collectivityId {
+    final $$CollectivitiesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.collectivityId,
+        referencedTable: $db.collectivities,
+        getReferencedColumn: (t) => t.collectivityId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CollectivitiesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.collectivities,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$GroupsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $GroupsTable,
+    GroupData,
+    $$GroupsTableFilterComposer,
+    $$GroupsTableOrderingComposer,
+    $$GroupsTableAnnotationComposer,
+    $$GroupsTableCreateCompanionBuilder,
+    $$GroupsTableUpdateCompanionBuilder,
+    (GroupData, $$GroupsTableReferences),
+    GroupData,
+    PrefetchHooks Function({bool collectivityId})> {
+  $$GroupsTableTableManager(_$AppDatabase db, $GroupsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GroupsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GroupsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GroupsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> collectivityId = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+            Value<String?> creatorId = const Value.absent(),
+            Value<String?> description = const Value.absent(),
+            Value<String?> imageId = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              GroupsCompanion(
+            id: id,
+            collectivityId: collectivityId,
+            name: name,
+            creatorId: creatorId,
+            description: description,
+            imageId: imageId,
+            status: status,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> collectivityId = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+            Value<String?> creatorId = const Value.absent(),
+            Value<String?> description = const Value.absent(),
+            Value<String?> imageId = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              GroupsCompanion.insert(
+            id: id,
+            collectivityId: collectivityId,
+            name: name,
+            creatorId: creatorId,
+            description: description,
+            imageId: imageId,
+            status: status,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$GroupsTableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({collectivityId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (collectivityId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.collectivityId,
+                    referencedTable:
+                        $$GroupsTableReferences._collectivityIdTable(db),
+                    referencedColumn: $$GroupsTableReferences
+                        ._collectivityIdTable(db)
+                        .collectivityId,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$GroupsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $GroupsTable,
+    GroupData,
+    $$GroupsTableFilterComposer,
+    $$GroupsTableOrderingComposer,
+    $$GroupsTableAnnotationComposer,
+    $$GroupsTableCreateCompanionBuilder,
+    $$GroupsTableUpdateCompanionBuilder,
+    (GroupData, $$GroupsTableReferences),
+    GroupData,
+    PrefetchHooks Function({bool collectivityId})>;
+typedef $$DyadTableCreateCompanionBuilder = DyadCompanion Function({
+  Value<int> id,
+  Value<String?> collectivityId,
+  Value<String?> userId,
+  Value<String> status,
+  Value<DateTime> createdAt,
+});
+typedef $$DyadTableUpdateCompanionBuilder = DyadCompanion Function({
+  Value<int> id,
+  Value<String?> collectivityId,
+  Value<String?> userId,
+  Value<String> status,
+  Value<DateTime> createdAt,
+});
+
+final class $$DyadTableReferences
+    extends BaseReferences<_$AppDatabase, $DyadTable, DyadData> {
+  $$DyadTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $CollectivitiesTable _collectivityIdTable(_$AppDatabase db) =>
+      db.collectivities.createAlias($_aliasNameGenerator(
+          db.dyad.collectivityId, db.collectivities.collectivityId));
+
+  $$CollectivitiesTableProcessedTableManager? get collectivityId {
+    final $_column = $_itemColumn<String>('collectivity_id');
+    if ($_column == null) return null;
+    final manager = $$CollectivitiesTableTableManager($_db, $_db.collectivities)
+        .filter((f) => f.collectivityId.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_collectivityIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$DyadTableFilterComposer extends Composer<_$AppDatabase, $DyadTable> {
+  $$DyadTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$CollectivitiesTableFilterComposer get collectivityId {
+    final $$CollectivitiesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.collectivityId,
+        referencedTable: $db.collectivities,
+        getReferencedColumn: (t) => t.collectivityId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CollectivitiesTableFilterComposer(
+              $db: $db,
+              $table: $db.collectivities,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$DyadTableOrderingComposer extends Composer<_$AppDatabase, $DyadTable> {
+  $$DyadTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  $$CollectivitiesTableOrderingComposer get collectivityId {
+    final $$CollectivitiesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.collectivityId,
+        referencedTable: $db.collectivities,
+        getReferencedColumn: (t) => t.collectivityId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CollectivitiesTableOrderingComposer(
+              $db: $db,
+              $table: $db.collectivities,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$DyadTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DyadTable> {
+  $$DyadTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$CollectivitiesTableAnnotationComposer get collectivityId {
+    final $$CollectivitiesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.collectivityId,
+        referencedTable: $db.collectivities,
+        getReferencedColumn: (t) => t.collectivityId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CollectivitiesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.collectivities,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$DyadTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $DyadTable,
+    DyadData,
+    $$DyadTableFilterComposer,
+    $$DyadTableOrderingComposer,
+    $$DyadTableAnnotationComposer,
+    $$DyadTableCreateCompanionBuilder,
+    $$DyadTableUpdateCompanionBuilder,
+    (DyadData, $$DyadTableReferences),
+    DyadData,
+    PrefetchHooks Function({bool collectivityId})> {
+  $$DyadTableTableManager(_$AppDatabase db, $DyadTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DyadTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DyadTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DyadTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> collectivityId = const Value.absent(),
+            Value<String?> userId = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              DyadCompanion(
+            id: id,
+            collectivityId: collectivityId,
+            userId: userId,
+            status: status,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> collectivityId = const Value.absent(),
+            Value<String?> userId = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              DyadCompanion.insert(
+            id: id,
+            collectivityId: collectivityId,
+            userId: userId,
+            status: status,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$DyadTableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({collectivityId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (collectivityId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.collectivityId,
+                    referencedTable:
+                        $$DyadTableReferences._collectivityIdTable(db),
+                    referencedColumn: $$DyadTableReferences
+                        ._collectivityIdTable(db)
+                        .collectivityId,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$DyadTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $DyadTable,
+    DyadData,
+    $$DyadTableFilterComposer,
+    $$DyadTableOrderingComposer,
+    $$DyadTableAnnotationComposer,
+    $$DyadTableCreateCompanionBuilder,
+    $$DyadTableUpdateCompanionBuilder,
+    (DyadData, $$DyadTableReferences),
+    DyadData,
+    PrefetchHooks Function({bool collectivityId})>;
 typedef $$ParticipantsTableCreateCompanionBuilder = ParticipantsCompanion
     Function({
   Value<int> id,
@@ -2597,27 +3585,6 @@ typedef $$PersonsTableUpdateCompanionBuilder = PersonsCompanion Function({
   Value<String> status,
 });
 
-final class $$PersonsTableReferences
-    extends BaseReferences<_$AppDatabase, $PersonsTable, PersonData> {
-  $$PersonsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$ContactsTable, List<ContactData>>
-      _contactsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-          db.contacts,
-          aliasName:
-              $_aliasNameGenerator(db.persons.personId, db.contacts.personId));
-
-  $$ContactsTableProcessedTableManager get contactsRefs {
-    final manager = $$ContactsTableTableManager($_db, $_db.contacts).filter(
-        (f) =>
-            f.personId.personId.sqlEquals($_itemColumn<String>('person_id')!));
-
-    final cache = $_typedResult.readTableOrNull(_contactsRefsTable($_db));
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: cache));
-  }
-}
-
 class $$PersonsTableFilterComposer
     extends Composer<_$AppDatabase, $PersonsTable> {
   $$PersonsTableFilterComposer({
@@ -2647,27 +3614,6 @@ class $$PersonsTableFilterComposer
 
   ColumnFilters<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnFilters(column));
-
-  Expression<bool> contactsRefs(
-      Expression<bool> Function($$ContactsTableFilterComposer f) f) {
-    final $$ContactsTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.personId,
-        referencedTable: $db.contacts,
-        getReferencedColumn: (t) => t.personId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$ContactsTableFilterComposer(
-              $db: $db,
-              $table: $db.contacts,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
 }
 
 class $$PersonsTableOrderingComposer
@@ -2730,27 +3676,6 @@ class $$PersonsTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
-
-  Expression<T> contactsRefs<T extends Object>(
-      Expression<T> Function($$ContactsTableAnnotationComposer a) f) {
-    final $$ContactsTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.personId,
-        referencedTable: $db.contacts,
-        getReferencedColumn: (t) => t.personId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$ContactsTableAnnotationComposer(
-              $db: $db,
-              $table: $db.contacts,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
 }
 
 class $$PersonsTableTableManager extends RootTableManager<
@@ -2762,9 +3687,9 @@ class $$PersonsTableTableManager extends RootTableManager<
     $$PersonsTableAnnotationComposer,
     $$PersonsTableCreateCompanionBuilder,
     $$PersonsTableUpdateCompanionBuilder,
-    (PersonData, $$PersonsTableReferences),
+    (PersonData, BaseReferences<_$AppDatabase, $PersonsTable, PersonData>),
     PersonData,
-    PrefetchHooks Function({bool contactsRefs})> {
+    PrefetchHooks Function()> {
   $$PersonsTableTableManager(_$AppDatabase db, $PersonsTable table)
       : super(TableManagerState(
           db: db,
@@ -2812,33 +3737,9 @@ class $$PersonsTableTableManager extends RootTableManager<
             status: status,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), $$PersonsTableReferences(db, table, e)))
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({contactsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (contactsRefs) db.contacts],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (contactsRefs)
-                    await $_getPrefetchedData<PersonData, $PersonsTable,
-                            ContactData>(
-                        currentTable: table,
-                        referencedTable:
-                            $$PersonsTableReferences._contactsRefsTable(db),
-                        managerFromTypedResult: (p0) =>
-                            $$PersonsTableReferences(db, table, p0)
-                                .contactsRefs,
-                        referencedItemsForCurrentItem:
-                            (item, referencedItems) => referencedItems
-                                .where((e) => e.personId == item.personId),
-                        typedResults: items)
-                ];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ));
 }
 
@@ -2851,9 +3752,9 @@ typedef $$PersonsTableProcessedTableManager = ProcessedTableManager<
     $$PersonsTableAnnotationComposer,
     $$PersonsTableCreateCompanionBuilder,
     $$PersonsTableUpdateCompanionBuilder,
-    (PersonData, $$PersonsTableReferences),
+    (PersonData, BaseReferences<_$AppDatabase, $PersonsTable, PersonData>),
     PersonData,
-    PrefetchHooks Function({bool contactsRefs})>;
+    PrefetchHooks Function()>;
 typedef $$MessagesTableCreateCompanionBuilder = MessagesCompanion Function({
   Value<int> id,
   required String messageId,
@@ -3186,36 +4087,14 @@ typedef $$ContactsTableCreateCompanionBuilder = ContactsCompanion Function({
   Value<int> id,
   required String name,
   required String username,
-  Value<String?> personId,
   Value<String> status,
 });
 typedef $$ContactsTableUpdateCompanionBuilder = ContactsCompanion Function({
   Value<int> id,
   Value<String> name,
   Value<String> username,
-  Value<String?> personId,
   Value<String> status,
 });
-
-final class $$ContactsTableReferences
-    extends BaseReferences<_$AppDatabase, $ContactsTable, ContactData> {
-  $$ContactsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $PersonsTable _personIdTable(_$AppDatabase db) =>
-      db.persons.createAlias(
-          $_aliasNameGenerator(db.contacts.personId, db.persons.personId));
-
-  $$PersonsTableProcessedTableManager? get personId {
-    final $_column = $_itemColumn<String>('person_id');
-    if ($_column == null) return null;
-    final manager = $$PersonsTableTableManager($_db, $_db.persons)
-        .filter((f) => f.personId.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_personIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
-  }
-}
 
 class $$ContactsTableFilterComposer
     extends Composer<_$AppDatabase, $ContactsTable> {
@@ -3237,26 +4116,6 @@ class $$ContactsTableFilterComposer
 
   ColumnFilters<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnFilters(column));
-
-  $$PersonsTableFilterComposer get personId {
-    final $$PersonsTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.personId,
-        referencedTable: $db.persons,
-        getReferencedColumn: (t) => t.personId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$PersonsTableFilterComposer(
-              $db: $db,
-              $table: $db.persons,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
 }
 
 class $$ContactsTableOrderingComposer
@@ -3279,26 +4138,6 @@ class $$ContactsTableOrderingComposer
 
   ColumnOrderings<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnOrderings(column));
-
-  $$PersonsTableOrderingComposer get personId {
-    final $$PersonsTableOrderingComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.personId,
-        referencedTable: $db.persons,
-        getReferencedColumn: (t) => t.personId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$PersonsTableOrderingComposer(
-              $db: $db,
-              $table: $db.persons,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
 }
 
 class $$ContactsTableAnnotationComposer
@@ -3321,26 +4160,6 @@ class $$ContactsTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
-
-  $$PersonsTableAnnotationComposer get personId {
-    final $$PersonsTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.personId,
-        referencedTable: $db.persons,
-        getReferencedColumn: (t) => t.personId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$PersonsTableAnnotationComposer(
-              $db: $db,
-              $table: $db.persons,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
 }
 
 class $$ContactsTableTableManager extends RootTableManager<
@@ -3352,9 +4171,9 @@ class $$ContactsTableTableManager extends RootTableManager<
     $$ContactsTableAnnotationComposer,
     $$ContactsTableCreateCompanionBuilder,
     $$ContactsTableUpdateCompanionBuilder,
-    (ContactData, $$ContactsTableReferences),
+    (ContactData, BaseReferences<_$AppDatabase, $ContactsTable, ContactData>),
     ContactData,
-    PrefetchHooks Function({bool personId})> {
+    PrefetchHooks Function()> {
   $$ContactsTableTableManager(_$AppDatabase db, $ContactsTable table)
       : super(TableManagerState(
           db: db,
@@ -3369,69 +4188,30 @@ class $$ContactsTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String> username = const Value.absent(),
-            Value<String?> personId = const Value.absent(),
             Value<String> status = const Value.absent(),
           }) =>
               ContactsCompanion(
             id: id,
             name: name,
             username: username,
-            personId: personId,
             status: status,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String name,
             required String username,
-            Value<String?> personId = const Value.absent(),
             Value<String> status = const Value.absent(),
           }) =>
               ContactsCompanion.insert(
             id: id,
             name: name,
             username: username,
-            personId: personId,
             status: status,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), $$ContactsTableReferences(db, table, e)))
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({personId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins: <
-                  T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic>>(state) {
-                if (personId) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.personId,
-                    referencedTable:
-                        $$ContactsTableReferences._personIdTable(db),
-                    referencedColumn:
-                        $$ContactsTableReferences._personIdTable(db).personId,
-                  ) as T;
-                }
-
-                return state;
-              },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ));
 }
 
@@ -3444,15 +4224,18 @@ typedef $$ContactsTableProcessedTableManager = ProcessedTableManager<
     $$ContactsTableAnnotationComposer,
     $$ContactsTableCreateCompanionBuilder,
     $$ContactsTableUpdateCompanionBuilder,
-    (ContactData, $$ContactsTableReferences),
+    (ContactData, BaseReferences<_$AppDatabase, $ContactsTable, ContactData>),
     ContactData,
-    PrefetchHooks Function({bool personId})>;
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
   $$CollectivitiesTableTableManager get collectivities =>
       $$CollectivitiesTableTableManager(_db, _db.collectivities);
+  $$GroupsTableTableManager get groups =>
+      $$GroupsTableTableManager(_db, _db.groups);
+  $$DyadTableTableManager get dyad => $$DyadTableTableManager(_db, _db.dyad);
   $$ParticipantsTableTableManager get participants =>
       $$ParticipantsTableTableManager(_db, _db.participants);
   $$PersonsTableTableManager get persons =>

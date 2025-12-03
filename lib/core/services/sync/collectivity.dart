@@ -25,7 +25,6 @@ class CollectivitySyncService {
   void init() {
     dispose();
     _setupAutoSync();
-    syncCollectivities();
   }
 
   void _setupAutoSync() {
@@ -51,11 +50,6 @@ class CollectivitySyncService {
         }
       }
     }
-  }
-
-  void syncCollectivities() async {
-    List<Collectivity> unsyncedCollectivities = await collectivityRepository.getUnsyncedCollectivities();
-    _syncCollectivities(unsyncedCollectivities);
   }
 
   void createGroup(String name, List<String> members) {

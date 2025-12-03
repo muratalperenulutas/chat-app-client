@@ -17,12 +17,12 @@ class CollectivityService {
 
   CollectivityService(this.ref);
 
-  Future<void> updateGroup(Group group, int reqId) async {
-    await collectivityRepository.updateGroup(group, reqId);
+  Future<void> updateGroup(Group group) async {
+    await collectivityRepository.updateGroup(group);
   }
 
   Future<void> saveGroup(Group group) async {
-    await collectivityRepository.insertGroup(group);
+    await collectivityRepository.insert(group);
   }
 
   Future<void> saveGroupList(List<Map<String, dynamic>> json) async {
@@ -31,7 +31,7 @@ class CollectivityService {
     Group group=Group.fromJson(groupj);
     groups.add(group);
   }
-  await collectivityRepository.insertGroupList(groups);
+  await collectivityRepository.insertCollectivityList(groups);
   }
 
   Future<void> syncDyadList(List<Map<String, dynamic>> dtos) async {
@@ -42,10 +42,10 @@ class CollectivityService {
       dyadModels.add(dyad);
       personRepository.createPersonIfNotExist(dyad.userId);
     }
-    await collectivityRepository.insertDyadList(dyadModels);
+    await collectivityRepository.insertCollectivityList(dyadModels);
   }
   Future<void> saveDyad(Dyad dyad) async {
-    await collectivityRepository.insertDyad(dyad);
+    await collectivityRepository.insert(dyad);
     personRepository.createPersonIfNotExist(dyad.userId);
   }
 
@@ -64,7 +64,7 @@ class CollectivityService {
     Dyad? dyad=await collectivityRepository.getDyadByUserId(userId);
     if(dyad==null){
       Dyad dyadModel=Dyad(userId: userId,status: Status.created);
-      await collectivityRepository.insertDyad(dyadModel);
+      await collectivityRepository.insert(dyadModel);
     }
   }
 }

@@ -34,6 +34,13 @@ class PersonRepository {
         .map((rows) => List<PersonData>.from(rows).map(_mapPersonDataToPerson).toList());
   }
 
+  Stream<List<Person>> watchPersons() {
+    final db = database;
+    return db.select(db.persons).watch().map((rows) => 
+      List<PersonData>.from(rows).map(_mapPersonDataToPerson).toList()
+    );
+  }
+
   Future<void> insertPerson(Person person) async {
     final db = database;
     try {
@@ -80,13 +87,7 @@ class PersonRepository {
       insertPerson(personModel);
     }
   }
-
-  Future<List<Person>> getUnscncedPerson() async {
-    final db = database;
-    final rows = await (db.select(db.persons)..where((tbl) => tbl.status.isNotValue(Status.sync.name))).get();
-    return rows.map(_mapPersonDataToPerson).toList();
-  }
-
+  
   Future<void> updatePerson(Person person) async {
     final db = database;
     await (db.update(db.persons)..where((tbl) => tbl.id.equals(person.id!))).write(
