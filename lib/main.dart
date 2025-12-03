@@ -8,9 +8,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'package:chat_app/core/bindings/initial_binding.dart';
+import 'package:chat_app/config/environment.dart';
+import 'package:chat_app/config/urls.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  appConfig = await Environment.load();
   if (kIsWeb) {
     setUrlStrategy(PathUrlStrategy());
   }
