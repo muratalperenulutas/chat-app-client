@@ -43,6 +43,7 @@ pipeline {
             }
             steps {
                 unstash 'json-config'
+
                 sh 'flutter --version'
                 sh 'flutter doctor'
                 sh 'flutter clean'
@@ -51,15 +52,17 @@ pipeline {
                 //sh 'flutter analyze'
                 //sh 'flutter test'
 
-                sh 'flutter build apk --release'
+                //sh 'flutter build apk --release'
 
                 sh 'flutter build web --release'
                 
+                sh 'chmod -R u+rw build/web || true'
+
                 stash includes: 'build/web/**/*', name: 'web-build'
             }
             post {
                 success {
-                    archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/*.apk', fingerprint: true
+                    //archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/*.apk', fingerprint: true
                     archiveArtifacts artifacts: 'build/web/**/*', fingerprint: true
                 }
             }
@@ -75,6 +78,8 @@ pipeline {
                 unstash 'env-file'
                 unstash 'web-build'
 
+                sh 'find . -type d -exec chmod 755 {} \\; -o -type f -exec chmod 644 {} \\;'
+
                 script {
                     sh 'docker compose up -d --build'
                 }
@@ -86,7 +91,6 @@ pipeline {
         always {
             script {
                 echo "Pipeline execution completed"
-                sh 'docker compose ps'
             }
         }
 
