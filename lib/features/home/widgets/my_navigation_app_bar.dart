@@ -1,5 +1,8 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/home/menu_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum NavigationBarPosition { left, bottom }
 
@@ -35,11 +38,8 @@ class MyNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var itemWidgets = items.asMap().entries.map((element) {
-      return buildNavigationItem(
-          context,
-          element.value.title,
-          element.value.icon,
-          element.key == currentIndex, () {
+      return buildNavigationItem(context, element.value.title,
+          element.value.icon, element.key == currentIndex, () {
         return onTab(element.key);
       });
     }).toList();
@@ -73,6 +73,16 @@ class MyNavigationBar extends StatelessWidget {
                       child: w,
                     )),
                 const Spacer(),
+                IconButton(
+                    onPressed: () {
+                      final ref = ProviderScope.containerOf(context);
+                      AuthController authController =
+                          ref.read(authControllerProvider.notifier);
+                      authController.logout();
+                      context.router.replacePath('/login');
+                    },
+                    icon: const Icon(Icons.logout)),
+                const SizedBox(height: 20),
                 MenuButton(),
                 const SizedBox(height: 20)
               ],
