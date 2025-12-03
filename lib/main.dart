@@ -1,6 +1,5 @@
 import 'package:chat_app/app.dart';
 import 'package:chat_app/core/di/injection.dart';
-import 'package:chat_app/data/database_service.dart';
 import 'package:chat_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';

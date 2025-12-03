@@ -51,7 +51,11 @@ class CollectivityService {
 
     Future<void> fetchDyad(Dyad dyad) async {
     await collectivityRepository.updateDyad(dyad);
-    messageRepository.batchFixCollectivityIdJob(dyad.collectivityId??"", dyad.userId);
+    print(dyad.collectivityId);
+    if(dyad.collectivityId==null){
+      return;
+    }
+    messageRepository.batchFixCollectivityIdJob(dyad.collectivityId!, dyad.userId);
     
     final messageState = ref.read(messageControllerProvider);
     if(messageState.userId == dyad.userId){
