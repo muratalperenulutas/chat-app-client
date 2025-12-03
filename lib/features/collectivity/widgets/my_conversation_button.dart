@@ -3,7 +3,7 @@ import 'package:chat_app/core/router/app_router.dart';
 import 'package:chat_app/features/chat/models/chat_base.dart';
 import 'package:flutter/material.dart';
 
-myConversationButton(
+MaterialButton myConversationButton(
     BuildContext context, double screenHeight, ChatBase chatBase) {
   return MaterialButton(
     height: screenHeight / 12,

@@ -1,0 +1,5 @@
+{
+    "appName": "Chat App",
+    "apiUrl": "https://auth.example.com",
+    "wsUrl": "wss://cab.example.com/ws"
+}

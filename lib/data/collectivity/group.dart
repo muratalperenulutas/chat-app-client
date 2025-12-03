@@ -9,14 +9,14 @@ class Group extends Collectivity {
   final String? imageId;
 
   Group(
-      {int? id,
-      String? collectivityId,
+      {super.id,
+      super.collectivityId,
       this.name,
       this.creatorId,
       this.imageId,
-      Status status = Status.created})
+      super.status = Status.created})
       : super(
-            collectivityId: collectivityId, type: CollectivityType.group, status: status, id: id);
+            type: CollectivityType.group);
 
   factory Group.fromJson(Map<String, dynamic> json) {
     return Group(

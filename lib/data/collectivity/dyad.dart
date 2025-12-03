@@ -7,16 +7,11 @@ class Dyad extends Collectivity {
   final String userId;
 
   Dyad(
-      {int? id,
+      {super.id,
       required this.userId,
-      String? collectivityId,
-      required Status status,
-      CollectivityType type= CollectivityType.dyad})
-      : super(
-            collectivityId: collectivityId,
-            type:type,
-            status: status,
-            id: id);
+      super.collectivityId,
+      required super.status,
+      super.type= CollectivityType.dyad});
 
 
   factory Dyad.fromJson(Map<String, dynamic> json, String myId) {
@@ -24,8 +19,8 @@ class Dyad extends Collectivity {
     String? otherUserId = userIds
         .firstWhere((id) => id != myId, orElse: ()=>"");
     if(otherUserId==""){
-      debugPrint("userIds"+userIds.toString());
-      debugPrint("myId:"+myId);
+      debugPrint("userIds$userIds");
+      debugPrint("myId:$myId");
       debugPrint("other userId null");
       throw Error();
     }

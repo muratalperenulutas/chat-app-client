@@ -169,7 +169,7 @@ class WebSocketClient {
   void sendWebsocketMessage(WebsocketMessage message) {
     String jsonMessage = jsonEncode(message.toJson());
     channel?.sink.add(jsonMessage);
-    debugPrint("send  " + jsonMessage);
+    debugPrint("send  $jsonMessage");
   }
 
   void close() {

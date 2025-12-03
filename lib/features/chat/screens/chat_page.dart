@@ -82,7 +82,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue[700],
-        title: Container(
+        title: SizedBox(
           width: double.infinity,
           child: GestureDetector(
             onTap: () {

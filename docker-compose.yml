@@ -1,0 +1,17 @@
+services:
+  chat-app-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - "80"
+    env_file:
+      - .env
+    restart: always
+
+    networks:
+      - proxy_web   
+
+networks:
+  proxy_web:
+    external: true
