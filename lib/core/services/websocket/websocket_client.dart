@@ -183,13 +183,13 @@ class WebSocketClient {
 
   void handleMessage(dynamic message) async {
     final jsonData = jsonDecode(message);
-    debugPrint(jsonData);
+    debugPrint(jsonData.toString());
     var data = jsonData["data"];
     var timestamp = jsonData["timestamp"];
     setLastSyncTime(timestamp);
     switch (WsMessageResponseType.fromString(jsonData['type'])) {
       case WsMessageResponseType.USER_FOUND:
-        if (message != null) {
+        if (data != null) {
           Person person = Person.fromJson(data);
           personService.fetchPerson(person);
         }

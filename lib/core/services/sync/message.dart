@@ -16,15 +16,23 @@ class MessageSyncService {
   
   StreamSubscription<List<Message>>? _unsyncedMessagesSubscription;
 
-  MessageSyncService() {
+  MessageSyncService();
+
+  void init() {
+    dispose();
     _setupAutoSync();
   }
 
   void _setupAutoSync() {
-    _unsyncedMessagesSubscription = messageRepository.watchUnsyncedCollectivityMessages().listen((messages) {
+    _unsyncedMessagesSubscription = messageRepository.watchReadyToSendMessages().listen((messages) {
       if (messages.isNotEmpty) {
         _syncMessages(messages);
       }
+    });
+
+    messageRepository.checkPendingMessagesTimeout();
+    Timer.periodic(const Duration(minutes: 1), (timer) {
+      messageRepository.checkPendingMessagesTimeout();
     });
   }
 
@@ -32,16 +40,14 @@ class MessageSyncService {
     for (Message message in messages) {
       _sendMessage(message.message, message.collectivityId, message.id);
       message.status = Status.pending;
-      await messageRepository.updateMessageWithoutNotifier(message);
+      await messageRepository.updateMessage(message);
     }
   }
 
-  void syncMessages() async {
-    List<Message> messages = await messageRepository.getAllUnsyncedCollectivityMessages();
-    _syncMessages(messages);
-  }
-
   void _sendMessage(message, collectivityId, requestId) {
+    if (collectivityId == null || collectivityId.isEmpty || collectivityId == '') {
+      return;
+    }
     WebsocketMessage wsMessage = WebsocketMessage(
       WsMessageType.SEND_MESSAGE, 
       requestId.toString(), 

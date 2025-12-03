@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:chat_app/constants/shared_pref_key.dart';
+import 'package:chat_app/core/di/injection.dart';
 import 'package:chat_app/core/services/api/api.dart';
 import 'package:chat_app/features/auth/controllers/auth_state.dart';
 import 'package:chat_app/features/auth/models/login.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:chat_app/data/database_service.dart';
 
 part 'auth_controller.g.dart';
 
@@ -28,6 +30,10 @@ class AuthController extends _$AuthController {
     final accessToken = prefs.getString(SharedPrefKey.accessTokenKey) ?? '';
     final refreshToken = prefs.getString(SharedPrefKey.refreshTokenKey) ?? '';
     final isLoggedIn = refreshToken.isNotEmpty;
+
+    if (isLoggedIn && myId.isNotEmpty) {
+      getIt<DatabaseService>().init(userId: myId);
+    }
     
     state = state.copyWith(
       myId: myId,
@@ -38,22 +44,25 @@ class AuthController extends _$AuthController {
     );
   }
 
-  void setUserId(String value) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(SharedPrefKey.userIdKey, value);
+  void setUserId(String value) {
     state = state.copyWith(myId: value);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString(SharedPrefKey.userIdKey, value);
+    });
   }
 
-  void setAccessToken(String value) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(SharedPrefKey.accessTokenKey, value);
+  void setAccessToken(String value) {
     state = state.copyWith(accessToken: value);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString(SharedPrefKey.accessTokenKey, value);
+    });
   }
 
-  void setRefreshToken(String value) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(SharedPrefKey.refreshTokenKey, value);
+  void setRefreshToken(String value) {
     state = state.copyWith(refreshToken: value);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString(SharedPrefKey.refreshTokenKey, value);
+    });
   }
 
   void setLoggedIn() {
@@ -64,6 +73,7 @@ class AuthController extends _$AuthController {
     setRefreshToken('');
     setAccessToken('');
     state = state.copyWith(isLoggedIn: false);
+    await getIt<DatabaseService>().closeDatabase();
   }
 
   void setRegisterProgress(RegisterProgress progress) {
@@ -94,6 +104,8 @@ class AuthController extends _$AuthController {
           debugPrint('Decoded Token: $decodedToken');
           String userId = decodedToken["sub"];
           setUserId(userId);
+
+          await getIt<DatabaseService>().init(userId: userId);
           
           onSuccess();
         }
@@ -157,6 +169,9 @@ class AuthController extends _$AuthController {
   }
 
   Future<String> getAccessToken() async {
+    if (state.accessToken.isEmpty) {
+      return '';
+    }
     Duration remainingTime = JwtDecoder.getRemainingTime(state.accessToken);
     debugPrint("Remained access token time: $remainingTime");
     if (remainingTime > Duration(minutes: 5)) {

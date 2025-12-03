@@ -1,10 +1,10 @@
-import 'package:chat_app/data/person/person.dart';
+import 'package:chat_app/data/contact/contact.dart';
 
 class PersonState {
   final Set<String> selectedContacts;
-  final List<Person> contacts;
-  final List<Person> contactsOnChatApp;
-  final List<Person> contactsNotOnChatApp;
+  final List<Contact> contacts;
+  final List<Contact> contactsOnChatApp;
+  final List<Contact> contactsNotOnChatApp;
 
   PersonState({
     this.selectedContacts = const {},
@@ -15,9 +15,9 @@ class PersonState {
 
   PersonState copyWith({
     Set<String>? selectedContacts,
-    List<Person>? contacts,
-    List<Person>? contactsOnChatApp,
-    List<Person>? contactsNotOnChatApp,
+    List<Contact>? contacts,
+    List<Contact>? contactsOnChatApp,
+    List<Contact>? contactsNotOnChatApp,
   }) {
     return PersonState(
       selectedContacts: selectedContacts ?? this.selectedContacts,

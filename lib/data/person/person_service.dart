@@ -1,65 +1,69 @@
 import 'package:chat_app/core/di/injection.dart';
+import 'package:chat_app/data/contact/contact.dart';
+import 'package:chat_app/data/contact/contact_repository.dart';
 import 'package:chat_app/data/person/person.dart';
 import 'package:chat_app/data/person/person_repository.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../constants/enums/source_enum.dart';
 import '../../constants/enums/status.dart';
 
-part 'person_service.g.dart';
-
-@Riverpod(keepAlive: true)
-PersonService personService(Ref ref) {
-  return PersonService(ref);
-}
-
 class PersonService {
-  final Ref ref;
   final PersonRepository personRepository = getIt<PersonRepository>();
+  final ContactRepository contactRepository = getIt<ContactRepository>();
 
-  PersonService(this.ref);
+  PersonService();
 
   Future<void> createContact(String name, String username) async {
     debugPrint("name:$name  username:$username");
-    Person? existingPerson = await personRepository.findPersonByUsername(username);
-    if (existingPerson != null) {
-      debugPrint(existingPerson.toString());
-      existingPerson.setLocalName(name);
-      existingPerson.setSource(SourceEnum.local);
-      personRepository.updatePerson(existingPerson);
+    
+    Contact? existingContact = await contactRepository.findByUsername(username);
+    
+    if (existingContact != null) {
+      Contact updatedContact = Contact(
+        id: existingContact.id,
+        name: name,
+        username: username,
+      );
+      await contactRepository.updateContact(updatedContact);
     } else {
-      Person person = Person(
-          localName: name,
-          username: username,
-          source: SourceEnum.local,
-          isRegistered: 0);
-      personRepository.insertPerson(person);
+      Contact newContact = Contact(
+        name: name,
+        username: username,
+      );
+      await contactRepository.insertContact(newContact);
     }
   }
 
   Future<void> fetchPerson(Person person) async {
     try {
-      final existingPerson = await personRepository.findPersonByUsernameOrUserId(person.username ?? '',person.personId??"");
+      final existingPerson = await personRepository.findPersonByUsernameOrUserId(person.username ?? '', person.personId ?? "");
 
       if (existingPerson != null) {
-
         Person personModel = Person(
             name: person.name,
-            source: existingPerson.source,
             personId: person.personId,
-            isRegistered: 1,
             description: person.description,
             imageId: person.imageId,
-            localName: existingPerson.localName,
             username: person.username,
             id: existingPerson.id,
             status: Status.sync);
-        personRepository.updatePerson(personModel);
+        await personRepository.updatePerson(personModel);
       } else {
-        person.source=SourceEnum.server;
-        person.status=Status.sync;
-        personRepository.insertPerson(person);
+        person.status = Status.sync;
+        await personRepository.insertPerson(person);
+      }
+      
+      if (person.username != null) {
+        Contact? contact = await contactRepository.findByUsername(person.username!);
+        if (contact != null) {
+           Contact updatedContact = Contact(
+            id: contact.id,
+            name: contact.name,
+            username: contact.username,
+            status: Status.sync
+          );
+          await contactRepository.updateContact(updatedContact);
+        }
       }
     } catch (e) {
       debugPrint("Error inserting person: $e");

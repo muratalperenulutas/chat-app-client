@@ -1,4 +1,5 @@
 import 'package:chat_app/features/home/menu_button.dart';
+import 'package:chat_app/features/home/widgets/logout_button.dart';
 import 'package:flutter/material.dart';
 
 enum NavigationBarPosition { left, bottom }
@@ -35,11 +36,8 @@ class MyNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var itemWidgets = items.asMap().entries.map((element) {
-      return buildNavigationItem(
-          context,
-          element.value.title,
-          element.value.icon,
-          element.key == currentIndex, () {
+      return buildNavigationItem(context, element.value.title,
+          element.value.icon, element.key == currentIndex, () {
         return onTab(element.key);
       });
     }).toList();
@@ -73,6 +71,8 @@ class MyNavigationBar extends StatelessWidget {
                       child: w,
                     )),
                 const Spacer(),
+                LogoutButton(),
+                const SizedBox(height: 20),
                 MenuButton(),
                 const SizedBox(height: 20)
               ],
@@ -87,7 +87,6 @@ class MyNavigationBar extends StatelessWidget {
     bool isSelected,
     Function() onPress,
   ) {
-    final color = isSelected ? Colors.green : Colors.black;
     return InkWell(
       onTap: onPress,
       borderRadius: BorderRadius.circular(12),

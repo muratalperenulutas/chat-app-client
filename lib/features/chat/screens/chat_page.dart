@@ -56,14 +56,13 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   Future<void> _loadData() async {
     try {
-      final messageController = ref.read(messageControllerProvider.notifier);
-      if (widget.chatBase.collectivityId != null) {
-        messageController
-            .setCollectivityId(widget.chatBase.collectivityId ??"");
-      }
-      if (widget.chatBase.personId != null) {
-        messageController.setUserId(widget.chatBase.personId ?? "");
-      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final messageController = ref.read(messageControllerProvider.notifier);
+        messageController.setChatIds(
+          collectivityId: widget.chatBase.collectivityId,
+          userId: widget.chatBase.personId,
+        );
+      });
 
       setState(() {
         _isLoading = false;

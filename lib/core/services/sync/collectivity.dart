@@ -20,7 +20,10 @@ class CollectivitySyncService {
   
   StreamSubscription<List<Collectivity>>? _unsyncedCollectivitiesSubscription;
 
-  CollectivitySyncService() {
+  CollectivitySyncService();
+
+  void init() {
+    dispose();
     _setupAutoSync();
   }
 
@@ -29,6 +32,11 @@ class CollectivitySyncService {
       if (collectivities.isNotEmpty) {
         _syncCollectivities(collectivities);
       }
+    });
+    
+    collectivityRepository.checkPendingCollectivitiesTimeout();
+    Timer.periodic(const Duration(minutes: 1), (timer) {
+      collectivityRepository.checkPendingCollectivitiesTimeout();
     });
   }
 
@@ -42,11 +50,6 @@ class CollectivitySyncService {
         }
       }
     }
-  }
-
-  void syncCollectivities() async {
-    List<Collectivity> unsyncedCollectivities = await collectivityRepository.getUnsyncedCollectivities();
-    _syncCollectivities(unsyncedCollectivities);
   }
 
   void createGroup(String name, List<String> members) {

@@ -41,7 +41,7 @@ final class PersonControllerProvider
   }
 }
 
-String _$personControllerHash() => r'7fdbb2a29badaf9c89a34e48f957909d1158fea4';
+String _$personControllerHash() => r'a8f32468bf2638686a975a1ba7430ec629a5cd7f';
 
 abstract class _$PersonController extends $Notifier<PersonState> {
   PersonState build();

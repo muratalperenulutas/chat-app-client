@@ -18,16 +18,6 @@ class Dyad extends Collectivity {
             status: status,
             id: id);
 
-  factory Dyad.fromDb(Map<String, dynamic> map) {
-    debugPrint("from db$map");
-    return Dyad(
-      id: map['id'],
-      userId: map['user_id'] ?? "",
-      collectivityId: map['collectivityId'],
-      status: Status.fromString(map['status']),
-      type: CollectivityType.fromString(map['collectivity_type'])
-    );
-  }
 
   factory Dyad.fromJson(Map<String, dynamic> json, String myId) {
     var userIds = List<String>.from(json['members']);
@@ -44,12 +34,4 @@ class Dyad extends Collectivity {
         userId: otherUserId,
         status: Status.sync);
   }
-
-  Map<String, dynamic> toDb() => {
-        'id': id,
-        'user_id': userId,
-        'collectivityId': collectivityId,
-        'status': status.name,
-        'collectivity_type': type.name
-      };
 }

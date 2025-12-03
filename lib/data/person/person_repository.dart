@@ -1,11 +1,9 @@
-import 'package:chat_app/constants/db/table_names.dart';
 import 'package:chat_app/constants/enums/status.dart';
 import 'package:chat_app/data/person/person.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:injectable/injectable.dart';
 import 'package:drift/drift.dart' as drift;
 
-import '../../constants/enums/source_enum.dart';
 import '../database_service.dart';
 import '../database/database.dart';
 
@@ -17,38 +15,44 @@ class PersonRepository {
 
   AppDatabase get database => databaseService.getDatabase();
 
+  Person _mapPersonDataToPerson(PersonData data) {
+    return Person(
+      id: data.id,
+      personId: data.personId,
+      name: data.name,
+      username: data.username,
+      description: data.description,
+      imageId: data.imageId,
+      status: Status.fromString(data.status),
+    );
+  }
+
   Stream<List<Person>> watchUnsyncedPersons() {
     final db = database;
-    
-    return db.customSelect(
-      'SELECT * FROM ${DbTableNames.persons} WHERE status != ?',
-      variables: [drift.Variable.withString(Status.sync.name)],
-      readsFrom: {db.persons},
-    ).watch().map((rows) => 
-      rows.map((row) => Person.fromDb(row.data)).toList()
+    return (db.select(db.persons)..where((tbl) => tbl.status.isNotValue(Status.sync.name)))
+        .watch()
+        .map((rows) => List<PersonData>.from(rows).map(_mapPersonDataToPerson).toList());
+  }
+
+  Stream<List<Person>> watchPersons() {
+    final db = database;
+    return db.select(db.persons).watch().map((rows) => 
+      List<PersonData>.from(rows).map(_mapPersonDataToPerson).toList()
     );
   }
 
   Future<void> insertPerson(Person person) async {
     final db = database;
-    final map = person.toDb();
     try {
-      await db.customInsert(
-        'INSERT INTO ${DbTableNames.persons} '
-        '(person_id, name, local_name, username, description, image_id, source, is_registered, status) '
-        'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        variables: [
-          drift.Variable.withString(map['person_id'] ?? ''),
-          drift.Variable.withString(map['name'] ?? ''),
-          drift.Variable.withString(map['local_name'] ?? ''),
-          drift.Variable.withString(map['username'] ?? ''),
-          drift.Variable.withString(map['description'] ?? ''),
-          drift.Variable.withString(map['image_id'] ?? ''),
-          drift.Variable.withString(map['source'] ?? 'SERVER'),
-          drift.Variable.withInt(map['is_registered'] ?? 0),
-          drift.Variable.withString(map['status'] ?? 'CREATED'),
-        ],
-        updates: {db.persons},
+      await db.into(db.persons).insert(
+        PersonsCompanion.insert(
+          personId: person.personId ?? '',
+          name: drift.Value(person.name),
+          username: drift.Value(person.username),
+          description: drift.Value(person.description),
+          imageId: drift.Value(person.imageId),
+          status: drift.Value(person.status.name),
+        ),
       );
     } catch (e) {
       debugPrint("Error inserting person: $e");
@@ -58,52 +62,22 @@ class PersonRepository {
 
   Future<Person?> findPersonByUsername(String username) async {
     final db = database;
-    final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.persons} WHERE username = ?',
-      variables: [drift.Variable.withString(username)],
-      readsFrom: {db.persons},
-    );
-    
-    final results = await query.get();
-    if (results.isNotEmpty) {
-      return Person.fromDb(results.first.data);
-    } else {
-      return null;
-    }
+    final row = await (db.select(db.persons)..where((tbl) => tbl.username.equals(username))).getSingleOrNull();
+    return row != null ? _mapPersonDataToPerson(row) : null;
   }
 
   Future<Person?> findPersonByUsernameOrUserId(String username, String userId) async {
     final db = database;
-    final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.persons} WHERE username = ? OR person_id = ?',
-      variables: [
-        drift.Variable.withString(username),
-        drift.Variable.withString(userId),
-      ],
-      readsFrom: {db.persons},
-    );
-    
-    final results = await query.get();
-    if (results.isNotEmpty) {
-      return Person.fromDb(results.first.data);
-    } else {
-      return null;
-    }
+    final row = await (db.select(db.persons)
+      ..where((tbl) => tbl.username.equals(username) | tbl.personId.equals(userId)))
+      .getSingleOrNull();
+    return row != null ? _mapPersonDataToPerson(row) : null;
   }
 
   Future<Person?> findPersonByPersonId(String personId) async {
     final db = database;
-    final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.persons} WHERE person_id = ?',
-      variables: [drift.Variable.withString(personId)],
-      readsFrom: {db.persons},
-    );
-    
-    final results = await query.get();
-    if(results.isEmpty){
-      return null;
-    }
-    return Person.fromDb(results.first.data);
+    final row = await (db.select(db.persons)..where((tbl) => tbl.personId.equals(personId))).getSingleOrNull();
+    return row != null ? _mapPersonDataToPerson(row) : null;
   }
 
   Future<void> createPersonIfNotExist(String personId)async{
@@ -113,85 +87,23 @@ class PersonRepository {
       insertPerson(personModel);
     }
   }
-
-  Future<List<Person>> getContacts() async {
-    final db = database;
-    final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.persons} WHERE source = ?',
-      variables: [drift.Variable.withString(SourceEnum.local.name)],
-      readsFrom: {db.persons},
-    );
-    
-    final results = await query.get();
-    return results.map((row) => Person.fromDb(row.data)).toList();
-  }
-
-  Future<List<Person>> getContactsOnChatApp() async {
-    final db = database;
-    final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND is_registered = ?',
-      variables: [
-        drift.Variable.withString(SourceEnum.local.name),
-        drift.Variable.withInt(1),
-      ],
-      readsFrom: {db.persons},
-    );
-    
-    final results = await query.get();
-    return results.map((row) => Person.fromDb(row.data)).toList();
-  }
-
-  Future<List<Person>> getContactsNotOnChatApp() async {
-    final db = database;
-    final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.persons} WHERE source = ? AND is_registered = ?',
-      variables: [
-        drift.Variable.withString(SourceEnum.local.name),
-        drift.Variable.withInt(0),
-      ],
-      readsFrom: {db.persons},
-    );
-    
-    final results = await query.get();
-    return results.map((row) => Person.fromDb(row.data)).toList();
-  }
-
-  Future<List<Person>> getUnscncedPerson() async {
-    final db = database;
-    final query = db.customSelect(
-      'SELECT * FROM ${DbTableNames.persons} WHERE status != ?',
-      variables: [drift.Variable.withString(Status.sync.name)],
-      readsFrom: {db.persons},
-    );
-    
-    final results = await query.get();
-    return results.map((row) => Person.fromDb(row.data)).toList();
-  }
-
+  
   Future<void> updatePerson(Person person) async {
     final db = database;
-    final map = person.toDb();
-    await db.customUpdate(
-      'UPDATE ${DbTableNames.persons} SET '
-      'person_id = ?, name = ?, local_name = ?, username = ?, description = ?, '
-      'image_id = ?, source = ?, is_registered = ?, status = ? WHERE id = ?',
-      variables: [
-        drift.Variable.withString(map['person_id'] ?? ''),
-        drift.Variable.withString(map['name'] ?? ''),
-        drift.Variable.withString(map['local_name'] ?? ''),
-        drift.Variable.withString(map['username'] ?? ''),
-        drift.Variable.withString(map['description'] ?? ''),
-        drift.Variable.withString(map['image_id'] ?? ''),
-        drift.Variable.withString(map['source'] ?? 'SERVER'),
-        drift.Variable.withInt(map['is_registered'] ?? 0),
-        drift.Variable.withString(map['status'] ?? 'CREATED'),
-        drift.Variable.withInt(map['id']),
-      ],
-      updates: {db.persons},
+    await (db.update(db.persons)..where((tbl) => tbl.id.equals(person.id!))).write(
+      PersonsCompanion(
+        personId: drift.Value(person.personId ?? ''),
+        name: drift.Value(person.name),
+        username: drift.Value(person.username),
+        description: drift.Value(person.description),
+        imageId: drift.Value(person.imageId),
+        status: drift.Value(person.status.name),
+      ),
     );
   }
 
   Future<void> printAll() async {
+    /*
     final db = database;
     final query = db.customSelect(
       'SELECT * FROM ${DbTableNames.persons}',
@@ -200,6 +112,7 @@ class PersonRepository {
     
     final results = await query.get();
     debugPrint(results.map((r) => r.data).toList().toString());
+    */
   }
 
 }

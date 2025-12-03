@@ -5,31 +5,24 @@ import 'package:chat_app/data/collectivity/dyad.dart';
 import 'package:chat_app/data/message/message_repository.dart';
 import 'package:chat_app/features/auth/controllers/auth_controller.dart';
 import 'package:chat_app/features/chat/controllers/message_controller.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../person/person_repository.dart';
 import 'group.dart';
 
-part 'collectivity_service.g.dart';
-
-@Riverpod(keepAlive: true)
-CollectivityService collectivityService(Ref ref) {
-  return CollectivityService(ref);
-}
-
 class CollectivityService {
-  final Ref ref;
+  final ProviderContainer ref;
   final CollectivityRepository collectivityRepository = getIt<CollectivityRepository>();
   final MessageRepository messageRepository = getIt<MessageRepository>();
   final PersonRepository personRepository = getIt<PersonRepository>();
 
   CollectivityService(this.ref);
 
-  Future<void> updateGroup(Group group, int reqId) async {
-    await collectivityRepository.updateGroup(group, reqId);
+  Future<void> updateGroup(Group group) async {
+    await collectivityRepository.updateGroup(group);
   }
 
   Future<void> saveGroup(Group group) async {
-    await collectivityRepository.insertGroup(group);
+    await collectivityRepository.insert(group);
   }
 
   Future<void> saveGroupList(List<Map<String, dynamic>> json) async {
@@ -38,7 +31,7 @@ class CollectivityService {
     Group group=Group.fromJson(groupj);
     groups.add(group);
   }
-  await collectivityRepository.insertGroupList(groups);
+  await collectivityRepository.insertCollectivityList(groups);
   }
 
   Future<void> syncDyadList(List<Map<String, dynamic>> dtos) async {
@@ -49,16 +42,20 @@ class CollectivityService {
       dyadModels.add(dyad);
       personRepository.createPersonIfNotExist(dyad.userId);
     }
-    await collectivityRepository.insertDyadList(dyadModels);
+    await collectivityRepository.insertCollectivityList(dyadModels);
   }
   Future<void> saveDyad(Dyad dyad) async {
-    await collectivityRepository.insertDyad(dyad);
+    await collectivityRepository.insert(dyad);
     personRepository.createPersonIfNotExist(dyad.userId);
   }
 
     Future<void> fetchDyad(Dyad dyad) async {
     await collectivityRepository.updateDyad(dyad);
-    messageRepository.batchFixCollectivityIdJob(dyad.collectivityId??"", dyad.userId);
+    print(dyad.collectivityId);
+    if(dyad.collectivityId==null){
+      return;
+    }
+    messageRepository.batchFixCollectivityIdJob(dyad.collectivityId!, dyad.userId);
     
     final messageState = ref.read(messageControllerProvider);
     if(messageState.userId == dyad.userId){
@@ -71,7 +68,7 @@ class CollectivityService {
     Dyad? dyad=await collectivityRepository.getDyadByUserId(userId);
     if(dyad==null){
       Dyad dyadModel=Dyad(userId: userId,status: Status.created);
-      await collectivityRepository.insertDyad(dyadModel);
+      await collectivityRepository.insert(dyadModel);
     }
   }
 }

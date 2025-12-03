@@ -7,13 +7,6 @@ class Participant {
   const Participant(
       {this.participantId,this.id, this.userId, this.collectivityId});
 
-  factory Participant.fromDb(Map<String, dynamic> map) {
-    return Participant(
-      id: map['id'],
-      userId: map['user_id'],
-      collectivityId: map['collectivity_id'],
-    );
-  }
   static List<Participant> fromJsonList(List<Map<String, dynamic>> json) {
     List<Participant> participants =
     <Participant>[];
@@ -23,10 +16,4 @@ class Participant {
     }
     return participants;
   }
-
-  Map<String, dynamic> toDb() => {
-        'id': id,
-        'user_id': userId,
-        'collectivity_id': collectivityId,
-      };
 }

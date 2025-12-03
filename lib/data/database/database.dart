@@ -1,3 +1,4 @@
+import 'package:chat_app/constants/enums/status.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:chat_app/data/connection/connection.dart';
@@ -5,9 +6,9 @@ import 'package:chat_app/data/database/tables.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [Collectivities, Participants, Persons, Messages])
+@DriftDatabase(tables: [Collectivities, Groups, Dyad, Participants, Persons, Messages, Contacts])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(openConnection());
+  AppDatabase({String dbName = 'ChatApp'}) : super(openConnection(dbName: dbName));
 
   @override
   int get schemaVersion => 1;
