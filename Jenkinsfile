@@ -48,6 +48,7 @@ pipeline {
                 sh 'flutter doctor'
                 sh 'flutter clean'
                 sh 'flutter pub get'
+                sh 'dart run build_runner build --delete-conflicting-outputs'
                 
                 //sh 'flutter analyze'
                 //sh 'flutter test'
