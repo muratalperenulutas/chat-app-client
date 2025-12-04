@@ -27,7 +27,8 @@ class PersonBase {
     return PersonBase(
       name: contact.name,
       username: contact.username,
-      imageId: person?.imageId
+      imageId: person?.imageId,
+      personId: contact.personId,
       );
   }
 }
